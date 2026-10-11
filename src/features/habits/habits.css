@@ -1,0 +1,123 @@
+.day-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.day-nav__label {
+  flex: 1;
+  text-align: center;
+  font-weight: var(--weight-semibold);
+}
+
+.habit-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  text-align: center;
+}
+
+.vessel {
+  position: relative;
+  flex: none;
+}
+
+.vessel svg {
+  overflow: visible;
+}
+
+.vessel__rim {
+  fill: none;
+  stroke: color-mix(in srgb, var(--series-water) 35%, transparent);
+  stroke-width: 3;
+}
+
+.vessel__bg {
+  fill: color-mix(in srgb, var(--series-water) 8%, transparent);
+}
+
+.vessel__glint {
+  fill: rgba(255, 255, 255, 0.22);
+}
+
+.vessel__wave {
+  transform-box: fill-box;
+  animation: wave-move 6s linear infinite;
+}
+
+.vessel__wave--back {
+  animation-duration: 9s;
+  animation-direction: reverse;
+}
+
+@keyframes wave-move {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.vessel__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.25);
+}
+
+.vessel__value {
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-display);
+  line-height: 1;
+}
+
+.habit-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.habit-meta .stat {
+  align-items: center;
+}
+
+.preset-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.water-log li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 52px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.water-log li:last-child {
+  border-bottom: 0;
+}
+
+.compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+@media (min-width: 640px) {
+  .compare {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

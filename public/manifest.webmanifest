@@ -1,0 +1,11 @@
+{
+  "name": "RUMBO",
+  "short_name": "RUMBO",
+  "description": "Hábitos, evolución física y entrenamiento.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08090d",
+  "theme_color": "#08090d",
+  "lang": "es",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
