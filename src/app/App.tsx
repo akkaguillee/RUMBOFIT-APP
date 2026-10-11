@@ -14,6 +14,7 @@ import { TabBar } from './shell/TabBar';
 import { TopBar } from './shell/TopBar';
 import { introModeForThisLoad, markIntroSeen } from './intro';
 import { Splash } from './Splash';
+import { StorageNotice } from './StorageNotice';
 
 const Dashboard = lazy(() => import('@/features/dashboard/DashboardPage'));
 const Progress = lazy(() => import('@/features/progress/ProgressPage'));
@@ -52,7 +53,7 @@ function Shell({ profile }: { profile: Profile }) {
       <Sidebar profile={profile} />
       <div className="shell__main">
         <TopBar profile={profile} />
-        <main id="main">
+        <main id="main" tabIndex={-1} style={{ outline: 'none' }}>
           <Suspense fallback={<Loader />}>
             <AnimatePresence mode="wait" initial={false} onExitComplete={() => window.scrollTo({ top: 0 })}>
               <Routes location={location} key={key}>
@@ -97,9 +98,18 @@ export function App() {
 
   return (
     <>
-      <a href="#main" className="sr-only">
+      <a
+        href="#main"
+        className="skip-link"
+        onClick={(e) => {
+          // Works with hash routing too: move focus instead of changing the URL.
+          e.preventDefault();
+          document.getElementById('main')?.focus();
+        }}
+      >
         Saltar al contenido
       </a>
+      <StorageNotice />
       <AppBackground />
       {!loading && profile === null && (
         <Suspense fallback={<Loader />}>

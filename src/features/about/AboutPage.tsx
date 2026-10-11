@@ -8,11 +8,13 @@ import { Page } from '@/ui/Page';
 import './about.css';
 
 /**
- * The creator's original photo must be placed at public/creator/guille.jpg.
- * If it is missing we show a neutral, clearly-labelled frame instead of
- * inventing or substituting an image.
+ * The creator's original photo goes in src/assets/creator/ (guille.jpg, .jpeg,
+ * .png or .webp). It is bundled at build time, so it also works inside the
+ * single-file HTML. If it is missing we show a neutral, clearly-labelled frame
+ * instead of inventing or substituting an image.
  */
-const PHOTO_SRC = '/creator/guille.jpg';
+const photos = import.meta.glob<string>('/src/assets/creator/guille.{jpg,jpeg,png,webp}', { eager: true, query: '?url', import: 'default' });
+const PHOTO_SRC: string | undefined = Object.values(photos)[0];
 
 const SOCIALS: { brand: Brand; label: string; handle: string; url: string }[] = [
   { brand: 'instagram', label: 'Instagram', handle: '@akkaguillee', url: 'https://www.instagram.com/akkaguillee' },
@@ -29,7 +31,7 @@ const PARAGRAPHS = [
 ];
 
 export default function AboutPage() {
-  const [photoState, setPhotoState] = useState<'loading' | 'ok' | 'missing'>('loading');
+  const [photoState, setPhotoState] = useState<'loading' | 'ok' | 'missing'>(PHOTO_SRC ? 'loading' : 'missing');
   return (
     <Page>
       <article className="about glass glass--strong" aria-labelledby="about-title">
@@ -37,7 +39,7 @@ export default function AboutPage() {
         <motion.div className="about__photo-wrap" variants={riseVariants}>
           <div className="about__halo" aria-hidden="true" />
           <div className="about__photo" data-state={photoState}>
-            {photoState !== 'missing' ? (
+            {PHOTO_SRC && photoState !== 'missing' ? (
               <img
                 src={PHOTO_SRC}
                 alt="Guille, creador de RUMBO"

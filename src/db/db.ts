@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
+import { idbFactoryProxy, keyRangeProxy } from './backend';
 import type { GoalSnapshot } from '@/domain/achievements/metrics';
 import type {
   AchievementUnlock,
@@ -42,7 +43,7 @@ export class RumboDB extends Dexie {
   settings!: EntityTable<Setting, 'key'>;
 
   constructor(name = 'rumbo') {
-    super(name);
+    super(name, { indexedDB: idbFactoryProxy, IDBKeyRange: keyRangeProxy });
     this.version(1).stores({
       profile: 'id',
       goals: '++id, startDate',

@@ -7,9 +7,9 @@ export function dateKey(offsetDays = 0): string {
 }
 
 /** Completes onboarding with a weight-loss goal (90 → 85,4 kg, goal 78 kg). */
-export async function onboard(page: Page, name = 'Guille') {
+export async function onboard(page: Page, name = 'Guille', url = '/') {
   await page.addInitScript(() => localStorage.setItem('rumbo.intro', 'off'));
-  await page.goto('/');
+  await page.goto(url);
   await page.getByRole('button', { name: 'Empezar' }).click();
   await page.getByRole('textbox', { name: 'Nombre o alias' }).fill(name);
   await page.getByRole('button', { name: 'Continuar' }).click();

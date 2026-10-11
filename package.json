@@ -2,7 +2,7 @@
   "name": "rumbo",
   "private": true,
   "version": "1.0.0",
-  "description": "RUMBO — hábitos, evolución física y entrenamiento con una experiencia Liquid Glass.",
+  "description": "RUMBO \u2014 h\u00e1bitos, evoluci\u00f3n f\u00edsica y entrenamiento con una experiencia Liquid Glass.",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,13 +12,15 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "vite build --mode standalone && playwright test",
+    "build:html": "tsc -b && vite build --mode standalone"
   },
   "dependencies": {
     "@fontsource-variable/inter": "5.3.0",
     "d3-shape": "3.2.0",
     "dexie": "4.4.6",
     "dexie-react-hooks": "4.4.0",
+    "fake-indexeddb": "6.2.5",
     "lucide-react": "1.47.0",
     "motion": "12.43.0",
     "react": "19.3.0",
@@ -36,11 +38,11 @@
     "eslint": "9.39.4",
     "eslint-plugin-react-hooks": "7.0.1",
     "eslint-plugin-react-refresh": "0.4.24",
-    "fake-indexeddb": "6.2.5",
     "globals": "16.5.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.70.0",
     "vite": "7.3.6",
+    "vite-plugin-singlefile": "2.3.3",
     "vitest": "4.1.11"
   }
 }

@@ -15,13 +15,21 @@ npm run build      # build de producción en dist/
 npm run preview    # sirve el build en http://localhost:4173
 ```
 
+### Versión en un solo archivo HTML
+
+```bash
+npm run build:html # genera dist-html/rumbo.html
+```
+
+`rumbo.html` lo incluye todo (código, estilos, fuente Inter, logotipo e iconos) y funciona al abrirlo directamente desde el disco, sin servidor ni conexión a internet. Usa rutas con `#` (por ejemplo `rumbo.html#/progresos`) y guarda los datos en el navegador como la versión normal. Si el navegador no permite guardar datos (ventanas privadas o visores de archivos), la app sigue funcionando en un **modo temporal** claramente avisado, en el que nada se conserva al cerrar.
+
 Comprobaciones:
 
 ```bash
 npm run typecheck  # TypeScript estricto
 npm run lint       # ESLint (incluye las reglas de React Hooks)
 npm test           # pruebas unitarias e integración (Vitest + IndexedDB simulada)
-npm run test:e2e   # pruebas end-to-end en móvil y escritorio (Playwright)
+npm run test:e2e   # genera rumbo.html y ejecuta las pruebas end-to-end en móvil y escritorio (Playwright)
 ```
 
 ## Qué incluye
@@ -72,7 +80,7 @@ Los datos se guardan únicamente en el navegador del dispositivo (IndexedDB). No
 
 ## Pendiente / dependencias externas
 
-- **Fotografía del creador:** no estaba disponible en el proyecto. Coloca la foto original en `public/creator/guille.jpg` (cuadrada o vertical, ≥ 600 px). Mientras falte, la sección muestra un marco con «Foto pendiente» en lugar de una imagen inventada.
+- **Fotografía del creador:** no estaba disponible en el proyecto. Coloca la foto original en `src/assets/creator/guille.jpg` (también vale `.png` o `.webp`; cuadrada o vertical, ≥ 600 px) y vuelve a generar la app: se incluye automáticamente, también dentro de `rumbo.html`. Mientras falte, la sección muestra un marco con «Foto pendiente» en lugar de una imagen inventada.
 - **Sincronización entre dispositivos:** requiere un backend con autenticación (por ejemplo, Supabase con políticas RLS por usuario). El esquema de Dexie está versionado y el formato de exportación sirve de base para migrar.
 - **Apple Salud / Health Connect / relojes:** no disponibles en web; los pasos se registran manualmente.
 - **Notificaciones (recordatorios de agua):** no implementadas; requieren service worker y permiso explícito.
