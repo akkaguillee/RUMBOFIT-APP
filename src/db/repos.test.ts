@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { todayKey, addDays } from '@/domain/dates';
 import { db } from './db';
 import { createProfile, updateProfile } from './repos/profile';
-import { addWater, addWeight, deleteWeight, setSteps, addSteps } from './repos/tracking';
+import { addWater, addWeight, deleteWeight, saveBmi, setNote, setSteps, addSteps } from './repos/tracking';
 import { exerciseEntry, finishWorkout, mutateExercises, startWorkout, getActiveWorkout } from './repos/training';
 import { deleteAllData, exportAll, importAll, parseExport } from './repos/data';
 import { syncAchievements } from './sync';
@@ -107,5 +107,41 @@ describe('repositories', () => {
     expect((await db.profile.get('me'))?.name).toBe('Guille');
     expect(await db.water.count()).toBe(1);
     expect(() => parseExport('{"format":"other"}')).toThrow();
+  });
+
+  it('rejects backups with malformed rows before touching any data', async () => {
+    await seedProfile();
+    await setSteps(today, 4000);
+    const good = await exportAll();
+    const mutate = (fn: (t: Record<string, unknown[]>) => void) => {
+      const copy = JSON.parse(JSON.stringify(good));
+      fn(copy.tables);
+      return JSON.stringify(copy);
+    };
+    expect(() => parseExport(mutate((t) => (t.profile = [{ id: 'me', name: 'Hack' }])))).toThrow(/perfil/);
+    expect(() => parseExport(mutate((t) => (t.weights = [{ id: 5, kg: 80, createdAt: 5, updatedAt: 5 }])))).toThrow(/peso/);
+    expect(() => parseExport(mutate((t) => t.steps!.push({ ...(t.steps![0] as object), id: 99 })))).toThrow(/pasos/);
+    expect(() => parseExport(mutate((t) => (t.notes = [{ text: 'sin fecha' }])))).toThrow(/notas/);
+    expect(() => parseExport(mutate((t) => (t.profile = [])))).toThrow(/perfil/);
+    expect(parseExport(JSON.stringify(good)).tables.steps).toHaveLength(1);
+  });
+
+  it('accepts a real backup with workouts, notes and calculators', async () => {
+    await seedProfile();
+    await addWeight({ date: today, kg: 84.6, note: 'Mañana' });
+    await addWater(today, 330);
+    await setSteps(today, 9000, 6.2);
+    await setNote(today, 'Buen día');
+    await saveBmi(84.6, 180);
+    const id = await startWorkout({ name: 'Pecho', exercises: [exerciseEntry('bench-press', [{ kg: 40, reps: 12 }])] });
+    await mutateExercises(id, (exs) => {
+      exs[0]!.sets[0]!.done = true;
+      return exs;
+    });
+    await finishWorkout(id, { rpe: 7 });
+    await syncAchievements();
+    const file = parseExport(JSON.stringify(await exportAll()));
+    expect(file.tables.workouts).toHaveLength(1);
+    expect(file.tables.bmi).toHaveLength(1);
   });
 });

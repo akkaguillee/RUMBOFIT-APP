@@ -89,7 +89,7 @@ export function EnergyPanel({ profile, weights }: { profile: Profile; weights: W
             Tus datos
           </h2>
           <div className="vstack">
-            <div className="grid-3" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+            <div className="grid-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))' }}>
               <NumberField label="Peso" value={w} onChange={(e) => setW(e.target.value)} suffix={u.w} error={errs.w} />
               <NumberField label="Altura" value={h} onChange={(e) => setH(e.target.value)} suffix={u.h} error={errs.h} />
               <NumberField label="Edad" value={age} onChange={(e) => setAge(e.target.value.replace(/\D/g, ''))} decimals={false} suffix="años" error={errs.a} />

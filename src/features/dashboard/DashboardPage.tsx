@@ -16,7 +16,7 @@ import { AnimatedNumber } from '@/ui/AnimatedNumber';
 import { ButtonLink, Button } from '@/ui/Button';
 import { GlassCard, GlassLinkCard } from '@/ui/GlassCard';
 import { Loader } from '@/ui/Loader';
-import { riseVariants } from '@/ui/motion';
+import { liftVariants, riseVariants } from '@/ui/motion';
 import { Page } from '@/ui/Page';
 import { ProgressBar } from '@/ui/ProgressBar';
 import { ProgressRing } from '@/ui/ProgressRing';
@@ -283,7 +283,7 @@ export default function DashboardPage() {
         </motion.nav>
 
         {/* ── Today ─────────────────────────────────────────────── */}
-        <motion.section className="dash__today" variants={riseVariants} aria-labelledby="today-title">
+        <motion.section className="dash__today rise-group" variants={liftVariants} aria-labelledby="today-title">
           <div className="section-head">
             <h2 id="today-title">Hoy</h2>
             <span className="t-small">

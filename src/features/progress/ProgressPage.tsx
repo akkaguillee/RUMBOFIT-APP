@@ -4,6 +4,7 @@ import { useProfile, useWeights } from '@/db/hooks';
 import { Loader } from '@/ui/Loader';
 import { riseVariants } from '@/ui/motion';
 import { Page, PageHead } from '@/ui/Page';
+import { TabPanel } from '@/ui/TabPanel';
 import { Segmented } from '@/ui/Segmented';
 import { BmiPanel } from './BmiPanel';
 import { EnergyPanel } from './EnergyPanel';
@@ -42,20 +43,12 @@ export default function ProgressPage() {
           block
         />
       </motion.div>
-      <motion.div
-        key={tab}
-        id="progress-panel"
-        role="tabpanel"
-        aria-labelledby={`progress-tab-${tab}`}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-      >
+      <TabPanel tab={tab} idPrefix="progress">
         {tab === 'evolucion' && <EvolutionPanel profile={profile} weights={weights} />}
         {tab === 'registros' && <WeightLogPanel profile={profile} weights={weights} />}
         {tab === 'imc' && <BmiPanel profile={profile} weights={weights} />}
         {tab === 'calorias' && <EnergyPanel profile={profile} weights={weights} />}
-      </motion.div>
+      </TabPanel>
     </Page>
   );
 }

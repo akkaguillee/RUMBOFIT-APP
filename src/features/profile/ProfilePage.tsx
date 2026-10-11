@@ -1,8 +1,9 @@
 import { Download, HeartPulse, Palette, ShieldCheck, Sparkles, Target, Trash2, Upload, UserRound } from 'lucide-react';
 import { useRef, useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTheme, type Effects, type Theme } from '@/app/theme';
 import { introEnabled, setIntroEnabled } from '@/app/intro';
+import { storageMode } from '@/db/backend';
 import { useProfile, useSetting, useWeights } from '@/db/hooks';
 import { deleteAllData, downloadJson, exportAll, importAll, parseExport, type ExportFile } from '@/db/repos/data';
 import { updateProfile } from '@/db/repos/profile';
@@ -16,6 +17,7 @@ import { NumberField, SelectField, TextField } from '@/ui/Field';
 import { GlassCard } from '@/ui/GlassCard';
 import { Loader } from '@/ui/Loader';
 import { Page, PageHead } from '@/ui/Page';
+import { AccentPicker } from '@/ui/AccentPicker';
 import { Segmented } from '@/ui/Segmented';
 import { Sheet } from '@/ui/Sheet';
 import { Switch } from '@/ui/Switch';
@@ -312,6 +314,11 @@ function AppearanceSection() {
           />
         </div>
         <div className="field">
+          <span className="field__label">Color de la interfaz</span>
+          <AccentPicker />
+          <span className="field__hint">Cambia el color de botones, anillos y destacados. Los colores de estado no cambian.</span>
+        </div>
+        <div className="field">
           <span className="field__label">Efectos visuales</span>
           <Segmented
             label="Efectos visuales"
@@ -366,6 +373,7 @@ function AppearanceSection() {
 }
 
 function DataSection() {
+  const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<ExportFile | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -375,10 +383,17 @@ function DataSection() {
   return (
     <Section icon={<ShieldCheck aria-hidden="true" />} title="Datos y privacidad" id="data">
       <div className="vstack">
-        <p className="t-small">
-          Tus datos se guardan solo en este dispositivo (IndexedDB del navegador) y no se envían a ningún servidor. Si borras los datos del navegador
-          los perderás, así que haz copias de seguridad de vez en cuando.
-        </p>
+        {storageMode() === 'memory' ? (
+          <p className="t-small">
+            <strong>Modo temporal:</strong> este navegador no permite guardar datos aquí, así que todo se borrará al cerrar o recargar. Descarga una
+            copia de seguridad antes de salir y restáurala en un navegador normal. Nada se envía a ningún servidor.
+          </p>
+        ) : (
+          <p className="t-small">
+            Tus datos se guardan solo en este dispositivo (IndexedDB del navegador) y no se envían a ningún servidor. Si borras los datos del navegador
+            los perderás, así que haz copias de seguridad de vez en cuando.
+          </p>
+        )}
         <div className="grid-2">
           <Button
             variant="secondary"
@@ -427,7 +442,12 @@ function DataSection() {
         confirmLabel="Restaurar"
         tone="primary"
         onConfirm={async () => {
-          await importAll(pending!);
+          try {
+            await importAll(pending!);
+          } catch (e) {
+            console.error(e);
+            throw new Error('No se pudo restaurar la copia: contiene datos no válidos. Tus datos actuales no se han modificado.');
+          }
           toast('Copia restaurada');
         }}
       />
@@ -449,6 +469,8 @@ function DataSection() {
               setBusy(true);
               try {
                 await deleteAllData();
+                // Re-onboarding should land on Inicio, not on this page.
+                navigate('/', { replace: true });
                 try {
                   localStorage.removeItem('rumbo.introSeen');
                 } catch {

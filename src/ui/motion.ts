@@ -13,15 +13,16 @@ export const ease = {
 };
 
 /**
- * Page choreography: the container fades in while children rise in a
- * cascade with a slight "settle" (they overshoot a few pixels upward and
- * land), which gives a liquid feel without zooms or blurs.
+ * Page choreography: children rise in a cascade with a slight "settle"
+ * (they overshoot a few pixels upward and land), which gives a liquid feel
+ * without zooms or blurs. The container itself never fades in: an ancestor
+ * with opacity < 1 would stop the glass cards from blurring the background
+ * until the animation ends.
  */
 export const pageVariants: Variants = {
-  initial: { opacity: 0 },
+  initial: {},
   enter: {
-    opacity: 1,
-    transition: { duration: 0.28, ease: ease.out, when: 'beforeChildren', staggerChildren: 0.055, delayChildren: 0.02 },
+    transition: { staggerChildren: 0.055, delayChildren: 0.02 },
   },
   exit: { opacity: 0, transition: { duration: 0.14, ease: ease.inOut } },
 };
@@ -30,6 +31,16 @@ export const riseVariants: Variants = {
   initial: { opacity: 0, y: 18 },
   enter: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 28, mass: 0.8 } },
   exit: { opacity: 0, y: 0 },
+};
+
+/**
+ * For wrappers that contain glass surfaces: they only slide; the surfaces
+ * fade themselves in CSS (.rise-group) so their backdrop blur never pauses.
+ */
+export const liftVariants: Variants = {
+  initial: { y: 18 },
+  enter: { y: 0, transition: { type: 'spring', stiffness: 300, damping: 28, mass: 0.8 } },
+  exit: {},
 };
 
 export const staggerContainer = (stagger = 0.05, delay = 0): Variants => ({

@@ -27,9 +27,12 @@ export async function onboard(page: Page, name = 'Guille', url = '/') {
   await page.getByRole('textbox', { name: 'Peso objetivo' }).fill('78');
   await page.getByRole('button', { name: 'Continuar' }).click();
   await page.getByRole('radio', { name: /Moderado/ }).click();
-  await page.getByRole('button', { name: 'Continuar' }).click();
-  await page.getByRole('button', { name: 'Continuar' }).click();
-  await page.getByRole('button', { name: 'Continuar' }).click();
+  // Steps without fields to wait on: advance only once the counter has moved,
+  // so a click never lands during the step transition.
+  for (const next of ['8/10', '9/10', '10/10']) {
+    await page.getByRole('button', { name: 'Continuar' }).click();
+    await expect(page.locator('.onb__count')).toHaveText(next);
+  }
   await page.getByRole('button', { name: 'Crear mi RUMBO' }).click();
   await dismissCelebration(page);
   await expect(page.getByRole('heading', { name: new RegExp(name) })).toBeVisible();

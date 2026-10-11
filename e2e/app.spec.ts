@@ -57,6 +57,50 @@ test.describe('RUMBO', () => {
     await expect(page.getByRole('button', { name: 'Cambiar a modo oscuro' }).first()).toBeVisible();
   });
 
+  test('accent colour can be changed from the top bar and persists', async ({ page }) => {
+    await onboard(page);
+    await expect(page.locator('html')).toHaveAttribute('data-accent', 'rojo');
+    await page.getByRole('button', { name: 'Cambiar el color de la interfaz' }).first().click();
+    await page.getByRole('radio', { name: /Volt/ }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-accent', 'volt');
+    await expect(page.getByRole('radio', { name: /Volt/ })).toHaveAttribute('aria-checked', 'true');
+    await page.keyboard.press('Escape');
+    await page.reload();
+    await dismissCelebration(page);
+    await expect(page.locator('html')).toHaveAttribute('data-accent', 'volt');
+  });
+
+  test('switching tabs always reveals the panel content', async ({ page }) => {
+    await onboard(page);
+    const checks: [string, string, string][] = [
+      ['/habitos', 'Pasos', '#habits-panel .glass'],
+      ['/progresos', 'Calorías', '#progress-panel .glass'],
+      ['/entreno', 'Estadísticas', '#training-panel .glass'],
+    ];
+    for (const [path, tab, card] of checks) {
+      await page.goto(path);
+      await page.getByRole('tab', { name: tab }).click();
+      const first = page.locator(card).first();
+      await expect(first).toBeVisible();
+      // Regression: cards mounted on a tab switch used to stay at opacity 0.
+      await expect.poll(() => first.evaluate((el) => Number(getComputedStyle(el).opacity)), { timeout: 4000 }).toBe(1);
+    }
+  });
+
+  test('steps quick add moves the track and reaches the goal', async ({ page }) => {
+    await onboard(page);
+    await page.goto('/habitos?tab=pasos');
+    await expect(page.getByText('Te faltan')).toContainText('8.000');
+    await page.getByRole('button', { name: 'Sumar 5.000 pasos hoy' }).click();
+    await dismissCelebration(page);
+    await expect(page.getByText('Te faltan')).toContainText('3.000');
+    await expect(page.getByRole('img', { name: /Pasos respecto al objetivo: 63 %/ })).toBeVisible();
+    await page.getByRole('button', { name: 'Sumar 5.000 pasos hoy' }).click();
+    await dismissCelebration(page);
+    await expect(page.locator('.steps-status').getByText('Objetivo cumplido')).toBeVisible();
+    await expect(page.getByText('+2.000 pasos extra')).toBeVisible();
+  });
+
   test('water updates the daily summary and the calendar', async ({ page }) => {
     await onboard(page);
     await page.goto('/habitos');

@@ -413,7 +413,7 @@
 
 .pick-row[aria-pressed='true'] .choice__check {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   box-shadow: none;
 }
 

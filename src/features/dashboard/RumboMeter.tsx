@@ -61,9 +61,9 @@ export function RumboMeter({ progress, children, startLabel, goalLabel }: Props)
       <svg viewBox={`0 0 ${W} ${H}`} className="meter__svg" aria-hidden="true">
         <defs>
           <linearGradient id={`${id}-g`} x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0%" stopColor="#8f182b" />
-            <stop offset="60%" stopColor="#e53945" />
-            <stop offset="100%" stopColor="#ff7a84" />
+            <stop offset="0%" style={{ stopColor: 'var(--acc-deep)' }} />
+            <stop offset="60%" style={{ stopColor: 'var(--acc)' }} />
+            <stop offset="100%" style={{ stopColor: 'color-mix(in srgb, var(--acc-hi) 72%, #fff)' }} />
           </linearGradient>
           <filter id={`${id}-glow`} x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="6" />

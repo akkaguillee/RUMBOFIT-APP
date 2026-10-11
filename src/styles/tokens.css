@@ -99,6 +99,91 @@
   }
 }
 
+/* ── Accent palettes ───────────────────────────────────────────────────
+   The interface accent can be switched (Perfil → Apariencia or the palette
+   button). Each palette defines a small ramp; both themes derive their
+   accent roles from it. Status colours (good / warn / bad) never change.
+     --acc        main accent (dark theme fill)
+     --acc-hi/lo  gradient stops for filled controls
+     --acc-deep   deep shade (gradients, light-theme titles & logo)
+     --acc-text-d text on dark surfaces   (≥ 4.5:1 on --bg)
+     --acc-text-l text on light surfaces  (≥ 4.5:1 on --bg)
+     --acc-fill-l accent fill in the light theme
+     --acc-on     text/icons on top of an accent fill
+   ────────────────────────────────────────────────────────────────────── */
+:root,
+:root[data-accent='rojo'] {
+  --acc: #e53945;
+  --acc-hi: #f04a56;
+  --acc-lo: #c92a37;
+  --acc-deep: #8f182b;
+  --acc-text-d: #ff6b75;
+  --acc-text-l: #b4202e;
+  --acc-fill-l: #d42f3c;
+  --acc-title-l: #8f182b;
+  --acc-on: #ffffff;
+}
+
+:root[data-accent='naranja'] {
+  --acc: #ff6a1a;
+  --acc-hi: #ff8a3d;
+  --acc-lo: #f2520a;
+  --acc-deep: #9a3412;
+  --acc-text-d: #ff8f4f;
+  --acc-text-l: #b23c00;
+  --acc-fill-l: #f45d0c;
+  --acc-title-l: #8f2f0c;
+  --acc-on: #160800;
+}
+
+:root[data-accent='volt'] {
+  --acc: #c6f135;
+  --acc-hi: #d9ff5c;
+  --acc-lo: #aedc12;
+  --acc-deep: #4a6b00;
+  --acc-text-d: #d2f55e;
+  --acc-text-l: #4d6a00;
+  --acc-fill-l: #b8e61f;
+  --acc-title-l: #3a5400;
+  --acc-on: #0d1200;
+}
+
+:root[data-accent='cian'] {
+  --acc: #22d3ee;
+  --acc-hi: #5ce3fb;
+  --acc-lo: #0fb8d6;
+  --acc-deep: #0e5a73;
+  --acc-text-d: #52dcf4;
+  --acc-text-l: #0a6b85;
+  --acc-fill-l: #12bfdd;
+  --acc-title-l: #0b4f63;
+  --acc-on: #03161b;
+}
+
+:root[data-accent='violeta'] {
+  --acc: #8b5cf6;
+  --acc-hi: #9d74ff;
+  --acc-lo: #7442ea;
+  --acc-deep: #4c1d95;
+  --acc-text-d: #b49cff;
+  --acc-text-l: #6d28d9;
+  --acc-fill-l: #7c3aed;
+  --acc-title-l: #4c1d95;
+  --acc-on: #ffffff;
+}
+
+:root[data-accent='fucsia'] {
+  --acc: #f0287a;
+  --acc-hi: #ff4b90;
+  --acc-lo: #d81566;
+  --acc-deep: #8a1048;
+  --acc-text-d: #ff6fa6;
+  --acc-text-l: #b8125a;
+  --acc-fill-l: #e11d74;
+  --acc-title-l: #8a1048;
+  --acc-on: #ffffff;
+}
+
 /* ── Dark (default) ─────────────────────────────────────────────────── */
 :root,
 :root[data-theme='dark'] {
@@ -114,12 +199,13 @@
   --divider: rgba(255, 255, 255, 0.08);
   --hairline: rgba(255, 255, 255, 0.07);
 
-  --accent: #e53945;
-  --accent-strong: #ff4d5a;
-  --accent-text: #ff6b75;
-  --accent-soft: rgba(229, 57, 69, 0.14);
-  --accent-glow: rgba(229, 57, 69, 0.42);
-  --on-accent: #ffffff;
+  --accent: var(--acc);
+  --accent-strong: var(--acc-hi);
+  --accent-text: var(--acc-text-d);
+  --accent-soft: color-mix(in srgb, var(--acc) 15%, transparent);
+  --accent-glow: color-mix(in srgb, var(--acc) 42%, transparent);
+  --accent-grad: linear-gradient(180deg, var(--acc-hi) 0%, var(--acc-lo) 100%);
+  --on-accent: var(--acc-on);
 
   --good: #30c77a;
   --good-text: #4fd893;
@@ -160,11 +246,12 @@
   --control-fill-hover: rgba(255, 255, 255, 0.13);
   --scrim: rgba(3, 3, 6, 0.6);
 
-  --orb-1: rgba(229, 57, 69, 0.38);
-  --orb-2: rgba(143, 24, 43, 0.5);
-  --orb-3: rgba(229, 57, 69, 0.16);
+  --orb-1: color-mix(in srgb, var(--acc) 34%, transparent);
+  --orb-2: color-mix(in srgb, var(--acc-deep) 48%, transparent);
+  --orb-3: color-mix(in srgb, var(--acc) 16%, transparent);
   --noise-opacity: 0.05;
-  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px rgba(255, 107, 117, 0.85);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px color-mix(in srgb, var(--acc-text-d) 85%, transparent);
+  --focus-color: color-mix(in srgb, var(--acc-text-d) 90%, transparent);
 }
 
 /* ── Light ──────────────────────────────────────────────────────────── */
@@ -176,17 +263,18 @@
   --text: #0b0b10;
   --text-2: rgba(22, 20, 28, 0.72);
   --text-3: rgba(22, 20, 28, 0.6);
-  --title: #8f182b;
-  --brand-ink: #8f182b;
+  --title: var(--acc-title-l);
+  --brand-ink: var(--acc-title-l);
   --divider: rgba(70, 20, 30, 0.09);
   --hairline: rgba(70, 20, 30, 0.08);
 
-  --accent: #d42f3c;
-  --accent-strong: #e53945;
-  --accent-text: #b4202e;
-  --accent-soft: rgba(212, 47, 60, 0.09);
-  --accent-glow: rgba(229, 57, 69, 0.28);
-  --on-accent: #ffffff;
+  --accent: var(--acc-fill-l);
+  --accent-strong: var(--acc);
+  --accent-text: var(--acc-text-l);
+  --accent-soft: color-mix(in srgb, var(--acc-fill-l) 11%, transparent);
+  --accent-glow: color-mix(in srgb, var(--acc) 30%, transparent);
+  --accent-grad: linear-gradient(180deg, var(--acc-hi) 0%, var(--acc-lo) 100%);
+  --on-accent: var(--acc-on);
 
   --good: #30c77a;
   --good-text: #137a48;
@@ -211,7 +299,7 @@
   --glass-fill-sheet: rgba(255, 253, 252, 0.88);
   --glass-edge-top: rgba(255, 255, 255, 1);
   --glass-edge-mid: rgba(255, 255, 255, 0.35);
-  --glass-edge-bottom: rgba(143, 24, 43, 0.1);
+  --glass-edge-bottom: color-mix(in srgb, var(--acc-deep) 10%, transparent);
   --glass-inner: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(143, 24, 43, 0.04);
   --glass-shadow: 0 1px 2px rgba(80, 22, 34, 0.06), 0 18px 36px -20px rgba(80, 22, 34, 0.28);
   --glass-shadow-lift: 0 2px 6px rgba(80, 22, 34, 0.08), 0 30px 60px -24px rgba(80, 22, 34, 0.34);
@@ -225,11 +313,12 @@
   --control-fill-hover: rgba(70, 20, 30, 0.09);
   --scrim: rgba(40, 14, 20, 0.28);
 
-  --orb-1: rgba(229, 57, 69, 0.2);
-  --orb-2: rgba(255, 180, 170, 0.45);
-  --orb-3: rgba(143, 24, 43, 0.1);
+  --orb-1: color-mix(in srgb, var(--acc) 22%, transparent);
+  --orb-2: color-mix(in srgb, var(--acc-hi) 26%, transparent);
+  --orb-3: color-mix(in srgb, var(--acc-deep) 10%, transparent);
   --noise-opacity: 0.035;
-  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px rgba(180, 32, 46, 0.75);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px color-mix(in srgb, var(--acc-text-l) 75%, transparent);
+  --focus-color: color-mix(in srgb, var(--acc-text-l) 85%, transparent);
 }
 
 @media (prefers-reduced-transparency: reduce) {

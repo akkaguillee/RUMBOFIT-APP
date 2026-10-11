@@ -1,7 +1,8 @@
-import { ArrowLeft, ArrowRight, Check, Info, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Droplets, Dumbbell, Info, ShieldCheck, TrendingUp } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useMemo, useState, type ReactNode } from 'react';
 import { RunnerMark, Wordmark } from '@/brand/Logo';
+import { storageMode } from '@/db/backend';
 import { createProfile } from '@/db/repos/profile';
 import { addDays, todayKey, WEEKDAY_LABELS, WEEKDAY_SHORT, formatDate } from '@/domain/dates';
 import { ACTIVITY_LEVELS, calculateBmi, suggestWaterGoal, weightForBmi } from '@/domain/health';
@@ -37,6 +38,12 @@ interface Draft {
 type StepId = 'welcome' | 'name' | 'goal' | 'about' | 'body' | 'weight' | 'target' | 'activity' | 'training' | 'habits' | 'summary';
 
 const STEPS: StepId[] = ['welcome', 'name', 'goal', 'about', 'body', 'weight', 'target', 'activity', 'training', 'habits', 'summary'];
+
+const WELCOME_FEATURES = [
+  { icon: TrendingUp, title: 'Tu evolución', desc: 'Peso, IMC y calorías, con gráficas claras.', tone: 'accent' },
+  { icon: Droplets, title: 'Hábitos diarios', desc: 'Agua y pasos con metas a tu medida.', tone: 'water' },
+  { icon: Dumbbell, title: 'Entrenamiento', desc: 'Rutinas, series, descansos y marcas.', tone: 'steps' },
+] as const;
 
 const stepVariants = {
   initial: (dir: number) => ({ opacity: 0, x: dir * 36, filter: 'blur(0px)' }),
@@ -184,7 +191,7 @@ export default function OnboardingPage() {
   const progress = index / (STEPS.length - 1);
 
   return (
-    <div className="onb">
+    <main id="main" tabIndex={-1} className="onb" style={{ outline: 'none' }}>
       <div className="onb__panel glass glass--sheet">
         {step !== 'welcome' && (
           <div className="onb__top">
@@ -211,21 +218,46 @@ export default function OnboardingPage() {
           >
             {step === 'welcome' && (
               <div className="onb__welcome">
-                <motion.div variants={itemVariants} className="onb__logo" style={{ color: 'var(--brand-ink)' }}>
-                  <RunnerMark size={120} />
-                  <Wordmark height={30} withCopyright />
+                <motion.div variants={itemVariants} className="onb__brand" style={{ color: 'var(--brand-ink)' }}>
+                  <span className="onb__medal" aria-hidden="true">
+                    <span className="onb__medal-ring" />
+                    <span className="onb__medal-core">
+                      <RunnerMark size={34} />
+                    </span>
+                  </span>
+                  <Wordmark height={14} title="RUMBO" />
                 </motion.div>
-                <motion.h1 id="onb-welcome" variants={itemVariants} className="t-display">
+                <motion.h1 id="onb-welcome" variants={itemVariants} className="onb__headline">
                   Vamos a preparar tu RUMBO
                 </motion.h1>
-                <motion.p variants={itemVariants} className="t-body">
-                  Unas pocas preguntas para personalizar tu seguimiento. Solo el nombre y tu objetivo son imprescindibles; el resto puedes completarlo
-                  cuando quieras.
+                <motion.p variants={itemVariants} className="onb__lead">
+                  Unas preguntas rápidas para personalizar tu seguimiento. Solo el nombre y tu objetivo son imprescindibles.
                 </motion.p>
-                <motion.div variants={itemVariants} className="callout">
+                <motion.ul variants={itemVariants} className="onb__features" aria-label="Qué podrás hacer">
+                  {WELCOME_FEATURES.map((f, i) => (
+                    <motion.li
+                      key={f.title}
+                      className="onb__feature"
+                      initial={{ opacity: 0, x: -14 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.32 + i * 0.09, type: 'spring', stiffness: 300, damping: 28 }}
+                    >
+                      <span className={`onb__feature-icon onb__feature-icon--${f.tone}`} aria-hidden="true">
+                        <f.icon />
+                      </span>
+                      <span className="onb__feature-text">
+                        <span className="onb__feature-title">{f.title}</span>
+                        <span className="onb__feature-desc">{f.desc}</span>
+                      </span>
+                    </motion.li>
+                  ))}
+                </motion.ul>
+                <motion.p variants={itemVariants} className="onb__privacy">
                   <ShieldCheck aria-hidden="true" />
-                  <p>Tus datos se guardan únicamente en este dispositivo y no se envían a ningún servidor.</p>
-                </motion.div>
+                  {storageMode() === 'memory'
+                    ? 'Modo temporal: este navegador no permite guardar datos, así que nada se conservará al cerrar.'
+                    : 'Tus datos se guardan solo en este dispositivo y no se envían a ningún servidor.'}
+                </motion.p>
               </div>
             )}
 
@@ -494,6 +526,11 @@ export default function OnboardingPage() {
               {step === 'welcome' ? 'Empezar' : 'Continuar'}
             </Button>
           )}
+          {step === 'welcome' && (
+            <p className="onb__hint" aria-hidden="true">
+              Menos de 2 minutos · Puedes saltar lo opcional
+            </p>
+          )}
           {optional && (
             <Button
               variant="ghost"
@@ -514,7 +551,7 @@ export default function OnboardingPage() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 

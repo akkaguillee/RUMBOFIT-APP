@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Button } from './Button';
 import { Sheet } from './Sheet';
+import { toastError } from './toast';
 
 interface ConfirmProps {
   open: boolean;
@@ -19,6 +20,10 @@ export function ConfirmDialog({ open, title, message, confirmLabel = 'Eliminar',
     try {
       await onConfirm();
       onClose();
+    } catch (e) {
+      // Every confirm action reports failures instead of leaving the dialog hanging.
+      console.error(e);
+      toastError(e);
     } finally {
       setBusy(false);
     }

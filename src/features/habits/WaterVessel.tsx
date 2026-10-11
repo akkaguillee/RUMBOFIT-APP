@@ -26,7 +26,12 @@ export function WaterVessel({ value, size = 220, label, children }: Props) {
   const p = Math.max(0, Math.min(1, value));
   const level = size * (1 - p) - (p >= 1 ? 8 : 0);
   return (
-    <div className="vessel" style={{ width: size, height: size }} role="img" aria-label={`${label}: ${Math.round(value * 100)} %`}>
+    <div
+      className={p > 0.42 ? 'vessel vessel--submerged' : 'vessel'}
+      style={{ width: size, height: size }}
+      role="img"
+      aria-label={`${label}: ${Math.round(value * 100)} %`}
+    >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
         <defs>
           <clipPath id={`${id}-c`}>

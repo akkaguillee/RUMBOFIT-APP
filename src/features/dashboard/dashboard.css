@@ -64,7 +64,7 @@
 }
 
 :root[data-theme='dark'] .greet__name span {
-  background: linear-gradient(100deg, #fff 30%, #ff9aa1 100%);
+  background: linear-gradient(100deg, #fff 30%, color-mix(in srgb, var(--acc-text-d) 70%, #fff) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -79,9 +79,14 @@
 /* Hero */
 .hero__top {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-2) var(--space-3);
+}
+
+.hero__top .card__title {
+  flex: 1 1 14ch;
 }
 
 .hero__stats {
@@ -280,6 +285,7 @@
 }
 
 .habit-card__value {
+  white-space: nowrap;
   font-size: var(--text-xl);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-tight);
@@ -294,6 +300,7 @@
 
 .habit-card__foot {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);

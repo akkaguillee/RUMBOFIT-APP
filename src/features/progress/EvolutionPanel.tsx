@@ -18,7 +18,7 @@ import {
 import { Button } from '@/ui/Button';
 import { EmptyState } from '@/ui/EmptyState';
 import { GlassCard } from '@/ui/GlassCard';
-import { riseVariants } from '@/ui/motion';
+import { liftVariants } from '@/ui/motion';
 import { ProgressBar } from '@/ui/ProgressBar';
 import { Segmented } from '@/ui/Segmented';
 import { StatusBadge } from '@/ui/StatusBadge';
@@ -93,7 +93,7 @@ export function EvolutionPanel({ profile, weights }: { profile: Profile; weights
 
   return (
     <div className="vstack">
-      <motion.div className="stat-tiles" variants={riseVariants}>
+      <motion.div className="stat-tiles rise-group" variants={liftVariants}>
         <div className="glass stat-tile">
           <div className="stat">
             <span className="stat__label">Peso actual</span>

@@ -42,6 +42,8 @@ export default defineConfig(({ mode }) => {
         { find: '@', replacement: src },
       ],
     },
+    // Only the real entry: never scan build output such as dist-html/rumbo.html.
+    optimizeDeps: { entries: ['index.html'] },
     build: {
       target: 'es2022',
       ...(standalone
@@ -50,7 +52,8 @@ export default defineConfig(({ mode }) => {
             rollupOptions: {
               output: {
                 manualChunks(id: string) {
-                  if (!id.includes('node_modules')) return undefined;
+                  // fake-indexeddb is only needed as a fallback: keep it in its own lazy chunk.
+                  if (!id.includes('node_modules') || id.includes('fake-indexeddb')) return undefined;
                   if (/node_modules\/(react|react-dom|scheduler|react-router|react-router-dom)\//.test(id)) return 'react';
                   if (/node_modules\/(motion|framer-motion|motion-dom|motion-utils)\//.test(id)) return 'motion';
                   if (/node_modules\/(dexie|dexie-react-hooks)\//.test(id)) return 'data';

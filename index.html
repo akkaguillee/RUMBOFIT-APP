@@ -14,12 +14,14 @@
     <link rel="manifest" href="/manifest.webmanifest" />
     <title>RUMBO</title>
     <script>
-      // Apply the stored theme before first paint to avoid any flash.
+      // Apply the stored theme and accent before first paint to avoid any flash.
       (function () {
         try {
           var t = localStorage.getItem('rumbo.theme');
           if (t !== 'light' && t !== 'dark') t = 'dark';
           document.documentElement.dataset.theme = t;
+          var a = localStorage.getItem('rumbo.accent');
+          if (/^(rojo|naranja|volt|cian|violeta|fucsia)$/.test(a)) document.documentElement.dataset.accent = a;
           var bg = t === 'dark' ? '#08090d' : '#f8f5f3';
           document.documentElement.style.background = bg;
           document.querySelector('meta[name="theme-color"]').setAttribute('content', bg);

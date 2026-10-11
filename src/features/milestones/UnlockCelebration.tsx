@@ -19,6 +19,7 @@ export function UnlockCelebration({ enabled }: { enabled: boolean }) {
   const navigate = useNavigate();
   const [batch, setBatch] = useState<string[] | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!enabled || batch || !unseen?.length) return;
@@ -27,7 +28,11 @@ export function UnlockCelebration({ enabled }: { enabled: boolean }) {
   }, [unseen, enabled, batch]);
 
   useEffect(() => {
-    if (batch) requestAnimationFrame(() => closeRef.current?.focus());
+    if (!batch) return;
+    const previous = document.activeElement as HTMLElement | null;
+    requestAnimationFrame(() => closeRef.current?.focus());
+    // Give focus back to where the user was once the dialog closes.
+    return () => previous?.focus?.({ preventScroll: true });
   }, [batch]);
 
   const close = async (goTo?: string) => {
@@ -39,7 +44,26 @@ export function UnlockCelebration({ enabled }: { enabled: boolean }) {
 
   useEffect(() => {
     if (!batch) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && void close();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        void close();
+        return;
+      }
+      // Modal dialog: keep Tab / Shift+Tab inside the card.
+      const card = cardRef.current;
+      if (e.key !== 'Tab' || !card) return;
+      const items = [...card.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')];
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (!first || !last) return;
+      if (e.shiftKey && (document.activeElement === first || !card.contains(document.activeElement))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (document.activeElement === last || !card.contains(document.activeElement))) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   });
@@ -57,6 +81,7 @@ export function UnlockCelebration({ enabled }: { enabled: boolean }) {
         <div className="celebrate" role="dialog" aria-modal="true" aria-labelledby="celebrate-title">
           <motion.div className="celebrate__scrim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => void close()} />
           <motion.div
+            ref={cardRef}
             className="celebrate__card glass glass--sheet"
             style={{ '--medal-glow': RARITY_COLORS[main.rarity].glow } as React.CSSProperties}
             initial={reduce ? { opacity: 0 } : { opacity: 0, clipPath: 'circle(8% at 50% 92px)' }}

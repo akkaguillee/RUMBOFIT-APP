@@ -1,0 +1,226 @@
+/* ──────────────────────────────────────────────────────────────────────
+   Liquid Glass for controls
+   Every interactive surface (segmented controls, chips, fields, buttons,
+   callouts, list rows…) is drawn as a small lens: translucent fill, bright
+   top edge, faint lower edge and a hairline rim. Controls that sit directly
+   on the moving background also blur it; inside cards the card already
+   provides the blur, so they skip the extra (costly) backdrop filter.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root,
+:root[data-theme='dark'] {
+  --lg-fill: rgba(255, 255, 255, 0.06);
+  --lg-fill-hover: rgba(255, 255, 255, 0.1);
+  --lg-hi: rgba(255, 255, 255, 0.2);
+  --lg-lo: rgba(255, 255, 255, 0.05);
+  --lg-rim: rgba(255, 255, 255, 0.08);
+  --lg-drop: 0 8px 20px -12px rgba(0, 0, 0, 0.7);
+  --lg-lens: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.07));
+  --lg-lens-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 6px 16px -6px rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme='light'] {
+  --lg-fill: rgba(255, 255, 255, 0.55);
+  --lg-fill-hover: rgba(255, 255, 255, 0.82);
+  --lg-hi: rgba(255, 255, 255, 1);
+  --lg-lo: rgba(70, 20, 30, 0.04);
+  --lg-rim: rgba(70, 20, 30, 0.09);
+  --lg-drop: 0 8px 18px -12px rgba(80, 22, 34, 0.28);
+  --lg-lens: linear-gradient(180deg, #fff, rgba(255, 255, 255, 0.88));
+  --lg-lens-shadow:
+    inset 0 1px 0 #fff,
+    inset 0 0 0 1px rgba(70, 20, 30, 0.06),
+    0 1px 2px rgba(80, 22, 34, 0.12),
+    0 6px 14px -6px rgba(80, 22, 34, 0.25);
+}
+
+/* Shared lens surface */
+.segmented,
+.chip,
+.icon-btn:not(.icon-btn--plain):not(.icon-btn--accent),
+.btn--secondary,
+.input-wrap,
+.callout,
+.accent-opt,
+.choice,
+.preset,
+.sidebar__profile,
+.onb__features {
+  background-color: var(--lg-fill);
+  box-shadow:
+    inset 0 1px 0 var(--lg-hi),
+    inset 0 -1px 0 var(--lg-lo),
+    inset 0 0 0 1px var(--lg-rim);
+}
+
+.segmented,
+.icon-btn:not(.icon-btn--plain):not(.icon-btn--accent),
+.btn--secondary,
+.chip {
+  box-shadow:
+    inset 0 1px 0 var(--lg-hi),
+    inset 0 -1px 0 var(--lg-lo),
+    inset 0 0 0 1px var(--lg-rim),
+    var(--lg-drop);
+}
+
+/* Only controls resting on the background blur it */
+.segmented:not(.glass *),
+.chip:not(.glass *),
+.icon-btn:not(.glass *):not(.icon-btn--plain),
+.btn--secondary:not(.glass *) {
+  -webkit-backdrop-filter: blur(18px) saturate(190%);
+  backdrop-filter: blur(18px) saturate(190%);
+}
+
+.glass .icon-btn,
+.glass .btn--secondary {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+@media (hover: hover) {
+  .chip:hover,
+  .accent-opt:hover,
+  .choice:hover,
+  .btn--secondary:hover:not(:disabled),
+  .icon-btn:hover:not(:disabled):not(.icon-btn--accent):not(.icon-btn--plain),
+  .input-wrap:hover {
+    background-color: var(--lg-fill-hover);
+  }
+}
+
+/* Focus keeps the accent ring on top of the lens edges */
+.input-wrap:focus-within {
+  box-shadow:
+    inset 0 1px 0 var(--lg-hi),
+    inset 0 0 0 1.5px var(--accent),
+    0 0 0 4px var(--accent-soft);
+}
+
+.input-wrap[data-invalid='true'] {
+  box-shadow:
+    inset 0 1px 0 var(--lg-hi),
+    inset 0 0 0 1.5px var(--bad);
+}
+
+/* Segmented thumb: a liquid lens that slides between options */
+.segmented__thumb,
+:root[data-theme='light'] .segmented__thumb {
+  background: var(--lg-lens);
+  box-shadow: var(--lg-lens-shadow);
+}
+
+.segmented__thumb::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 18%;
+  right: 18%;
+  height: 40%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent);
+  pointer-events: none;
+}
+
+:root[data-theme='light'] .segmented__thumb::after {
+  display: none;
+}
+
+/* Selected choices glow softly in the accent, like tinted glass */
+.choice[aria-checked='true'],
+.accent-opt[aria-checked='true'] {
+  background-color: color-mix(in srgb, var(--accent) 12%, var(--lg-fill));
+}
+
+.choice[aria-checked='true'] {
+  box-shadow:
+    inset 0 1px 0 var(--lg-hi),
+    inset 0 0 0 1.5px var(--accent),
+    0 10px 26px -16px var(--accent-glow);
+}
+
+/* Accent-filled controls: coloured liquid with a specular top edge */
+.chip[aria-pressed='true'],
+.chip[aria-checked='true'],
+.chip--active {
+  background: var(--accent-grad);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12),
+    0 8px 20px -10px var(--accent-glow);
+}
+
+.tab__pill,
+.icon-btn--accent,
+.btn--primary {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -2px 6px -2px rgba(0, 0, 0, 0.18),
+    0 10px 26px -10px var(--accent-glow);
+}
+
+.tab__pill::after,
+.icon-btn--accent::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 14%;
+  right: 14%;
+  height: 42%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), transparent);
+  pointer-events: none;
+}
+
+/* Tab bar & top bar: denser glass so labels stay legible over content */
+.tabbar__panel {
+  background: color-mix(in srgb, var(--glass-fill-nav) 100%, transparent);
+  -webkit-backdrop-filter: blur(30px) saturate(200%) brightness(1.04);
+  backdrop-filter: blur(30px) saturate(200%) brightness(1.04);
+}
+
+:root[data-theme='dark'] .tabbar__panel {
+  background: rgba(16, 17, 24, 0.7);
+}
+
+.topbar::before {
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+}
+
+/* Progress tracks read as glass tubes */
+.progress {
+  background: var(--lg-fill);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.25),
+    inset 0 -1px 0 var(--lg-hi);
+}
+
+.progress__fill::after {
+  content: '';
+  position: absolute;
+  inset: 1px 4px auto;
+  height: 35%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), transparent);
+}
+
+/* Low-power: keep the shapes, drop the blur */
+:root.lite .segmented,
+:root.lite .chip,
+:root.lite .icon-btn,
+:root.lite .btn--secondary,
+:root.lite .tabbar__panel,
+:root.lite .topbar::before {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+:root.lite .tabbar__panel {
+  background: var(--surface-solid);
+}

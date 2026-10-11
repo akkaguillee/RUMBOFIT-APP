@@ -84,14 +84,14 @@ a {
   text-decoration: none;
 }
 
-:focus {
+:focus:not(:focus-visible) {
   outline: none;
 }
 
+/* Drawn with outline so component box-shadows can never cancel it. */
 :focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-  border-radius: var(--radius-sm);
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
 }
 
 ::selection {

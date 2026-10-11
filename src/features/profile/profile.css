@@ -14,8 +14,8 @@
   border-radius: 22px;
   font-size: var(--text-2xl);
   font-weight: var(--weight-bold);
-  color: #fff;
-  background: linear-gradient(145deg, var(--accent), var(--rumbo-red-deep));
+  color: var(--on-accent);
+  background: var(--accent-grad);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
     0 14px 30px -12px var(--accent-glow);
@@ -40,6 +40,10 @@
   gap: var(--space-3);
   padding-top: var(--space-3);
   border-top: 1px solid var(--divider);
+}
+
+.setting-row > .btn {
+  flex: none;
 }
 
 .day-pick {

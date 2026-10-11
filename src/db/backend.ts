@@ -43,8 +43,12 @@ export const keyRangeProxy = {
   upperBound: (...a: Parameters<typeof IDBKeyRange.upperBound>) => keyRange().upperBound(...a),
 } as unknown as typeof IDBKeyRange;
 
-/** Opens and deletes a throwaway database to check that IndexedDB really works here. */
-function probe(timeoutMs = 2500): Promise<boolean> {
+/**
+ * Opens and deletes a throwaway database to check that IndexedDB really works
+ * here. Errors fall back at once; a slow but working store gets a generous cap
+ * so it is not mistaken for a blocked one.
+ */
+function probe(timeoutMs = 10_000): Promise<boolean> {
   return new Promise((resolve) => {
     let settled = false;
     const done = (ok: boolean) => {
@@ -87,6 +91,11 @@ export async function initStorage(): Promise<StorageMode> {
     mode = 'persistent';
     return mode;
   }
+  return switchToMemory();
+}
+
+/** Routes every database call to the temporary in-memory store. */
+export async function switchToMemory(): Promise<StorageMode> {
   const fake = await import('fake-indexeddb');
   override = { factory: fake.indexedDB, keyRange: fake.IDBKeyRange };
   // Dexie's liveQuery() stays idle unless its global dependencies point to a

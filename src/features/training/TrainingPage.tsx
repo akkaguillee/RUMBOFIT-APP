@@ -4,6 +4,7 @@ import { useProfile } from '@/db/hooks';
 import { Loader } from '@/ui/Loader';
 import { riseVariants } from '@/ui/motion';
 import { Page, PageHead } from '@/ui/Page';
+import { TabPanel } from '@/ui/TabPanel';
 import { Segmented } from '@/ui/Segmented';
 import { ExercisesPanel } from './ExercisesPanel';
 import { HistoryPanel } from './HistoryPanel';
@@ -41,21 +42,13 @@ export default function TrainingPage() {
           block
         />
       </motion.div>
-      <motion.div
-        key={tab}
-        id="training-panel"
-        role="tabpanel"
-        aria-labelledby={`training-tab-${tab}`}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-      >
+      <TabPanel tab={tab} idPrefix="training">
         {tab === 'plan' && <PlanPanel profile={profile} />}
         {tab === 'historial' && <HistoryPanel />}
         {tab === 'ejercicios' && <ExercisesPanel />}
         {tab === 'plantillas' && <TemplatesPanel />}
         {tab === 'stats' && <StatsPanel />}
-      </motion.div>
+      </TabPanel>
     </Page>
   );
 }

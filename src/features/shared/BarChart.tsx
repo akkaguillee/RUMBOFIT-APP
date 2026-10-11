@@ -44,7 +44,10 @@ export function BarChart({ bars, color, goal, goalLabel = 'Objetivo', format, he
   const slot = (width - M.left - M.right) / Math.max(bars.length, 1);
   const bw = Math.min(24, slot * 0.62);
   const y = (v: number) => M.top + innerH - (v / max) * innerH;
-  const labelEvery = bars.length > 14 ? Math.ceil(bars.length / 7) : 1;
+  // Thin the x labels by the room available, so long labels ("24 ago") never collide.
+  const labelPx = Math.max(...bars.map((b) => b.label.length), 1) * 6.6 + 12;
+  const maxLabels = Math.max(1, Math.floor((width - M.left - M.right) / labelPx));
+  const labelEvery = Math.max(1, Math.ceil(bars.length / maxLabels));
   const a = active !== null ? bars[active] : undefined;
 
   return (

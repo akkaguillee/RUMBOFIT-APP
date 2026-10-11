@@ -56,7 +56,7 @@
 
 .btn--primary {
   color: var(--on-accent);
-  background: linear-gradient(180deg, #ee4855 0%, #d42f3c 100%);
+  background: var(--accent-grad);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.32),
     inset 0 -1px 0 rgba(0, 0, 0, 0.18),
@@ -161,7 +161,7 @@
 
 .icon-btn--accent {
   color: var(--on-accent);
-  background: linear-gradient(180deg, #ee4855, #d42f3c);
+  background: var(--accent-grad);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
     0 8px 20px -8px var(--accent-glow);
@@ -370,8 +370,7 @@ select.input option {
 }
 
 .segmented--block .segmented__item {
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 1 0 auto;
   padding: 0 10px;
 }
 
@@ -549,7 +548,7 @@ select.input option {
   position: absolute;
   inset: 0 auto 0 0;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--rumbo-red-deep), var(--accent));
+  background: linear-gradient(90deg, var(--acc-deep), var(--accent));
   box-shadow: 0 0 16px -2px var(--accent-glow);
 }
 
@@ -985,7 +984,150 @@ select.input option {
 }
 
 :root[data-theme='light'] .theme-toggle {
-  color: var(--rumbo-red-deep);
+  color: var(--title);
+}
+
+/* Accent colour picker */
+.accent-btn__wheel {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: conic-gradient(from 200deg, #ff5c68, #ff8a3d, #d9ff5c, #5ce3fb, #9d74ff, #ff4b90, #ff5c68);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18), 0 4px 12px -4px var(--accent-glow);
+  transition: transform var(--dur-base) var(--ease-spring);
+}
+
+.accent-btn:hover .accent-btn__wheel {
+  transform: rotate(60deg);
+}
+
+.accent-btn__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent-grad);
+  box-shadow:
+    0 0 0 2px var(--surface-solid),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.accent-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+@media (min-width: 560px) {
+  .accent-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+.accent-grid--compact {
+  gap: var(--space-2);
+}
+
+.accent-opt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-3) var(--space-1) var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--control-fill);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .accent-opt:hover {
+    background: var(--control-fill-hover);
+  }
+
+  .accent-opt:hover .accent-opt__orb {
+    transform: translateY(-2px) scale(1.04);
+  }
+}
+
+.accent-opt:active {
+  transform: scale(0.96);
+}
+
+.accent-opt__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 2px var(--accent),
+    0 10px 28px -14px var(--accent-glow);
+  pointer-events: none;
+}
+
+.accent-opt__orb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.45),
+    inset 0 -6px 12px rgba(0, 0, 0, 0.22),
+    0 10px 20px -10px rgba(0, 0, 0, 0.6);
+  transition: transform var(--dur-base) var(--ease-spring);
+}
+
+/* Specular highlight: the swatch reads as a drop of liquid glass */
+.accent-opt__orb::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 10px;
+  width: 18px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0));
+  transform: rotate(-18deg);
+}
+
+.accent-opt__check {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: #0b0b10;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.5);
+}
+
+.accent-opt__check svg {
+  width: 14px;
+  height: 14px;
+}
+
+.accent-opt__name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
+}
+
+.accent-opt__color {
+  margin-top: -4px;
+  font-size: var(--text-xs);
+  color: var(--text-3);
+}
+
+.accent-grid--compact .accent-opt__orb {
+  width: 38px;
+  height: 38px;
 }
 
 /* Quick-add presets */

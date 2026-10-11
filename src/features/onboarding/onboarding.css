@@ -1,5 +1,5 @@
 .onb {
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--notice-h, 0px));
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   place-items: center;
@@ -11,7 +11,7 @@
   display: flex;
   flex-direction: column;
   width: min(560px, 100%);
-  min-height: min(720px, calc(100dvh - 32px));
+  min-height: min(720px, calc(100dvh - 32px - var(--notice-h, 0px)));
   padding: var(--space-5);
   border-radius: var(--radius-2xl);
 }
@@ -50,20 +50,191 @@
 .onb__welcome {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
-  padding-top: var(--space-6);
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  text-align: center;
 }
 
-.onb__logo {
+.onb__brand {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-5);
-  margin-bottom: var(--space-3);
+  align-items: center;
+  gap: 12px;
+  margin-bottom: var(--space-2);
 }
 
-.onb__logo svg:first-child {
-  filter: drop-shadow(0 18px 40px var(--accent-glow));
+/* Liquid-glass medallion with a light that orbits the runner */
+.onb__medal {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+}
+
+.onb__medal-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  padding: 1.5px;
+  background: conic-gradient(from 0deg, transparent 0deg, var(--accent) 70deg, color-mix(in srgb, var(--accent) 0%, transparent) 150deg, transparent 360deg);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  animation: medal-orbit 4.8s linear infinite;
+}
+
+.onb__medal-core {
+  position: absolute;
+  inset: 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(120% 90% at 30% 10%, rgba(255, 255, 255, 0.16), transparent 55%),
+    var(--glass-fill-strong);
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge-top),
+    inset 0 -10px 20px -12px var(--accent-glow),
+    0 18px 40px -16px var(--accent-glow);
+  -webkit-backdrop-filter: blur(var(--blur-sm)) saturate(var(--saturate));
+  backdrop-filter: blur(var(--blur-sm)) saturate(var(--saturate));
+}
+
+.onb__medal-core svg {
+  margin-left: -4px;
+}
+
+@keyframes medal-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.onb__headline {
+  max-width: 15ch;
+  font-size: clamp(1.75rem, 1.4rem + 1.8vw, 2.4rem);
+  font-weight: var(--weight-bold);
+  line-height: 1.06;
+  letter-spacing: var(--tracking-display);
+  color: var(--title);
+  text-wrap: balance;
+}
+
+.onb__lead {
+  max-width: 34ch;
+  font-size: var(--text-md);
+  line-height: 1.5;
+  color: var(--text-2);
+  text-wrap: pretty;
+}
+
+.onb__features {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  margin-top: var(--space-2);
+  padding: 4px 6px;
+  border-radius: var(--radius-xl);
+  background: var(--control-fill);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  text-align: left;
+}
+
+.onb__feature {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 9px 8px;
+}
+
+.onb__feature + .onb__feature {
+  border-top: 1px solid var(--divider);
+}
+
+.onb__feature-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 11px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.onb__feature-icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+.onb__feature-icon--accent {
+  color: var(--accent-text);
+  background: var(--accent-soft);
+}
+
+.onb__feature-icon--water {
+  color: var(--series-water);
+  background: color-mix(in srgb, var(--series-water) 15%, transparent);
+}
+
+.onb__feature-icon--steps {
+  color: var(--series-steps);
+  background: color-mix(in srgb, var(--series-steps) 16%, transparent);
+}
+
+.onb__feature-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.onb__feature-title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
+}
+
+.onb__feature-desc {
+  font-size: var(--text-sm);
+  line-height: 1.35;
+  color: var(--text-2);
+}
+
+.onb__privacy {
+  max-width: 38ch;
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--text-3);
+}
+
+.onb__privacy svg {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin: 0 5px 0 0;
+  vertical-align: -2px;
+  color: var(--good-text);
+}
+
+.onb__hint {
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  text-align: center;
+  color: var(--text-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onb__medal-ring {
+    animation: none;
+  }
 }
 
 .onb__actions {
@@ -181,7 +352,7 @@
 
 .choice[aria-checked='true'] .choice__check {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   box-shadow: none;
 }
 
@@ -205,8 +376,8 @@
 }
 
 .day-picker__day[aria-pressed='true'] {
-  background: linear-gradient(180deg, #ee4855, #c92a37);
-  color: #fff;
+  background: var(--accent-grad);
+  color: var(--on-accent);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
     0 8px 18px -8px var(--accent-glow);

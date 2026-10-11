@@ -4,6 +4,7 @@ import './styles/base.css';
 import './styles/glass.css';
 import './styles/components.css';
 import './styles/layout.css';
+import './styles/liquid.css';
 import './styles/splash.css';
 import './styles/milestones.css';
 import { StrictMode } from 'react';
@@ -11,22 +12,40 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, HashRouter } from 'react-router-dom';
 import { MotionConfig } from 'motion/react';
 import { App } from './app/App';
+import { ErrorBoundary } from './app/ErrorBoundary';
 import { ThemeProvider } from './app/ThemeProvider';
-import { initStorage } from './db/backend';
+import { initStorage, switchToMemory } from './db/backend';
+import { db } from './db/db';
 
 // The single-file build is opened from disk (file://), where only hash URLs work.
 const Router = import.meta.env.MODE === 'standalone' ? HashRouter : BrowserRouter;
 
 // Pick the storage backend (persistent IndexedDB or the temporary in-memory
-// fallback) before the first database query.
-void initStorage().finally(() => {
+// fallback) before the first database query. If the real database still fails
+// to open (disk full, corrupted store), run on the temporary store instead of
+// showing an endless loader; the storage notice explains it.
+async function boot() {
+  try {
+    await initStorage();
+    await db.open();
+  } catch (e) {
+    console.error('RUMBO: no se pudo abrir la base de datos', e);
+    db.close();
+    await switchToMemory();
+    await db.open();
+  }
+}
+
+void boot().finally(() => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <ThemeProvider>
         <MotionConfig reducedMotion="user">
-          <Router>
-            <App />
-          </Router>
+          <ErrorBoundary variant="root">
+            <Router>
+              <App />
+            </Router>
+          </ErrorBoundary>
         </MotionConfig>
       </ThemeProvider>
     </StrictMode>,

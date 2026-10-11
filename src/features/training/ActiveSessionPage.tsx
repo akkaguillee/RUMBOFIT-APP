@@ -169,6 +169,8 @@ export default function ActiveSessionPage() {
       <Button variant="ghost" block icon={<Trash2 />} onClick={() => setDiscardOpen(true)} style={{ marginTop: 8, color: 'var(--bad-text)' }}>
         Descartar entrenamiento
       </Button>
+      {/* Room for the floating rest timer so it never covers the last button. */}
+      {restLeft !== null && restLeft > 0 && <div aria-hidden="true" style={{ height: 92 }} />}
 
       <AnimatePresence>
         {restLeft !== null && restLeft > 0 && active.restTotalSec && (

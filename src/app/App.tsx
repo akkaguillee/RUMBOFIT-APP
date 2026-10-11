@@ -8,6 +8,7 @@ import { UnlockCelebration } from '@/features/milestones/UnlockCelebration';
 import { Loader } from '@/ui/Loader';
 import { ToastViewport } from '@/ui/ToastViewport';
 import { sectionOf } from './nav';
+import { ErrorBoundary } from './ErrorBoundary';
 import { AppBackground } from './shell/AppBackground';
 import { Sidebar } from './shell/Sidebar';
 import { TabBar } from './shell/TabBar';
@@ -54,22 +55,24 @@ function Shell({ profile }: { profile: Profile }) {
       <div className="shell__main">
         <TopBar profile={profile} />
         <main id="main" tabIndex={-1} style={{ outline: 'none' }}>
-          <Suspense fallback={<Loader />}>
-            <AnimatePresence mode="wait" initial={false} onExitComplete={() => window.scrollTo({ top: 0 })}>
-              <Routes location={location} key={key}>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/progresos" element={<Progress />} />
-                <Route path="/calendario" element={<Calendar />} />
-                <Route path="/entreno" element={<Training />} />
-                <Route path="/entreno/sesion" element={<ActiveSession />} />
-                <Route path="/habitos" element={<Habits />} />
-                <Route path="/hitos" element={<Milestones />} />
-                <Route path="/perfil" element={<ProfilePage />} />
-                <Route path="/quien-soy" element={<About />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </AnimatePresence>
-          </Suspense>
+          <ErrorBoundary variant="section" resetKey={key}>
+            <Suspense fallback={<Loader />}>
+              <AnimatePresence mode="wait" initial={false} onExitComplete={() => window.scrollTo({ top: 0 })}>
+                <Routes location={location} key={key}>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/progresos" element={<Progress />} />
+                  <Route path="/calendario" element={<Calendar />} />
+                  <Route path="/entreno" element={<Training />} />
+                  <Route path="/entreno/sesion" element={<ActiveSession />} />
+                  <Route path="/habitos" element={<Habits />} />
+                  <Route path="/hitos" element={<Milestones />} />
+                  <Route path="/perfil" element={<ProfilePage />} />
+                  <Route path="/quien-soy" element={<About />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </AnimatePresence>
+            </Suspense>
+          </ErrorBoundary>
         </main>
       </div>
       <TabBar />
@@ -91,6 +94,8 @@ export function App() {
 
   useEffect(() => {
     if (!hasProfile) return;
+    // Onboarding → app: start at the top (the storage notice, if any, stays visible).
+    window.scrollTo({ top: 0 });
     // Records can change outside a mutation (imports, older versions): reconcile once per launch.
     void syncAchievements();
     prefetchSections();

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { RunnerMark, Wordmark } from '@/brand/Logo';
 import type { Profile } from '@/domain/types';
+import { AccentButton } from '@/ui/AccentPicker';
 import { ThemeToggle } from '@/ui/ThemeToggle';
 import { useIsDesktop } from '@/ui/useMediaQuery';
 import { titleFor } from '../nav';
@@ -36,6 +37,7 @@ export function TopBar({ profile }: { profile: Profile }) {
           </span>
         )}
         <div className="topbar__actions">
+          <AccentButton />
           <ThemeToggle />
           {desktop ? (
             <Link to="/perfil" className="avatar-btn" aria-label={`Perfil de ${profile.name}`}>

@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { useState } from 'react';
 import { RunnerMark, Wordmark } from '@/brand/Logo';
 import { BrandIcon, type Brand } from '@/ui/BrandIcons';
-import { riseVariants } from '@/ui/motion';
+import { liftVariants, riseVariants } from '@/ui/motion';
 import { Page } from '@/ui/Page';
 import './about.css';
 
@@ -76,7 +76,7 @@ export default function AboutPage() {
           </motion.p>
         </div>
 
-        <motion.ul className="about__socials" variants={riseVariants} aria-label="Redes sociales de Guille">
+        <motion.ul className="about__socials rise-group" variants={liftVariants} aria-label="Redes sociales de Guille">
           {SOCIALS.map((s) => (
             <li key={s.brand}>
               <a className={`social social--${s.brand}`} href={s.url} target="_blank" rel="noopener noreferrer" aria-label={`${s.label} de Guille (${s.handle}), se abre en una pestaña nueva`}>

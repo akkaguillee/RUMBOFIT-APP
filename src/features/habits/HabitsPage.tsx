@@ -4,6 +4,7 @@ import { useProfile } from '@/db/hooks';
 import { Loader } from '@/ui/Loader';
 import { riseVariants } from '@/ui/motion';
 import { Page, PageHead } from '@/ui/Page';
+import { TabPanel } from '@/ui/TabPanel';
 import { Segmented } from '@/ui/Segmented';
 import { StepsPanel } from './StepsPanel';
 import { WaterPanel } from './WaterPanel';
@@ -31,17 +32,9 @@ export default function HabitsPage() {
           block
         />
       </motion.div>
-      <motion.div
-        key={tab}
-        id="habits-panel"
-        role="tabpanel"
-        aria-labelledby={`habits-tab-${tab}`}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-      >
+      <TabPanel tab={tab} idPrefix="habits">
         {tab === 'agua' ? <WaterPanel profile={profile} /> : <StepsPanel profile={profile} />}
-      </motion.div>
+      </TabPanel>
     </Page>
   );
 }

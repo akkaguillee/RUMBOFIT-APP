@@ -1,5 +1,6 @@
 import { ALL_TABLES, db, type TableName } from '../db';
 import { scheduleSync } from '../sync';
+import { findInvalidTable, TABLE_LABELS } from './validateExport';
 
 const FORMAT = 'rumbo-export';
 const VERSION = 1;
@@ -45,10 +46,11 @@ export function parseExport(text: string): ExportFile {
     if (!ALL_TABLES.includes(name as TableName)) throw new Error(`Tabla desconocida: ${name}`);
     if (!Array.isArray(rows)) throw new Error(`Formato no válido en ${name}.`);
   }
-  const profile = file.tables.profile?.[0] as { id?: string; name?: string } | undefined;
-  if (!profile || profile.id !== 'me' || typeof profile.name !== 'string') {
-    throw new Error('La copia no contiene un perfil válido.');
-  }
+  const tables = file.tables as ExportFile['tables'];
+  if (tables.profile?.length !== 1) throw new Error('La copia no contiene un perfil válido.');
+  // Every row is checked, so a damaged file can never leave the app unable to render.
+  const invalid = findInvalidTable(tables);
+  if (invalid) throw new Error(`La copia contiene datos no válidos en ${TABLE_LABELS[invalid]}.`);
   return file as ExportFile;
 }
 

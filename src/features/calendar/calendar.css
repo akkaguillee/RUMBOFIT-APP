@@ -42,6 +42,7 @@
 
 .cal-day {
   position: relative;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -92,8 +93,8 @@
 }
 
 .cal-day[aria-pressed='true'] {
-  color: #fff;
-  background: linear-gradient(180deg, #ee4855, #c92a37);
+  color: var(--on-accent);
+  background: var(--accent-grad);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
     0 8px 20px -10px var(--accent-glow);
@@ -104,7 +105,7 @@
 }
 
 .cal-day[data-has-data='true'][aria-pressed='true'] {
-  background: linear-gradient(180deg, #ee4855, #c92a37);
+  background: var(--accent-grad);
 }
 
 .cal-dots {
@@ -136,11 +137,11 @@
 }
 
 .cal-day[aria-pressed='true'] .cal-dot--workout {
-  box-shadow: inset 0 0 0 1.5px #fff;
+  box-shadow: inset 0 0 0 1.5px var(--on-accent);
 }
 
 .cal-day[aria-pressed='true'] .cal-dot--weight {
-  background: #fff;
+  background: var(--on-accent);
 }
 
 .cal-mark {
@@ -176,7 +177,7 @@
 }
 
 .cal-day[aria-pressed='true'] .cal-mark--ms {
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .cal-mark--note {

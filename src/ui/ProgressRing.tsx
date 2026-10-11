@@ -12,7 +12,7 @@ interface Props {
 }
 
 const gradients: Record<NonNullable<Props['tone']>, [string, string]> = {
-  accent: ['#8f182b', '#ff4d5a'],
+  accent: ['var(--acc-deep)', 'var(--acc-hi)'],
   water: ['color-mix(in srgb, var(--series-water) 55%, #001)', 'var(--series-water)'],
   steps: ['color-mix(in srgb, var(--series-steps) 55%, #100)', 'var(--series-steps)'],
   good: ['#1e9e5e', '#30c77a'],
@@ -47,10 +47,10 @@ export function ProgressRing({ value, size = 120, stroke = 10, tone = 'accent', 
           stroke={`url(#${id})`}
           strokeWidth={stroke}
           strokeLinecap="round"
-          initial={{ pathLength: reduce ? clamped : 0 }}
-          animate={{ pathLength: clamped || 0.0001 }}
-          transition={{ duration: reduce ? 0 : 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          style={{ opacity: clamped === 0 ? 0 : 1 }}
+          // Opacity is animated too: a static style would keep its first-render value.
+          initial={{ pathLength: reduce ? clamped : 0, opacity: clamped === 0 ? 0 : 1 }}
+          animate={{ pathLength: clamped || 0.0001, opacity: clamped === 0 ? 0 : 1 }}
+          transition={{ duration: reduce ? 0 : 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.1, opacity: { duration: 0.2 } }}
         />
       </svg>
       {children && (
