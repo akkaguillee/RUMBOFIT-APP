@@ -22,8 +22,8 @@ export const ACCOUNT_NAV: NavItem[] = [
   { to: '/quien-soy', label: '¿Quién soy?', short: '¿Quién soy?', icon: Sparkles },
 ];
 
-/** Mobile tab bar: the five most frequent destinations (Calendario and Hitos live in the menu). */
-export const TAB_NAV: NavItem[] = PRIMARY_NAV.filter((n) => n.to !== '/calendario' && n.to !== '/hitos');
+/** Mobile tab bar: every main section except Calendario, which lives in the menu. */
+export const TAB_NAV: NavItem[] = PRIMARY_NAV.filter((n) => n.to !== '/calendario');
 
 export function sectionOf(pathname: string): string {
   const seg = pathname.split('/')[1] ?? '';

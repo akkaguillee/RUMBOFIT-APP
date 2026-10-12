@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronRight, Sparkles, Trophy, UserRound } from 'lucide-react';
+import { CalendarDays, ChevronRight, Sparkles, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Sheet } from '@/ui/Sheet';
 import { ThemeToggle } from '@/ui/ThemeToggle';
@@ -6,7 +6,6 @@ import { useTheme } from '../theme';
 
 const links = [
   { to: '/calendario', label: 'Calendario', sub: 'Tu historial día a día', icon: CalendarDays },
-  { to: '/hitos', label: 'Hitos', sub: 'Logros desbloqueados y próximos objetivos', icon: Trophy },
   { to: '/perfil', label: 'Perfil y ajustes', sub: 'Datos, objetivos, unidades y privacidad', icon: UserRound },
   { to: '/quien-soy', label: '¿Quién soy?', sub: 'Conoce al creador de RUMBO', icon: Sparkles },
 ];

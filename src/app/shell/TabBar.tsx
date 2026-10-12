@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import type { CSSProperties } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { spring } from '@/ui/motion';
 import { sectionOf, TAB_NAV } from '../nav';
@@ -8,7 +9,7 @@ export function TabBar() {
   const section = sectionOf(pathname);
   return (
     <nav className="tabbar" aria-label="Navegación principal">
-      <div className="tabbar__panel glass glass--nav">
+      <div className="tabbar__panel glass glass--nav" style={{ '--tabs': TAB_NAV.length } as CSSProperties}>
         {TAB_NAV.map((item) => {
           const active = section === item.to;
           const Icon = item.icon;
