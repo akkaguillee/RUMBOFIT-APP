@@ -24,7 +24,7 @@ export function Segmented<T extends string>({ options, value, onChange, label, b
   const layoutId = useId();
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const rootRef = useRef<HTMLDivElement>(null);
-  const [scroll, setScroll] = useState<'none' | 'more' | 'end'>('none');
+  const [scroll, setScroll] = useState<'none' | 'start' | 'middle' | 'end'>('none');
 
   // When options don't fit, the control scrolls horizontally with an edge fade,
   // and the selected option is kept in view.
@@ -33,7 +33,8 @@ export function Segmented<T extends string>({ options, value, onChange, label, b
     if (!el) return;
     const update = () => {
       if (el.scrollWidth <= el.clientWidth + 1) setScroll('none');
-      else setScroll(el.scrollLeft + el.clientWidth >= el.scrollWidth - 2 ? 'end' : 'more');
+      else if (el.scrollLeft <= 2) setScroll('start');
+      else setScroll(el.scrollLeft + el.clientWidth >= el.scrollWidth - 2 ? 'end' : 'middle');
     };
     update();
     const ro = new ResizeObserver(update);
@@ -73,7 +74,7 @@ export function Segmented<T extends string>({ options, value, onChange, label, b
       ref={rootRef}
       role={mode === 'tabs' ? 'tablist' : 'radiogroup'}
       aria-label={label}
-      className={cx('segmented', block && 'segmented--block', scroll !== 'none' && 'segmented--scroll', scroll === 'end' && 'is-end', className)}
+      className={cx('segmented', block && 'segmented--block', scroll !== 'none' && `segmented--scroll is-${scroll}`, className)}
     >
       {options.map((o, i) => {
         const selected = o.value === value;
