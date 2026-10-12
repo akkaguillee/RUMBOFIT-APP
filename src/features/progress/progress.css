@@ -337,49 +337,35 @@
   white-space: nowrap;
 }
 
-/* BMI scale */
-.bmi-result {
+/* BMI › manual calculator (the automatic card lives in features/body) */
+.bmi-manual__result {
   display: flex;
-  align-items: flex-end;
-  gap: var(--space-3);
   flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  min-height: 56px;
+  margin-top: var(--space-4);
 }
 
-.bmi-scale {
-  position: relative;
-  margin: var(--space-6) 0 var(--space-2);
+.bmi-manual__value {
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: 1;
 }
 
-.bmi-scale__bar {
-  display: flex;
-  gap: 2px;
-  height: 12px;
-  border-radius: var(--radius-pill);
-  overflow: hidden;
-}
-
-.bmi-scale__seg {
-  flex: 1;
-}
-
-.bmi-scale__marker {
-  position: absolute;
-  top: -8px;
-  width: 4px;
-  height: 28px;
-  margin-left: -2px;
-  border-radius: 2px;
-  background: var(--text);
-  box-shadow: 0 0 0 3px var(--surface-solid);
-}
-
-.bmi-scale__labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  font-size: 11px;
+.bmi-manual__value small {
+  margin-left: 6px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0;
   color: var(--text-3);
-  font-variant-numeric: tabular-nums;
+}
+
+.bmi-manual__subtitle {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  margin-bottom: 2px;
 }
 
 /* Energy */
@@ -398,7 +384,12 @@
   background: var(--control-fill);
   box-shadow: inset 0 0 0 1px var(--hairline);
   text-align: left;
-  transition: box-shadow var(--dur-fast), background-color var(--dur-fast);
+  /* Press, background and ring transitions come from .pressable (interaction.css). */
+}
+
+/* Target options: one per row when a card is too narrow for two (long descriptions). */
+.energy-grid--targets {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
 }
 
 .energy-target[aria-pressed='true'] {
@@ -420,32 +411,74 @@
   margin-left: 4px;
 }
 
-.macro-bar {
+.energy-target__name {
   display: flex;
-  gap: 2px;
-  height: 14px;
-  border-radius: var(--radius-pill);
-  overflow: hidden;
-  margin: var(--space-3) 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
 }
 
-.macro-legend {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-3);
+.energy-target__badge {
+  height: 20px;
 }
 
-.macro-legend__item {
+.energy-note {
   display: flex;
   gap: 8px;
 }
 
-.macro-legend__swatch {
-  width: 10px;
-  height: 10px;
-  margin-top: 4px;
-  border-radius: 3px;
+.energy-note svg {
+  width: 15px;
+  height: 15px;
   flex: none;
+  margin-top: 2px;
+  color: var(--text-3);
+}
+
+/* Calories › "Ajustar el cálculo" trigger and special situations */
+.glass.kcal-adjust {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: left;
+}
+
+.kcal-adjust__title {
+  display: block;
+}
+
+/* Block-level so the smaller text keeps its own line height (inline, it inherited the card's loose one). */
+.kcal-adjust__sub {
+  display: block;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.kcal-adjust__chev {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: var(--text-3);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.kcal-adjust__chev.is-open {
+  transform: rotate(180deg);
+}
+
+.kcal-macro-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3) var(--space-4);
+}
+
+.kcal-flags {
+  border: 0;
+  padding: 0;
+  margin: 0;
 }
 
 .formula {
@@ -470,6 +503,26 @@
 .formula dd {
   font-weight: var(--weight-semibold);
   text-align: right;
+}
+
+.kcal-formula__result {
+  white-space: nowrap;
+}
+
+/* Calories › "Cómo se calcula": narrow cards stack each step (label above value) instead of squeezing both. */
+.kcal-formula-card {
+  container: kcal-formula / inline-size;
+}
+
+@container kcal-formula (max-width: 460px) {
+  .kcal-formula-card .formula div {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .kcal-formula-card .formula dd {
+    text-align: left;
+  }
 }
 
 .check-row {

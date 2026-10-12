@@ -51,7 +51,7 @@ export function StreakCard({ className }: { className?: string }) {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: reduce ? 0 : 0.15 + i * 0.05, type: 'spring', stiffness: 380, damping: 22 }}
             >
-              {d.active ? <StreakFlame size={16} lit /> : null}
+              {d.active ? <StreakFlame size={16} lit still /> : null}
             </motion.span>
           </li>
         ))}

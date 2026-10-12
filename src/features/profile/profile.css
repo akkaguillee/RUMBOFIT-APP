@@ -21,6 +21,12 @@
     0 14px 30px -12px var(--accent-glow);
 }
 
+.profile-hero__goal {
+  margin: 2px 0 1px;
+  font-weight: var(--weight-medium);
+  color: var(--text);
+}
+
 .profile-grid {
   display: grid;
   gap: var(--space-4);
@@ -46,14 +52,190 @@
   flex: none;
 }
 
-.day-pick {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6px;
+/* Objetivo principal: read-only line, edited in the «Objetivos» sheet */
+.goal-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--divider);
 }
 
-.day-pick .chip {
-  justify-content: center;
+.goal-main__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.goal-main__value {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: 1.3;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.goal-main > .btn {
+  flex: none;
+}
+
+/* Cards reached from other pages (/perfil#personal, /perfil#preferencias) land below the sticky header */
+.profile-sec,
+.prefs-card {
+  scroll-margin-top: calc(var(--notice-h, 0px) + var(--safe-top) + var(--header-h) + var(--space-3));
+}
+
+/* Their titles take focus on arrival (for screen readers); they are not controls, so no ring */
+.profile-sec > .card__title:focus,
+.prefs-card > .card__title:focus {
+  outline: none;
+}
+
+/* ── Tu personalización ─────────────────────────────────────────────── */
+
+@media (min-width: 960px) {
+  .prefs-card {
+    grid-column: 1 / -1;
+  }
+}
+
+.prefs-card__lead {
+  max-width: 60ch;
+  margin-bottom: var(--space-3);
+  line-height: 1.5;
+}
+
+.prefs-rows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0 calc(var(--space-2) * -1);
   padding: 0;
-  min-height: 42px;
+  list-style: none;
+}
+
+@media (min-width: 960px) {
+  .prefs-rows {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-4);
+  }
+}
+
+.prefs-rows li {
+  min-width: 0;
+  border-bottom: 1px solid var(--divider);
+}
+
+.prefs-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  /* Rows side by side on wide screens share their height, so chevrons line up. */
+  height: 100%;
+  min-height: 64px;
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--radius-sm);
+  text-align: left;
+}
+
+@media (hover: hover) {
+  .prefs-row:hover {
+    background: var(--control-fill);
+  }
+}
+
+.prefs-row__icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 12px;
+  color: var(--accent-text);
+  background: var(--accent-soft);
+}
+
+.prefs-row__icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+.prefs-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.prefs-row__title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.prefs-row__sub {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+.prefs-row__sub.is-empty {
+  color: var(--text-3);
+}
+
+.prefs-row__chev {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: var(--text-3);
+}
+
+.prefs-card__privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: var(--space-4);
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--text-3);
+}
+
+.prefs-card__privacy svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  margin-top: 1px;
+  color: var(--good-text);
+}
+
+/* Edit sheets */
+.pref-editor {
+  container-type: inline-size;
+}
+
+.pref-sheet__foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 0;
+}
+
+.link-btn.pref-clear {
+  align-self: flex-start;
+  gap: 6px;
+  color: var(--bad-text);
+}
+
+.pref-water {
+  padding-top: var(--space-4);
 }

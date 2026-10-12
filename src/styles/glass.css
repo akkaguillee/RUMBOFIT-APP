@@ -158,23 +158,23 @@
 /* Glass inside sliding wrappers fades itself (see liftVariants) */
 .rise-group .glass,
 .rise-group > :not(:has(.glass)) {
-  animation: glass-in 0.5s var(--ease-out) both;
+  animation: glass-in 0.36s var(--ease-out) both;
 }
 
 .rise-group > :nth-child(2),
 .rise-group > :nth-child(2) .glass,
 .rise-group .glass:nth-child(2) {
-  animation-delay: 60ms;
+  animation-delay: 40ms;
 }
 
 .rise-group > :nth-child(3),
 .rise-group .glass:nth-child(3) {
-  animation-delay: 120ms;
+  animation-delay: 80ms;
 }
 
 .rise-group > :nth-child(4),
 .rise-group .glass:nth-child(4) {
-  animation-delay: 180ms;
+  animation-delay: 120ms;
 }
 
 @keyframes glass-in {
@@ -206,15 +206,24 @@
   }
 }
 
-/* ── App background ─────────────────────────────────────────────────── */
+/* ── App background ─────────────────────────────────────────────────────
+   Depth comes from layering: a base gradient (lighter towards the top, as if
+   lit from above), large soft pools of accent light that drift over tens of
+   seconds, a scroll parallax between layers (AppBackground.tsx) and grain. */
 
 .app-bg {
   position: fixed;
   inset: 0;
   z-index: -10;
   overflow: hidden;
-  background: var(--bg);
+  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 48%, var(--bg-bottom) 100%);
   pointer-events: none;
+}
+
+.app-bg__layer {
+  position: absolute;
+  inset: -10% 0;
+  will-change: transform;
 }
 
 .app-bg__orb {
@@ -224,63 +233,56 @@
 }
 
 .app-bg__orb--1 {
-  width: 70vmax;
-  height: 70vmax;
-  top: -30vmax;
-  right: -26vmax;
-  background: radial-gradient(circle at center, var(--orb-1), transparent 62%);
-  animation: orb-drift-1 19s var(--ease-in-out) infinite alternate;
+  width: 78vmax;
+  height: 78vmax;
+  top: -34vmax;
+  right: -30vmax;
+  background: radial-gradient(closest-side, var(--orb-1), color-mix(in srgb, var(--orb-1) 40%, transparent) 55%, transparent);
+  animation: orb-drift-1 38s var(--ease-in-out) infinite alternate;
 }
 
 .app-bg__orb--2 {
-  width: 62vmax;
-  height: 62vmax;
-  bottom: -32vmax;
-  left: -24vmax;
-  background: radial-gradient(circle at center, var(--orb-2), transparent 64%);
-  animation: orb-drift-2 23s var(--ease-in-out) infinite alternate;
+  width: 70vmax;
+  height: 70vmax;
+  bottom: -30vmax;
+  left: -32vmax;
+  background: radial-gradient(closest-side, var(--orb-2), color-mix(in srgb, var(--orb-2) 35%, transparent) 55%, transparent);
+  animation: orb-drift-2 46s var(--ease-in-out) infinite alternate;
 }
 
 .app-bg__orb--3 {
-  width: 40vmax;
-  height: 40vmax;
-  top: 34%;
-  left: 46%;
-  background: radial-gradient(circle at center, var(--orb-3), transparent 66%);
-  animation: orb-drift-3 27s var(--ease-in-out) infinite alternate;
+  width: 46vmax;
+  height: 46vmax;
+  top: 30%;
+  left: 38%;
+  background: radial-gradient(closest-side, var(--orb-3), transparent);
+  animation: orb-drift-3 54s var(--ease-in-out) infinite alternate;
 }
 
-/* Slow aurora ribbon: a soft conic light that turns behind everything */
-.app-bg__aurora {
+/* Neutral light from above: separates the top bar area from the content */
+.app-bg__sky {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 150vmax;
-  height: 150vmax;
-  margin: -75vmax 0 0 -75vmax;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    color-mix(in srgb, var(--acc) 9%, transparent) 50deg,
-    transparent 110deg,
-    transparent 200deg,
-    color-mix(in srgb, var(--acc-hi) 7%, transparent) 250deg,
-    transparent 310deg
-  );
-  -webkit-mask: radial-gradient(closest-side, #000 20%, transparent 72%);
-  mask: radial-gradient(closest-side, #000 20%, transparent 72%);
-  animation: aurora-turn 60s linear infinite;
-  will-change: transform;
+  inset: 0 0 auto;
+  height: 60vh;
+  background: radial-gradient(70% 70% at 50% 0%, var(--bg-sky), transparent 70%);
 }
 
-.app-bg__field {
+/* Pointer light (mouse only), positioned from JS with transform */
+.app-bg__light {
   position: absolute;
-  inset: 0;
+  top: -320px;
+  left: -320px;
+  width: 640px;
+  height: 640px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--acc) 10%, transparent), transparent);
+  opacity: 0;
+  will-change: transform, opacity;
 }
 
 .app-bg__grain {
   position: absolute;
-  inset: -50%;
+  inset: 0;
   opacity: var(--noise-opacity);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   mix-blend-mode: overlay;
@@ -289,54 +291,60 @@
 .app-bg__vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(120% 80% at 50% 0%, transparent 40%, color-mix(in srgb, var(--bg) 70%, transparent) 100%);
+  background: radial-gradient(130% 90% at 50% 10%, transparent 45%, color-mix(in srgb, var(--bg-bottom) 75%, transparent) 100%);
 }
 
+/* Each orb wanders along its own slow path; periods never line up */
 @keyframes orb-drift-1 {
-  50% {
-    transform: translate3d(-6vmax, 9vmax, 0) scale(1.06);
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
   }
-  to {
-    transform: translate3d(-14vmax, 4vmax, 0) scale(1.12);
+  40% {
+    transform: translate3d(-5vmax, 6vmax, 0) scale(1.05);
+  }
+  100% {
+    transform: translate3d(-11vmax, 2vmax, 0) scale(1.1);
   }
 }
 
 @keyframes orb-drift-2 {
-  50% {
-    transform: translate3d(12vmax, -4vmax, 0) scale(0.96);
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
   }
-  to {
-    transform: translate3d(6vmax, -12vmax, 0) scale(1.08);
+  55% {
+    transform: translate3d(9vmax, -3vmax, 0) scale(0.97);
+  }
+  100% {
+    transform: translate3d(5vmax, -9vmax, 0) scale(1.06);
   }
 }
 
 @keyframes orb-drift-3 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
   50% {
-    transform: translate3d(-18vmax, 6vmax, 0) scale(1.2);
+    transform: translate3d(-12vmax, 5vmax, 0) scale(1.12);
   }
-  to {
-    transform: translate3d(-6vmax, 16vmax, 0) scale(0.92);
-  }
-}
-
-@keyframes aurora-turn {
-  to {
-    transform: rotate(360deg);
+  100% {
+    transform: translate3d(-4vmax, 11vmax, 0) scale(0.94);
   }
 }
 
-:root.lite .app-bg__orb,
-:root.lite .app-bg__aurora {
+:root.lite .app-bg__orb {
   animation: none;
 }
 
-:root.lite .app-bg__field {
+:root.lite .app-bg__light {
   display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app-bg__orb,
-  .app-bg__aurora {
+  .app-bg__orb {
     animation: none;
+  }
+
+  .app-bg__light {
+    display: none;
   }
 }

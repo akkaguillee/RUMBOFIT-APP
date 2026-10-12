@@ -1,6 +1,6 @@
 import { nowTime, todayKey, type DateKey } from '@/domain/dates';
 import { goalProgress } from '@/domain/weight';
-import type { ActivityLevel, Challenge, GoalType, HealthFlag, NutritionPrefs, Profile, Sex, TrainingPrefs, Units } from '@/domain/types';
+import type { ActivityLevel, ActivityProfile, FoodHabits, GoalType, HealthFlag, MotivationProfile, Profile, Sex, Units, Wellbeing } from '@/domain/types';
 import { assertRange, assertText, LIMITS, ValidationError } from '@/domain/validation';
 import { db } from '../db';
 import { scheduleSync } from '../sync';
@@ -21,9 +21,13 @@ export interface ProfileInput {
   waterGoalMl: number;
   stepsGoal: number;
   healthFlags?: HealthFlag[];
-  nutrition?: NutritionPrefs;
-  training?: TrainingPrefs;
-  challenges?: Challenge[];
+  goalNote?: string;
+  secondaryGoals?: GoalType[];
+  activity?: ActivityProfile;
+  food?: FoodHabits;
+  motivation?: MotivationProfile;
+  wellbeing?: Wellbeing;
+  consentAt?: number;
 }
 
 function validate(input: ProfileInput) {
@@ -60,9 +64,13 @@ export async function createProfile(input: ProfileInput): Promise<void> {
     waterGoalMl: input.waterGoalMl,
     stepsGoal: input.stepsGoal,
     healthFlags: input.healthFlags ?? [],
-    ...(input.nutrition ? { nutrition: input.nutrition } : {}),
-    ...(input.training ? { training: input.training } : {}),
-    ...(input.challenges ? { challenges: input.challenges } : {}),
+    ...(input.goalNote ? { goalNote: input.goalNote.trim().slice(0, 80) } : {}),
+    ...(input.secondaryGoals?.length ? { secondaryGoals: input.secondaryGoals } : {}),
+    ...(input.activity ? { activity: input.activity } : {}),
+    ...(input.food ? { food: input.food } : {}),
+    ...(input.motivation ? { motivation: input.motivation } : {}),
+    ...(input.wellbeing ? { wellbeing: input.wellbeing } : {}),
+    ...(input.consentAt ? { consentAt: input.consentAt } : {}),
     createdAt: now,
     updatedAt: now,
   };

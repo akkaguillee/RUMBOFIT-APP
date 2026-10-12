@@ -5,6 +5,7 @@ import './styles/glass.css';
 import './styles/components.css';
 import './styles/layout.css';
 import './styles/liquid.css';
+import './styles/interaction.css';
 import './styles/splash.css';
 import './styles/milestones.css';
 import { StrictMode } from 'react';
@@ -16,6 +17,9 @@ import { ErrorBoundary } from './app/ErrorBoundary';
 import { ThemeProvider } from './app/ThemeProvider';
 import { initStorage, switchToMemory } from './db/backend';
 import { db } from './db/db';
+
+// iOS Safari only shows :active press states when a touch listener exists.
+document.addEventListener('touchstart', () => {}, { passive: true });
 
 // The single-file build is opened from disk (file://), where only hash URLs work.
 const Router = import.meta.env.MODE === 'standalone' ? HashRouter : BrowserRouter;

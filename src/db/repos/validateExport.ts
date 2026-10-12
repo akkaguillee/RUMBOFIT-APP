@@ -20,7 +20,7 @@ const oneOf =
   (v: unknown) =>
     values.includes(v as T);
 
-const goal = oneOf('lose', 'maintain', 'gain', 'fitness', 'strength', 'habits');
+const goal = oneOf('lose', 'recomp', 'maintain', 'gain', 'fitness', 'strength', 'habits', 'consistency');
 const sex = oneOf('male', 'female', 'unspecified');
 const activity = oneOf('sedentary', 'light', 'moderate', 'active', 'very_active');
 const units = oneOf('metric', 'imperial');
@@ -41,21 +41,11 @@ const set = (s: unknown) =>
   optNum(s.avgHr) &&
   optNum(s.level);
 
-const diet = oneOf('omnivore', 'flexitarian', 'pescatarian', 'vegetarian', 'vegan');
-const allergen = oneOf('gluten', 'lactose', 'egg', 'nuts', 'peanut', 'soy', 'fish', 'shellfish');
-const challenge = oneOf('motivation', 'time', 'cravings', 'consistency', 'knowledge', 'sleep', 'stress', 'social', 'plateau');
-const nutritionPrefs = (v: unknown) =>
-  v === undefined ||
-  (obj(v) &&
-    oneOf('plan', 'ideas', 'none')(v.interest) &&
-    diet(v.diet) &&
-    arrOf(v.allergens, allergen) &&
-    [3, 4, 5].includes(v.mealsPerDay as number) &&
-    oneOf('quick', 'normal', 'any')(v.cookingTime) &&
-    optStr(v.dislikes));
-const trainingPrefs = (v: unknown) =>
-  v === undefined ||
-  (obj(v) && oneOf('beginner', 'intermediate', 'advanced')(v.experience) && oneOf('gym', 'home', 'outdoor')(v.place) && num(v.sessionMinutes));
+const goalList = oneOf('lose', 'recomp', 'maintain', 'gain', 'fitness', 'strength', 'habits', 'consistency');
+/** Personalisation blocks are optional objects; their answers are free-form enums kept as given. */
+const optObj = (v: unknown) => v === undefined || obj(v);
+const activityProfile = (v: unknown) =>
+  v === undefined || (obj(v) && str(v.posture) && str(v.job) && num(v.trainingDays) && arrOf(v.activityTypes, str));
 const workoutExercise = (e: unknown) => obj(e) && str(e.uid) && str(e.exerciseId) && num(e.restSec) && arrOf(e.sets, set);
 const templateExercise = (e: unknown) => obj(e) && str(e.exerciseId) && num(e.sets) && num(e.restSec);
 
@@ -77,9 +67,13 @@ const ROW_CHECKS: Record<TableName, (r: Row) => boolean> = {
     optNum(r.heightCm) &&
     optNum(r.startWeightKg) &&
     optNum(r.goalWeightKg) &&
-    nutritionPrefs(r.nutrition) &&
-    trainingPrefs(r.training) &&
-    (r.challenges === undefined || arrOf(r.challenges, challenge)) &&
+    optStr(r.goalNote) &&
+    (r.secondaryGoals === undefined || arrOf(r.secondaryGoals, goalList)) &&
+    activityProfile(r.activity) &&
+    optObj(r.food) &&
+    optObj(r.motivation) &&
+    optObj(r.wellbeing) &&
+    optNum(r.consentAt) &&
     num(r.createdAt) &&
     num(r.updatedAt),
   goals: (r) => autoId(r.id) && goal(r.type) && isDate(r.startDate) && optDate(r.endDate) && bool(r.reached) && optNum(r.startWeightKg) && optNum(r.goalWeightKg),

@@ -246,10 +246,13 @@
   --control-fill-hover: rgba(255, 255, 255, 0.13);
   --scrim: rgba(3, 3, 6, 0.6);
 
-  --orb-1: color-mix(in srgb, var(--acc) 34%, transparent);
-  --orb-2: color-mix(in srgb, var(--acc-deep) 48%, transparent);
-  --orb-3: color-mix(in srgb, var(--acc) 16%, transparent);
-  --noise-opacity: 0.05;
+  --bg-top: #0e0f16;
+  --bg-bottom: #050609;
+  --bg-sky: rgba(255, 255, 255, 0.045);
+  --orb-1: color-mix(in srgb, var(--acc) 26%, transparent);
+  --orb-2: color-mix(in srgb, var(--acc-deep) 36%, transparent);
+  --orb-3: color-mix(in srgb, var(--acc) 10%, transparent);
+  --noise-opacity: 0.045;
   --flame-off: #4a4d57;
   --flame-off-deep: #34363e;
   --flame-off-light: #5d606b;
@@ -316,10 +319,13 @@
   --control-fill-hover: rgba(70, 20, 30, 0.09);
   --scrim: rgba(40, 14, 20, 0.28);
 
-  --orb-1: color-mix(in srgb, var(--acc) 22%, transparent);
-  --orb-2: color-mix(in srgb, var(--acc-hi) 26%, transparent);
-  --orb-3: color-mix(in srgb, var(--acc-deep) 10%, transparent);
-  --noise-opacity: 0.035;
+  --bg-top: #fdfbfa;
+  --bg-bottom: #f2edea;
+  --bg-sky: rgba(255, 255, 255, 0.8);
+  --orb-1: color-mix(in srgb, var(--acc) 18%, transparent);
+  --orb-2: color-mix(in srgb, var(--acc-hi) 20%, transparent);
+  --orb-3: color-mix(in srgb, var(--acc-deep) 8%, transparent);
+  --noise-opacity: 0.03;
   --flame-off: #c9c3c6;
   --flame-off-deep: #b5aeb2;
   --flame-off-light: #ddd8da;

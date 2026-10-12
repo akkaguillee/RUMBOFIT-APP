@@ -1,4 +1,4 @@
-import { CalendarDays, ChartLine, Dumbbell, Droplets, House, Salad, Sparkles, Trophy, UserRound, type LucideIcon } from 'lucide-react';
+import { CalendarDays, ChartLine, Dumbbell, Droplets, House, Sparkles, Trophy, UserRound, type LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   to: string;
@@ -12,7 +12,6 @@ export const PRIMARY_NAV: NavItem[] = [
   { to: '/progresos', label: 'Progresos', short: 'Progreso', icon: ChartLine },
   { to: '/calendario', label: 'Calendario', short: 'Calendario', icon: CalendarDays },
   { to: '/entreno', label: 'Entrenamiento', short: 'Entreno', icon: Dumbbell },
-  { to: '/nutricion', label: 'Nutrición', short: 'Nutrición', icon: Salad },
   { to: '/habitos', label: 'Hábitos', short: 'Hábitos', icon: Droplets },
   { to: '/hitos', label: 'Hitos', short: 'Hitos', icon: Trophy },
 ];
@@ -30,7 +29,11 @@ export function sectionOf(pathname: string): string {
   return `/${seg}`;
 }
 
-export function titleFor(pathname: string): string {
+export function navItemFor(pathname: string): NavItem | undefined {
   const section = sectionOf(pathname);
-  return [...PRIMARY_NAV, ...ACCOUNT_NAV].find((n) => n.to === section)?.label ?? 'RUMBO';
+  return [...PRIMARY_NAV, ...ACCOUNT_NAV].find((n) => n.to === section);
+}
+
+export function titleFor(pathname: string): string {
+  return navItemFor(pathname)?.label ?? 'RUMBO';
 }

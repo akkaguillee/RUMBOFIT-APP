@@ -12,24 +12,27 @@ export const ease = {
   inOut: [0.65, 0, 0.35, 1] as const,
 };
 
+/** Short, critically damped spring for content entering a screen (~300 ms). */
+const riseSpring = { type: 'spring', stiffness: 420, damping: 34, mass: 0.8 } satisfies Transition;
+
 /**
- * Page choreography: children rise in a cascade with a slight "settle"
- * (they overshoot a few pixels upward and land), which gives a liquid feel
- * without zooms or blurs. The container itself never fades in: an ancestor
- * with opacity < 1 would stop the glass cards from blurring the background
- * until the animation ends.
+ * Page choreography: the old screen lifts away in 120 ms, then the new
+ * one's blocks rise in a tight cascade. The whole change reads in about a
+ * third of a second and taps keep working throughout. The container itself
+ * never fades in: an ancestor with opacity < 1 would stop the glass cards
+ * from blurring the background until the animation ends.
  */
 export const pageVariants: Variants = {
   initial: {},
   enter: {
-    transition: { staggerChildren: 0.055, delayChildren: 0.02 },
+    transition: { staggerChildren: 0.04, delayChildren: 0.01 },
   },
-  exit: { opacity: 0, transition: { duration: 0.14, ease: ease.inOut } },
+  exit: { opacity: 0, y: -6, transition: { duration: 0.12, ease: ease.inOut } },
 };
 
 export const riseVariants: Variants = {
-  initial: { opacity: 0, y: 18 },
-  enter: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 28, mass: 0.8 } },
+  initial: { opacity: 0, y: 14 },
+  enter: { opacity: 1, y: 0, transition: riseSpring },
   exit: { opacity: 0, y: 0 },
 };
 
@@ -38,8 +41,8 @@ export const riseVariants: Variants = {
  * fade themselves in CSS (.rise-group) so their backdrop blur never pauses.
  */
 export const liftVariants: Variants = {
-  initial: { y: 18 },
-  enter: { y: 0, transition: { type: 'spring', stiffness: 300, damping: 28, mass: 0.8 } },
+  initial: { y: 14 },
+  enter: { y: 0, transition: riseSpring },
   exit: {},
 };
 

@@ -28,7 +28,8 @@ export const LIMITS = {
 } satisfies Record<string, Range>;
 
 export function checkRange(value: number | null | undefined, range: Range): string | null {
-  if (value === null || value === undefined) return `${range.label} es obligatorio.`;
+  // «Indica la altura», «Indica los pasos»: correct for any gender or number.
+  if (value === null || value === undefined) return `Indica ${range.label.charAt(0).toLowerCase()}${range.label.slice(1)}.`;
   if (Number.isNaN(value)) return `${range.label} no es un número válido.`;
   if (value < range.min || value > range.max) {
     const u = range.unit ? ` ${range.unit}` : '';

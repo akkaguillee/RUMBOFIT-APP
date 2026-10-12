@@ -1,4 +1,4 @@
-import type { ActivityLevel, GoalType, HealthFlag, Sex } from './types';
+import type { ActivityLevel, ActivityProfile, GoalType, HealthFlag, Sex } from './types';
 import { round } from './units';
 
 // ── BMI ────────────────────────────────────────────────────────────────
@@ -97,6 +97,25 @@ export const ACTIVITY_LEVELS: Record<ActivityLevel, { label: string; factor: num
   },
 };
 
+const LEVEL_ORDER: ActivityLevel[] = ['sedentary', 'light', 'moderate', 'active', 'very_active'];
+
+/**
+ * Activity factor from everyday life plus training, so the user never has to
+ * guess a "PAL": the posture they spend most of the day in (a physical job
+ * counts as moving) sets the base, and weekly training sessions add to it.
+ *   base: sitting 0 · on your feet 1 · moving 2
+ *   training: 0 days +0 · 1–2 +0.5 · 3–4 +1 · 5+ +1.5   (rounded half up, capped)
+ * e.g. desk job + 3 sessions → light (1.375); physical job + 5 → very active (1.9).
+ */
+export function estimateActivityLevel(a: Pick<ActivityProfile, 'posture' | 'job' | 'trainingDays'>): ActivityLevel {
+  let base = a.posture === 'moving' ? 2 : a.posture === 'standing' ? 1 : 0;
+  if (a.job === 'physical') base = Math.max(base, 2);
+  if (a.job === 'standing') base = Math.max(base, 1);
+  const days = Math.max(0, Math.min(7, Math.round(a.trainingDays)));
+  const bonus = days >= 5 ? 1.5 : days >= 3 ? 1 : days >= 1 ? 0.5 : 0;
+  return LEVEL_ORDER[Math.min(LEVEL_ORDER.length - 1, Math.floor(base + bonus + 0.5))]!;
+}
+
 const SEX_CONSTANT: Record<Sex, number> = {
   male: 5,
   female: -161,
@@ -159,7 +178,7 @@ export function calculateEnergy(input: EnergyInput): EnergyResult {
   }
   if (age < 18) {
     restrictions.push(
-      'Eres menor de edad: las necesidades energéticas durante el crecimiento son diferentes y no mostramos objetivos de pérdida o ganancia.',
+      'Eres menor de edad: las necesidades energéticas durante el crecimiento son diferentes y no mostramos objetivos de pérdida ni de ganancia.',
     );
   }
   const flags = input.healthFlags ?? [];
@@ -181,13 +200,13 @@ export function calculateEnergy(input: EnergyInput): EnergyResult {
       label: 'Mantenimiento',
       kcal: maintenance,
       description: 'Energía estimada para mantener tu peso actual.',
-      recommended: restrictions.length > 0 || !['lose', 'gain'].includes(goal),
+      recommended: restrictions.length > 0 || !['lose', 'gain', 'strength'].includes(goal),
     },
   ];
 
   if (restrictions.length === 0) {
-    // Conservative deficits: never below the estimated basal metabolism.
-    const floor = roundTo(bmrRaw, 10);
+    // Conservative deficits: never below the estimated basal metabolism (rounded up, so 1.844 → 1.850).
+    const floor = Math.ceil(bmrRaw / 10) * 10;
     const mild = Math.max(floor, roundTo(tdee - Math.min(tdee * 0.1, 300), 10));
     const moderate = Math.max(floor, roundTo(tdee - Math.min(tdee * 0.2, 500), 10));
     if (goal === 'lose') {
@@ -207,6 +226,15 @@ export function calculateEnergy(input: EnergyInput): EnergyResult {
           recommended: false,
         },
       );
+    }
+    if (goal === 'recomp') {
+      targets.push({
+        id: 'lose_mild',
+        label: 'Recomposición',
+        kcal: mild,
+        description: 'Déficit muy ligero (≈10 %) con proteína suficiente y entrenamiento de fuerza. Mantenimiento también es válido.',
+        recommended: false,
+      });
     }
     if (goal === 'gain' || goal === 'strength') {
       targets.push(

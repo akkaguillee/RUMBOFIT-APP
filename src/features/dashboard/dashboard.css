@@ -8,9 +8,10 @@
     'streak'
     'actions'
     'today'
+    'tip'
+    'body'
     'week'
-    'next'
-    'tip';
+    'next';
 }
 
 @media (min-width: 960px) {
@@ -20,9 +21,9 @@
     grid-template-areas:
       'hero streak'
       'hero actions'
-      'hero today'
-      'week today'
-      'next tip';
+      'hero tip'
+      'today body'
+      'week next';
     align-items: start;
   }
 }
@@ -47,6 +48,9 @@
 }
 .dash__tip {
   grid-area: tip;
+}
+.dash__body {
+  grid-area: body;
 }
 
 .greet {
@@ -397,11 +401,4 @@
   display: flex;
   align-items: center;
   gap: var(--space-4);
-}
-
-/* Tips */
-.tip {
-  display: flex;
-  gap: var(--space-3);
-  align-items: flex-start;
 }

@@ -5,7 +5,7 @@ import type { Profile } from '@/domain/types';
 import { AccentButton } from '@/ui/AccentPicker';
 import { ThemeToggle } from '@/ui/ThemeToggle';
 import { useIsDesktop } from '@/ui/useMediaQuery';
-import { titleFor } from '../nav';
+import { navItemFor } from '../nav';
 import { MoreMenu } from './MoreMenu';
 
 export function TopBar({ profile }: { profile: Profile }) {
@@ -13,7 +13,7 @@ export function TopBar({ profile }: { profile: Profile }) {
   const [menu, setMenu] = useState(false);
   const desktop = useIsDesktop();
   const { pathname } = useLocation();
-  const title = titleFor(pathname);
+  const section = navItemFor(pathname);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -31,9 +31,11 @@ export function TopBar({ profile }: { profile: Profile }) {
           <RunnerMark size={34} />
           {!scrolled || pathname === '/' ? <Wordmark height={15} /> : null}
         </Link>
-        {pathname !== '/' && (
-          <span className="topbar__title truncate" aria-hidden="true">
-            {title}
+        {pathname !== '/' && section && (
+          // Decorative echo of the page's own <h1>; the short label is used on narrow phones.
+          <span className="topbar__title" aria-hidden="true">
+            <span className="topbar__title-long truncate">{section.label}</span>
+            <span className="topbar__title-short truncate">{section.short}</span>
           </span>
         )}
         <div className="topbar__actions">

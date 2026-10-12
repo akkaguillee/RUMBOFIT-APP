@@ -1,0 +1,42 @@
+import {
+  Award,
+  BatteryCharging,
+  CalendarCheck,
+  ChartLine,
+  Droplets,
+  Dumbbell,
+  Flag,
+  Footprints,
+  HeartPulse,
+  Lightbulb,
+  Moon,
+  RotateCcw,
+  Salad,
+  Scale,
+  Timer,
+  UserRound,
+  Wind,
+  type LucideIcon,
+} from 'lucide-react';
+import type { TipTopic } from '@/domain/tips/types';
+
+/** Icon and short label shown with each tip. */
+export const TOPIC_META: Record<TipTopic, { icon: LucideIcon; label: string }> = {
+  start: { icon: Flag, label: 'Primeros pasos' },
+  comeback: { icon: RotateCcw, label: 'Retomar' },
+  consistency: { icon: CalendarCheck, label: 'Constancia' },
+  celebrate: { icon: Award, label: 'Logro' },
+  recovery: { icon: BatteryCharging, label: 'Recuperación' },
+  progress: { icon: ChartLine, label: 'Progreso' },
+  weighing: { icon: Scale, label: 'Peso' },
+  water: { icon: Droplets, label: 'Agua' },
+  steps: { icon: Footprints, label: 'Pasos' },
+  training: { icon: Dumbbell, label: 'Entreno' },
+  sleep: { icon: Moon, label: 'Descanso' },
+  stress: { icon: Wind, label: 'Estrés' },
+  time: { icon: Timer, label: 'Poco tiempo' },
+  food: { icon: Salad, label: 'Alimentación' },
+  mindset: { icon: Lightbulb, label: 'Actitud' },
+  profile: { icon: UserRound, label: 'Tu perfil' },
+  wellbeing: { icon: HeartPulse, label: 'Bienestar' },
+};

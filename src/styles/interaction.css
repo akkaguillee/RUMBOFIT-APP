@@ -1,0 +1,114 @@
+/* ──────────────────────────────────────────────────────────────────────
+   Interaction language — one set of rules for every control.
+   Press: the element sinks quickly (≈90 ms) and comes back with a soft
+   spring (≈340 ms), so a tap always feels answered, even when the action
+   is instant. Three depths: small targets move most, buttons and choices a
+   little, large surfaces barely. Hover only exists on real pointers.
+   Only transform, opacity and colours animate.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --press-sm: 0.9;
+  --press-md: 0.965;
+  --press-lg: 0.985;
+  --release: 340ms var(--ease-spring);
+}
+
+.btn,
+.icon-btn,
+.chip,
+.choice,
+.preset,
+.accent-opt,
+.pressable {
+  transition:
+    transform var(--release),
+    background-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
+}
+
+.btn:active:not(:disabled),
+.chip:active:not(:disabled),
+.choice:active:not(:disabled),
+.preset:active:not(:disabled),
+.accent-opt:active,
+.pressable:active:not(:disabled) {
+  transform: scale(var(--press-md));
+  transition-duration: var(--dur-instant);
+  transition-timing-function: var(--ease-out);
+}
+
+.icon-btn:active:not(:disabled) {
+  transform: scale(var(--press-sm));
+  transition-duration: var(--dur-instant);
+  transition-timing-function: var(--ease-out);
+}
+
+/* Large surfaces: a barely-there sink, no bounce */
+.glass--interactive:active,
+.pressable--lg:active:not(:disabled) {
+  transform: scale(var(--press-lg));
+  transition-duration: var(--dur-instant);
+}
+
+/* Tab bar: the pill glides (motion layout); the icon gives the tap feedback */
+.tab svg {
+  transition: transform var(--release);
+}
+
+.tab:active svg {
+  transform: scale(0.86);
+  transition-duration: var(--dur-instant);
+}
+
+/* Segmented controls host a sliding thumb, so only the label reacts */
+.segmented__item:active {
+  opacity: 0.6;
+  transition: opacity var(--dur-instant);
+}
+
+/* Link rows (menus, pickers) dim like native lists */
+a.list-row,
+button.list-row {
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+a.list-row:active,
+button.list-row:active {
+  opacity: 0.6;
+  transition-duration: var(--dur-instant);
+}
+
+/* Switch: the knob stretches while pressed, like a drop of liquid */
+.switch::after {
+  transition:
+    transform var(--dur-base) var(--ease-spring),
+    width var(--dur-fast) var(--ease-out);
+}
+
+.switch:active::after {
+  width: 31px;
+}
+
+.switch[aria-checked='true']:active::after {
+  transform: translateX(15px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Keep the acknowledgement, drop the movement */
+  .btn:active:not(:disabled),
+  .chip:active:not(:disabled),
+  .choice:active:not(:disabled),
+  .preset:active:not(:disabled),
+  .accent-opt:active,
+  .pressable:active:not(:disabled),
+  .icon-btn:active:not(:disabled),
+  .glass--interactive:active,
+  .pressable--lg:active:not(:disabled),
+  .tab:active svg {
+    transform: none;
+    opacity: 0.7;
+  }
+}

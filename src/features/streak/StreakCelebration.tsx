@@ -38,6 +38,7 @@ export function StreakCelebration({ profile, enabled, onActiveChange }: Props) {
   const [open, setOpen] = useState<number | null>(null);
   const [rolled, setRolled] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const joinedToday = toDateKey(new Date(profile.createdAt)) === today;
 
   const due = enabled && open === null && celebrated !== undefined && celebrated !== today && !joinedToday && !!streak?.todayActive;
@@ -58,8 +59,12 @@ export function StreakCelebration({ profile, enabled, onActiveChange }: Props) {
 
   useEffect(() => {
     if (open === null) return;
+    // Where focus was before the dialog took it (e.g. a Perfil section reached by a link).
+    const previous = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
     const roll = window.setTimeout(() => setRolled(true), reduce ? 0 : 750);
-    const focus = requestAnimationFrame(() => buttonRef.current?.focus());
+    // Focus the dialog itself: screen readers announce it, and the button does
+    // not show a focus ring the user never asked for. Tab moves to the button.
+    const focus = requestAnimationFrame(() => dialogRef.current?.focus());
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(null);
       if (e.key === 'Tab') {
@@ -72,6 +77,7 @@ export function StreakCelebration({ profile, enabled, onActiveChange }: Props) {
       window.clearTimeout(roll);
       cancelAnimationFrame(focus);
       document.removeEventListener('keydown', onKey);
+      if (previous?.isConnected) previous.focus({ preventScroll: true });
     };
   }, [open, reduce]);
 
@@ -83,7 +89,9 @@ export function StreakCelebration({ profile, enabled, onActiveChange }: Props) {
     <AnimatePresence>
       {open !== null && streak && (
         <motion.div
+          ref={dialogRef}
           className="streak-cele"
+          tabIndex={-1}
           role="dialog"
           aria-modal="true"
           aria-labelledby="streak-cele-title"
@@ -177,7 +185,7 @@ export function StreakCelebration({ profile, enabled, onActiveChange }: Props) {
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ delay: reduce ? 0 : isToday ? 1.05 : 0.8 + i * 0.04, type: 'spring', stiffness: 420, damping: isToday ? 12 : 24 }}
                     >
-                      {d.active ? <StreakFlame size={16} lit /> : null}
+                      {d.active ? <StreakFlame size={16} lit still /> : null}
                     </motion.span>
                   </li>
                 );

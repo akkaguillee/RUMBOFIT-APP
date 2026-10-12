@@ -89,10 +89,15 @@
   border-radius: var(--radius-sm);
 }
 
+/* Section name next to the logo: set in caps, like the wordmark it replaces. */
 .topbar__title {
-  font-size: var(--text-lg);
+  min-width: 0;
+  margin-left: 2px;
+  font-size: var(--text-md);
   font-weight: var(--weight-bold);
-  letter-spacing: -0.015em;
+  letter-spacing: 0.09em;
+  line-height: 1;
+  text-transform: uppercase;
   opacity: 0;
   transform: translateY(6px);
   transition:
@@ -103,6 +108,25 @@
 .topbar[data-scrolled='true'] .topbar__title {
   opacity: 1;
   transform: none;
+}
+
+.topbar__title-long,
+.topbar__title-short {
+  display: block;
+}
+
+.topbar__title-long {
+  display: none;
+}
+
+@media (min-width: 480px) {
+  .topbar__title-long {
+    display: block;
+  }
+
+  .topbar__title-short {
+    display: none;
+  }
 }
 
 .topbar__actions {

@@ -1,15 +1,15 @@
-import { Download, HeartPulse, Palette, ShieldCheck, Sparkles, Target, Trash2, Upload, UserRound } from 'lucide-react';
-import { useRef, useState, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Download, HeartPulse, Info, Palette, ShieldCheck, Sparkles, Target, Trash2, Upload, UserRound } from 'lucide-react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme, type Effects, type Theme } from '@/app/theme';
 import { introEnabled, setIntroEnabled } from '@/app/intro';
 import { storageMode } from '@/db/backend';
 import { useProfile, useSetting, useWeights } from '@/db/hooks';
 import { deleteAllData, downloadJson, exportAll, importAll, parseExport, type ExportFile } from '@/db/repos/data';
 import { updateProfile } from '@/db/repos/profile';
-import { formatDate, todayKey, WEEKDAY_LABELS, WEEKDAY_SHORT } from '@/domain/dates';
-import { ACTIVITY_LEVELS, calculateBmi, currentAge, weightForBmi } from '@/domain/health';
-import type { ActivityLevel, GoalType, Profile, Sex, Units } from '@/domain/types';
+import { formatDate, todayKey } from '@/domain/dates';
+import { ACTIVITY_LEVELS, currentAge, estimateActivityLevel } from '@/domain/health';
+import type { ActivityLevel, Profile, Sex, Units } from '@/domain/types';
 import { checkRange, LIMITS } from '@/domain/validation';
 import { Button } from '@/ui/Button';
 import { ConfirmDialog } from '@/ui/ConfirmDialog';
@@ -22,14 +22,18 @@ import { Segmented } from '@/ui/Segmented';
 import { Sheet } from '@/ui/Sheet';
 import { Switch } from '@/ui/Switch';
 import { toast, toastError } from '@/ui/toast';
-import { GOALS, goalLabel, SEX_OPTIONS, usesWeightGoal } from '../shared/labels';
+import { DayPicker } from '../onboarding/PrefControls';
+import { activityWithDays, inputOrStored, mainGoalLabel, TARGET_NEEDS_HEIGHT, targetWeightError } from '../onboarding/preferences';
+import { SEX_OPTIONS, usesWeightGoal } from '../shared/labels';
 import { unitsApi } from '../shared/units';
+import { HEIGHT_IN_PERSONAL, PreferencesCard, PreferencesSheet, type PrefGroup } from './PreferencesForm';
 import './profile.css';
 
+/** A Perfil card. Its `id` is also the anchor other pages link to (/perfil#personal). */
 function Section({ icon, title, children, id }: { icon: ReactNode; title: string; children: ReactNode; id: string }) {
   return (
-    <GlassCard aria-labelledby={id}>
-      <h2 id={id} className="card__title" style={{ marginBottom: 16 }}>
+    <GlassCard id={id} className="profile-sec" aria-labelledby={`${id}-title`}>
+      <h2 id={`${id}-title`} className="card__title" tabIndex={-1} style={{ marginBottom: 16 }}>
         {icon}
         {title}
       </h2>
@@ -49,6 +53,14 @@ function ProfileContent({ profile }: { profile: Profile }) {
   const latest = weights?.[weights.length - 1];
   const today = todayKey();
   const age = currentAge(profile.age, profile.ageRecordedOn, today);
+  useScrollToAnchor();
+  // The edit sheet keeps its key while closing (so it can animate out) and gets a new one each time it opens.
+  const [editing, setEditing] = useState(false);
+  const [sheet, setSheet] = useState<{ group: PrefGroup; n: number }>({ group: 'goals', n: 0 });
+  const edit = (group: PrefGroup) => {
+    setSheet((s) => ({ group, n: s.n + 1 }));
+    setEditing(true);
+  };
 
   return (
     <Page>
@@ -61,16 +73,27 @@ function ProfileContent({ profile }: { profile: Profile }) {
           <h2 className="t-title" style={{ fontSize: 'var(--text-2xl)' }}>
             {profile.name}
           </h2>
-          <p className="t-small">
-            {goalLabel(profile.goal)} · En RUMBO desde el {formatDate.long(profile.startDate)}
-          </p>
+          <p className="t-small profile-hero__goal">{mainGoalLabel(profile)}</p>
+          <p className="t-small t-muted">En RUMBO desde el {formatDate.long(profile.startDate)}</p>
         </div>
       </GlassCard>
 
+      {/* Each form starts from the saved values: a new key when they change elsewhere (units, an imported copy…), so no field keeps a stale value. */}
       <div className="profile-grid">
-        <PersonalForm profile={profile} age={age} />
-        <GoalForm profile={profile} latestKg={latest?.kg} />
-        <HabitsForm profile={profile} />
+        <PersonalForm
+          key={[profile.name, profile.age, profile.ageRecordedOn, profile.sex, profile.units, profile.heightCm].join('|')}
+          profile={profile}
+          age={age}
+        />
+        <GoalForm
+          key={[profile.goal, profile.startWeightKg, profile.goalWeightKg, profile.activityLevel, profile.units].join('|')}
+          profile={profile}
+          age={age}
+          latestKg={latest?.kg}
+          onEditGoals={() => edit('goals')}
+        />
+        <PreferencesCard profile={profile} onEdit={edit} />
+        <HabitsForm key={[profile.waterGoalMl, profile.stepsGoal, profile.trainingDays.join(), profile.units].join('|')} profile={profile} />
         <AppearanceSection />
         <DataSection />
         <Section icon={<HeartPulse aria-hidden="true" />} title="Uso responsable" id="about-sec">
@@ -87,8 +110,42 @@ function ProfileContent({ profile }: { profile: Profile }) {
           </div>
         </Section>
       </div>
+      <PreferencesSheet
+        key={`${sheet.group}-${sheet.n}`}
+        group={sheet.group}
+        open={editing}
+        onClose={() => setEditing(false)}
+        profile={profile}
+        latestKg={latest?.kg}
+      />
     </Page>
   );
+}
+
+/**
+ * /perfil#personal, /perfil#preferencias…: once the page cascade has settled,
+ * land on that card and focus its title. The jump is instant (the page
+ * transition already moves), so a slow device can never leave it half-way.
+ */
+function useScrollToAnchor() {
+  const { hash } = useLocation();
+  useEffect(() => {
+    const id = decodeURIComponent(hash.slice(1));
+    if (!id) return;
+    let frame = 0;
+    const t = window.setTimeout(() => {
+      frame = requestAnimationFrame(() => {
+        const el = document.getElementById(id);
+        if (!el?.classList.contains('glass')) return;
+        el.scrollIntoView({ block: 'start' });
+        el.querySelector<HTMLElement>('h2')?.focus({ preventScroll: true });
+      });
+    }, 320);
+    return () => {
+      window.clearTimeout(t);
+      cancelAnimationFrame(frame);
+    };
+  }, [hash]);
 }
 
 function PersonalForm({ profile, age }: { profile: Profile; age?: number }) {
@@ -102,7 +159,7 @@ function PersonalForm({ profile, age }: { profile: Profile; age?: number }) {
   const u = unitsApi(units);
 
   const save = async () => {
-    const cm = height ? u.parseHeight(height) : undefined;
+    const cm = height ? inputOrStored(height, profile.heightCm, u.heightToInput, u.parseHeight) : undefined;
     const e = {
       name: name.trim() ? null : 'El nombre es obligatorio.',
       age: ageS ? checkRange(Number(ageS), LIMITS.age) : null,
@@ -112,12 +169,13 @@ function PersonalForm({ profile, age }: { profile: Profile; age?: number }) {
     if (Object.values(e).some(Boolean)) return;
     setBusy(true);
     try {
+      // An emptied field removes the value: both are optional.
       await updateProfile({
         name,
         sex,
         units,
-        ...(ageS ? { age: Number(ageS) } : {}),
-        ...(cm ? { heightCm: cm } : {}),
+        ...(ageS ? { age: Number(ageS) } : { age: undefined, ageRecordedOn: undefined }),
+        heightCm: cm ?? undefined,
       });
       toast('Datos personales guardados');
     } catch (err) {
@@ -150,7 +208,7 @@ function PersonalForm({ profile, age }: { profile: Profile; age?: number }) {
             ]}
             value={units}
             onChange={(v) => {
-              const cm = height ? unitsApi(units).parseHeight(height) : null;
+              const cm = height ? inputOrStored(height, profile.heightCm, u.heightToInput, u.parseHeight) : null;
               setUnits(v);
               setHeight(cm ? unitsApi(v).heightToInput(cm) : '');
             }}
@@ -165,31 +223,29 @@ function PersonalForm({ profile, age }: { profile: Profile; age?: number }) {
   );
 }
 
-function GoalForm({ profile, latestKg }: { profile: Profile; latestKg?: number }) {
+function GoalForm({ profile, age, latestKg, onEditGoals }: { profile: Profile; age?: number; latestKg?: number; onEditGoals: () => void }) {
   const u = unitsApi(profile.units);
-  const [goal, setGoal] = useState<GoalType>(profile.goal);
+  const goal = profile.goal;
+  // Same rule as onboarding and the «Objetivos» sheet: no target weight under 18.
+  const minor = age !== undefined && age < 18;
   const [start, setStart] = useState(u.weightToInput(profile.startWeightKg));
   const [target, setTarget] = useState(u.weightToInput(profile.goalWeightKg));
   const [activity, setActivity] = useState<ActivityLevel>(profile.activityLevel);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const estimate = profile.activity ? estimateActivityLevel(profile.activity) : null;
 
   const save = async () => {
-    const s = start ? (u.parseWeight(start) ?? NaN) : undefined;
-    const t = target ? (u.parseWeight(target) ?? NaN) : undefined;
+    const s = start ? (inputOrStored(start, profile.startWeightKg, u.weightToInput, u.parseWeight) ?? NaN) : undefined;
+    const t = target && !minor ? (inputOrStored(target, profile.goalWeightKg, u.weightToInput, u.parseWeight) ?? NaN) : undefined;
     if (start && checkRange(s ?? null, LIMITS.weightKg)) return setError(checkRange(s ?? null, LIMITS.weightKg));
-    if (target && checkRange(t ?? null, LIMITS.weightKg)) return setError(checkRange(t ?? null, LIMITS.weightKg));
-    if (usesWeightGoal(goal) && s !== undefined && t !== undefined) {
-      if (goal === 'lose' && t >= s) return setError('Para perder peso, el objetivo debe ser menor que el peso de partida.');
-      if (goal === 'gain' && t <= s) return setError('Para ganar peso, el objetivo debe ser mayor que el peso de partida.');
-    }
-    if (t !== undefined && profile.heightCm && calculateBmi(t, profile.heightCm) < 18.5) {
-      return setError(`Por tu salud, el objetivo no puede quedar por debajo de un IMC de 18,5 (${u.weight(weightForBmi(18.5, profile.heightCm))}).`);
-    }
+    // Same rules as onboarding: direction for weight goals and never below a BMI of 18.5 (which needs the height).
+    const targetError = t !== undefined ? targetWeightError(usesWeightGoal(goal) ? goal : 'maintain', t, s ?? null, profile.heightCm ?? null, u.weight) : null;
+    if (targetError) return setError(targetError === TARGET_NEEDS_HEIGHT ? HEIGHT_IN_PERSONAL : targetError);
     setError(null);
     setBusy(true);
     try {
-      await updateProfile({ goal, startWeightKg: s, goalWeightKg: usesWeightGoal(goal) || t !== undefined ? t : undefined, activityLevel: activity });
+      await updateProfile({ startWeightKg: s, goalWeightKg: t, activityLevel: activity });
       toast('Objetivo actualizado');
     } catch (e) {
       toastError(e);
@@ -201,28 +257,59 @@ function GoalForm({ profile, latestKg }: { profile: Profile; latestKg?: number }
   return (
     <Section icon={<Target aria-hidden="true" />} title="Objetivo" id="goal">
       <div className="vstack">
-        <SelectField label="Objetivo principal" value={goal} onChange={(e) => setGoal(e.target.value as GoalType)} options={GOALS.map((g) => ({ value: g.id, label: g.label }))} />
-        <div className="grid-2">
-          <NumberField label="Peso de partida" value={start} suffix={u.w} onChange={(e) => setStart(e.target.value)} />
-          <NumberField label={usesWeightGoal(goal) ? 'Peso objetivo' : 'Peso de referencia'} value={target} suffix={u.w} onChange={(e) => setTarget(e.target.value)} placeholder="Opcional" />
+        <div className="goal-main">
+          <span className="goal-main__text">
+            <span className="field__label">Objetivo principal</span>
+            <span className="goal-main__value">{mainGoalLabel(profile)}</span>
+          </span>
+          <Button variant="secondary" size="sm" onClick={onEditGoals}>
+            Cambiar
+          </Button>
         </div>
+        {minor ? (
+          <NumberField label="Peso de partida" value={start} suffix={u.w} onChange={(e) => setStart(e.target.value)} />
+        ) : (
+          <div className="grid-2">
+            <NumberField label="Peso de partida" value={start} suffix={u.w} onChange={(e) => setStart(e.target.value)} />
+            <NumberField
+              label={usesWeightGoal(goal) ? 'Peso objetivo' : 'Peso de referencia'}
+              value={target}
+              suffix={u.w}
+              onChange={(e) => setTarget(e.target.value)}
+              placeholder="Opcional"
+            />
+          </div>
+        )}
         {latestKg !== undefined && (
-          <button type="button" className="link-btn" style={{ alignSelf: 'flex-start' }} onClick={() => setStart(u.weightToInput(latestKg))}>
+          <button type="button" className="link-btn" style={{ alignSelf: 'flex-start', textAlign: 'left' }} onClick={() => setStart(u.weightToInput(latestKg))}>
             Usar mi peso actual ({u.weight(latestKg)}) como punto de partida
           </button>
+        )}
+        {minor && (
+          <p className="callout">
+            <Info aria-hidden="true" />
+            <span>Como eres menor de edad, no fijamos un peso objetivo. Si quieres cambiar tu peso, coméntalo antes con un profesional sanitario.</span>
+          </p>
         )}
         <SelectField
           label="Nivel de actividad"
           value={activity}
           onChange={(e) => setActivity(e.target.value as ActivityLevel)}
           options={(Object.keys(ACTIVITY_LEVELS) as ActivityLevel[]).map((k) => ({ value: k, label: ACTIVITY_LEVELS[k].label }))}
+          hint={
+            estimate
+              ? activity === estimate
+                ? 'Estimado con tus respuestas de «Actividad». Puedes ajustarlo aquí.'
+                : `Según tus respuestas sería ${ACTIVITY_LEVELS[estimate].label.toLowerCase()}. Se usará el que elijas aquí.`
+              : ACTIVITY_LEVELS[activity].description
+          }
         />
         {error && (
           <p className="field__error" role="alert">
             {error}
           </p>
         )}
-        <p className="field__hint">Cambiar el objetivo inicia una nueva etapa. Tu historial y los hitos conseguidos se conservan.</p>
+        {!minor && <p className="field__hint">Cambiar el peso objetivo inicia una nueva etapa. Tu historial y los hitos conseguidos se conservan.</p>}
         <Button onClick={save} loading={busy}>
           Guardar objetivo
         </Button>
@@ -240,15 +327,19 @@ function HabitsForm({ profile }: { profile: Profile }) {
   const [busy, setBusy] = useState(false);
 
   const save = async () => {
-    const ml = u.parseVolume(water);
+    const ml = inputOrStored(water, profile.waterGoalMl, u.volumeToInput, u.parseVolume);
     const st = Number(steps);
     const err = checkRange(ml, LIMITS.waterGoalMl) ?? checkRange(st, LIMITS.stepsGoal);
     if (err) return setError(err);
     setError(null);
     setBusy(true);
+    // The training days are also an activity answer: keep both in step and re-estimate the level.
+    const changedDays = days.length !== profile.trainingDays.length;
+    const activity = changedDays ? activityWithDays(profile, days) : undefined;
+    const level = activity ? estimateActivityLevel(activity) : undefined;
     try {
-      await updateProfile({ waterGoalMl: ml!, stepsGoal: st, trainingDays: days });
-      toast('Objetivos diarios guardados');
+      await updateProfile({ waterGoalMl: ml!, stepsGoal: st, trainingDays: days, ...(activity ? { activity, activityLevel: level } : {}) });
+      toast(level && level !== profile.activityLevel ? `Guardado · Nivel de actividad: ${ACTIVITY_LEVELS[level].label.toLowerCase()}` : 'Objetivos diarios guardados');
     } catch (e) {
       toastError(e);
     } finally {
@@ -257,28 +348,17 @@ function HabitsForm({ profile }: { profile: Profile }) {
   };
 
   return (
-    <Section icon={<Sparkles aria-hidden="true" />} title="Hábitos y entrenamiento" id="habits-sec">
+    <Section icon={<Sparkles aria-hidden="true" />} title="Hábitos y días de entreno" id="habits-sec">
       <div className="vstack">
         <div className="grid-2">
           <NumberField label="Agua al día" value={water} suffix={u.v} onChange={(e) => setWater(e.target.value)} />
           <NumberField label="Pasos al día" value={steps} decimals={false} onChange={(e) => setSteps(e.target.value.replace(/\D/g, ''))} />
         </div>
         <div className="field">
-          <span className="field__label">Días disponibles para entrenar</span>
-          <div className="day-pick" role="group" aria-label="Días disponibles para entrenar">
-            {WEEKDAY_SHORT.map((l, i) => (
-              <button
-                key={i}
-                type="button"
-                className="chip"
-                aria-pressed={days.includes(i)}
-                aria-label={WEEKDAY_LABELS[i]}
-                onClick={() => setDays(days.includes(i) ? days.filter((d) => d !== i) : [...days, i])}
-              >
-                {l}
-              </button>
-            ))}
-          </div>
+          <span className="field__label" id="habits-days">
+            Días disponibles para entrenar
+          </span>
+          <DayPicker days={days} onChange={setDays} labelledBy="habits-days" />
         </div>
         {error && (
           <p className="field__error" role="alert">

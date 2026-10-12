@@ -1,0 +1,177 @@
+/* ── Tu consejo de hoy ──────────────────────────────────────────────── */
+
+.tip-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tip-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  margin-bottom: var(--space-4);
+}
+
+.tip-card__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.tip-card__icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.tip-card__label {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.005em;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tip-card__topic {
+  flex: none;
+  max-width: 45%;
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tip-card__main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.tip-card__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: 1.3;
+  letter-spacing: -0.014em;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.tip-card__title--extra {
+  font-size: var(--text-md);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.tip-card__body {
+  max-width: 62ch;
+  margin-top: 6px;
+  font-size: var(--text-md);
+  line-height: 1.5;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
+.tip-card__head + .tip-card__body {
+  margin-top: 0;
+}
+
+.tip-card__action {
+  margin-top: var(--space-2);
+  /* Optical alignment: the label starts on the text edge, the tap target extends around it. */
+  margin-left: -4px;
+  padding: 0 4px;
+}
+
+/* Un paso más: a section of the same surface, under a hairline */
+.tip-card__extra {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--divider);
+}
+
+.tip-card__extra .tip-card__body {
+  font-size: var(--text-sm);
+}
+
+.tip-card__extra-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
+.tip-card__extra-label svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+/* Loading: the shape of a tip, so nothing jumps when it arrives */
+.tip-card__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 2px 0 4px;
+}
+
+.tip-card__skeleton span {
+  display: block;
+  width: 100%;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: var(--control-fill);
+}
+
+.tip-card__skeleton span:first-child {
+  height: 18px;
+  margin-bottom: 4px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tip-card__skeleton span {
+    animation: tip-pulse 1.6s var(--ease-in-out) infinite alternate;
+  }
+
+  .tip-card__skeleton span:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+
+  .tip-card__skeleton span:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+}
+
+@keyframes tip-pulse {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.45;
+  }
+}

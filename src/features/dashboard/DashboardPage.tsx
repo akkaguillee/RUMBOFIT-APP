@@ -1,8 +1,8 @@
-import { CalendarDays, Check, ChevronRight, Dumbbell, Droplets, Footprints, Lightbulb, Plus, Scale, X } from 'lucide-react';
+import { CalendarDays, Check, ChevronRight, Dumbbell, Droplets, Footprints, Plus, Scale } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAchievements, useSetting } from '@/db/hooks';
+import { useAchievements } from '@/db/hooks';
 import { addWater } from '@/db/repos/tracking';
 import { nextAchievement } from '@/domain/achievements/engine';
 import { RARITIES } from '@/domain/achievements/catalog';
@@ -13,7 +13,7 @@ import { muscleShort } from '@/domain/training/catalog';
 import { formatFixed, formatInt, kgToDisplay } from '@/domain/units';
 import { assessTrend, changeOverDays, deltaTone, goalDirection, goalProgress, latestWeight } from '@/domain/weight';
 import { AnimatedNumber } from '@/ui/AnimatedNumber';
-import { ButtonLink, Button } from '@/ui/Button';
+import { Button } from '@/ui/Button';
 import { GlassCard, GlassLinkCard } from '@/ui/GlassCard';
 import { Loader } from '@/ui/Loader';
 import { liftVariants, riseVariants } from '@/ui/motion';
@@ -23,6 +23,7 @@ import { ProgressRing } from '@/ui/ProgressRing';
 import { StatusBadge } from '@/ui/StatusBadge';
 import { toast, toastError } from '@/ui/toast';
 import { useToday } from '@/ui/useToday';
+import { BodySnapshotCard } from '../body/MiniCards';
 import { AchievementBadge } from '../milestones/AchievementBadge';
 import { usesWeightGoal } from '../shared/labels';
 import { StepsSheet } from '../shared/sheets/StepsSheet';
@@ -30,55 +31,17 @@ import { WaterSheet } from '../shared/sheets/WaterSheet';
 import { WeightSheet } from '../shared/sheets/WeightSheet';
 import { unitsApi } from '../shared/units';
 import { StreakCard } from '../streak/StreakCard';
+import { TipCard } from '../tips/TipCard';
 import { RumboMeter } from './RumboMeter';
 import './dashboard.css';
 
-const TIPS: { id: string; text: string; when: (c: TipContext) => boolean; link?: { to: string; label: string } }[] = [
-  {
-    id: 'weigh-conditions',
-    text: 'Pésate en condiciones parecidas (por ejemplo, por la mañana) para que la comparación sea más fiable.',
-    when: (c) => c.weightCount < 4,
-  },
-  {
-    id: 'trend-not-day',
-    text: 'El peso varía de un día a otro por el agua y la comida. Fíjate en la tendencia de varias semanas, no en un día suelto.',
-    when: (c) => c.weightCount >= 4,
-    link: { to: '/progresos', label: 'Ver evolución' },
-  },
-  {
-    id: 'plan-week',
-    text: 'Organiza tus días de entrenamiento en un plan semanal. Es editable y puedes saltarte días sin problema.',
-    when: (c) => !c.hasPlan,
-    link: { to: '/entreno', label: 'Crear plan' },
-  },
-  {
-    id: 'energy',
-    text: 'Calcula una estimación de tus calorías de mantenimiento con tus datos. Es orientativa, no una prescripción.',
-    when: (c) => !c.hasEnergy,
-    link: { to: '/progresos?tab=calorias', label: 'Calcular' },
-  },
-  {
-    id: 'calendar',
-    text: 'Pulsa cualquier día del calendario para ver lo que registraste y añadir notas o datos atrasados.',
-    when: () => true,
-    link: { to: '/calendario', label: 'Abrir calendario' },
-  },
-];
-
 const toneColor = (t: string) => (t === 'good' ? 'var(--good-text)' : t === 'bad' ? 'var(--bad-text)' : undefined);
-
-interface TipContext {
-  weightCount: number;
-  hasPlan: boolean;
-  hasEnergy: boolean;
-}
 
 export default function DashboardPage() {
   const ach = useAchievements();
   const today = useToday();
   const navigate = useNavigate();
   const [sheet, setSheet] = useState<'weight' | 'water' | 'steps' | null>(null);
-  const [dismissed, setDismissed] = useSetting<string[]>('dismissedTips', []);
 
   const model = useMemo(() => {
     if (!ach?.data.profile) return null;
@@ -150,14 +113,11 @@ export default function DashboardPage() {
       activeDays,
       next: nextAchievement(states),
       metrics,
-      tipCtx: { weightCount: data.weights.length, hasPlan, hasEnergy: data.energy.length > 0 } satisfies TipContext,
     };
   }, [ach, today]);
 
-  if (!model || dismissed === undefined) return <Loader />;
+  if (!model) return <Loader />;
   const { profile, u, current, start, target, progress, trend, week } = model;
-  const tip = TIPS.find((t) => !dismissed.includes(t.id) && t.when(model.tipCtx));
-  const dismissTip = (id: string) => void setDismissed([...dismissed, id]);
 
   const quickWater = async () => {
     try {
@@ -435,29 +395,11 @@ export default function DashboardPage() {
           </GlassLinkCard>
         )}
 
-        {/* ── Tip ───────────────────────────────────────────────── */}
-        {tip && (
-          <GlassCard className="dash__tip" padded="tight">
-            <div className="tip">
-              <span className="icon-tile icon-tile--accent">
-                <Lightbulb aria-hidden="true" />
-              </span>
-              <div className="grow">
-                <p className="t-small" style={{ color: 'var(--text)' }}>
-                  {tip.text}
-                </p>
-                {tip.link && (
-                  <ButtonLink to={tip.link.to} variant="ghost" size="sm" style={{ marginLeft: -12, marginTop: 4, color: 'var(--accent-text)' }}>
-                    {tip.link.label}
-                  </ButtonLink>
-                )}
-              </div>
-              <button type="button" className="icon-btn icon-btn--sm icon-btn--plain" aria-label="Descartar consejo" onClick={() => dismissTip(tip.id)}>
-                <X />
-              </button>
-            </div>
-          </GlassCard>
-        )}
+        {/* ── Today's tip ───────────────────────────────────────── */}
+        <TipCard className="dash__tip" />
+
+        {/* ── Body estimates ────────────────────────────────────── */}
+        <BodySnapshotCard className="dash__body" />
       </div>
 
       <WeightSheet open={sheet === 'weight'} onClose={() => setSheet(null)} units={profile.units} lastKg={current?.kg} />

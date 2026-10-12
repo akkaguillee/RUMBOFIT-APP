@@ -24,7 +24,6 @@ const Calendar = lazy(() => import('@/features/calendar/CalendarPage'));
 const Training = lazy(() => import('@/features/training/TrainingPage'));
 const ActiveSession = lazy(() => import('@/features/training/ActiveSessionPage'));
 const Habits = lazy(() => import('@/features/habits/HabitsPage'));
-const Nutrition = lazy(() => import('@/features/nutrition/NutritionPage'));
 const Milestones = lazy(() => import('@/features/milestones/MilestonesPage'));
 const ProfilePage = lazy(() => import('@/features/profile/ProfilePage'));
 const About = lazy(() => import('@/features/about/AboutPage'));
@@ -38,7 +37,6 @@ function prefetchSections() {
     void import('@/features/training/TrainingPage');
     void import('@/features/training/ActiveSessionPage');
     void import('@/features/habits/HabitsPage');
-    void import('@/features/nutrition/NutritionPage');
     void import('@/features/milestones/MilestonesPage');
     void import('@/features/profile/ProfilePage');
     void import('@/features/about/AboutPage');
@@ -67,7 +65,6 @@ function Shell({ profile }: { profile: Profile }) {
                   <Route path="/calendario" element={<Calendar />} />
                   <Route path="/entreno" element={<Training />} />
                   <Route path="/entreno/sesion" element={<ActiveSession />} />
-                  <Route path="/nutricion" element={<Nutrition />} />
                   <Route path="/habitos" element={<Habits />} />
                   <Route path="/hitos" element={<Milestones />} />
                   <Route path="/perfil" element={<ProfilePage />} />

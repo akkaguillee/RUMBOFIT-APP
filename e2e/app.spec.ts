@@ -61,9 +61,9 @@ test.describe('RUMBO', () => {
     await onboard(page);
     await expect(page.locator('html')).toHaveAttribute('data-accent', 'rojo');
     await page.getByRole('button', { name: 'Cambiar el color de la interfaz' }).first().click();
-    await page.getByRole('radio', { name: /Volt/ }).click();
+    await page.getByRole('radio', { name: /volt/i }).click();
     await expect(page.locator('html')).toHaveAttribute('data-accent', 'volt');
-    await expect(page.getByRole('radio', { name: /Volt/ })).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByRole('radio', { name: /volt/i })).toHaveAttribute('aria-checked', 'true');
     await page.keyboard.press('Escape');
     await page.reload();
     await dismissCelebration(page);

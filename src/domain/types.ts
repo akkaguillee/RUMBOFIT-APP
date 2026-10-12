@@ -2,7 +2,7 @@ import type { DateKey } from './dates';
 
 export type Sex = 'male' | 'female' | 'unspecified';
 export type Units = 'metric' | 'imperial';
-export type GoalType = 'lose' | 'maintain' | 'gain' | 'fitness' | 'strength' | 'habits';
+export type GoalType = 'lose' | 'recomp' | 'maintain' | 'gain' | 'fitness' | 'strength' | 'habits' | 'consistency';
 export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
 
 export interface Profile {
@@ -26,41 +26,70 @@ export interface Profile {
   stepsGoal: number;
   /** Health flags that make standard calorie targets inappropriate. */
   healthFlags: HealthFlag[];
-  nutrition?: NutritionPrefs;
-  training?: TrainingPrefs;
-  /** What makes reaching the goal hardest; drives coaching tips. */
-  challenges?: Challenge[];
+  /** Free text when the main goal is "Otro objetivo personal". */
+  goalNote?: string;
+  secondaryGoals?: GoalType[];
+  activity?: ActivityProfile;
+  food?: FoodHabits;
+  motivation?: MotivationProfile;
+  wellbeing?: Wellbeing;
+  /** When the user agreed to store this information on the device. */
+  consentAt?: number;
   createdAt: number;
   updatedAt: number;
 }
 
 export type HealthFlag = 'pregnancy' | 'eating_disorder' | 'medical_condition';
 
-// ── Preferences gathered in onboarding (all optional, editable in Perfil) ──
+// ── Personalisation gathered in onboarding (all optional, editable in Perfil) ──
+// "unsure" = «No lo sé / No estoy seguro»; "skip" = «Prefiero no responder».
 
 export type DietType = 'omnivore' | 'flexitarian' | 'pescatarian' | 'vegetarian' | 'vegan';
 export type Allergen = 'gluten' | 'lactose' | 'egg' | 'nuts' | 'peanut' | 'soy' | 'fish' | 'shellfish';
-export type NutritionInterest = 'plan' | 'ideas' | 'none';
-export type CookingTime = 'quick' | 'normal' | 'any';
-export type Challenge = 'motivation' | 'time' | 'cravings' | 'consistency' | 'knowledge' | 'sleep' | 'stress' | 'social' | 'plateau';
 export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
-export type TrainingPlace = 'gym' | 'home' | 'outdoor';
 
-export interface NutritionPrefs {
-  /** "Quiero un plan" / "Solo ideas" / "Ahora no". */
-  interest: NutritionInterest;
-  diet: DietType;
-  allergens: Allergen[];
-  mealsPerDay: 3 | 4 | 5;
-  cookingTime: CookingTime;
-  /** Free text ("champiñones, atún…"), matched against recipe ingredients. */
-  dislikes?: string;
+/** Daily life and training, used to estimate the activity factor. */
+export interface ActivityProfile {
+  /** Most of the day: sitting, on your feet, or moving / carrying. */
+  posture: 'sitting' | 'standing' | 'moving';
+  job: 'desk' | 'standing' | 'physical' | 'student' | 'home' | 'none' | 'other';
+  /** Training sessions per week (0–7). */
+  trainingDays: number;
+  activityTypes: ('strength' | 'cardio' | 'walking' | 'sports' | 'yoga' | 'other')[];
+  experience?: ExperienceLevel;
 }
 
-export interface TrainingPrefs {
-  experience: ExperienceLevel;
-  place: TrainingPlace;
-  sessionMinutes: 30 | 45 | 60 | 90;
+export interface FoodHabits {
+  improve?: 'yes' | 'a_bit' | 'no' | 'unsure';
+  quality?: 'good' | 'irregular' | 'improvable' | 'unsure' | 'skip';
+  pattern?: DietType | 'none' | 'unsure' | 'skip';
+  /** Allergies, intolerances or important preferences (never treated as a diagnosis). */
+  restrictions?: Allergen[];
+  difficulties?: ('planning' | 'portions' | 'consistency' | 'choosing' | 'impulse')[];
+  eatingOut?: 'rarely' | 'weekly' | 'several' | 'daily' | 'unsure';
+  water?: 'low' | 'medium' | 'high' | 'unsure';
+  schedule?: 'regular' | 'irregular' | 'skips' | 'late' | 'unsure' | 'skip';
+}
+
+export interface MotivationProfile {
+  blockers?: ('time' | 'motivation' | 'results' | 'knowledge' | 'stress' | 'injury' | 'social' | 'other')[];
+  hardest?: 'start' | 'consistency' | 'results' | 'unsure';
+  /** Minutes a day the user can dedicate to looking after themselves. */
+  dailyMinutes?: 10 | 20 | 30 | 45 | 60;
+  dropReasons?: ('boredom' | 'no_results' | 'busy' | 'fatigue' | 'perfectionism' | 'other')[];
+  motivators?: ('progress' | 'streaks' | 'tips' | 'challenges' | 'health' | 'routine')[];
+  style?: 'small' | 'balanced' | 'challenging';
+  firstFocus?: 'movement' | 'food' | 'sleep' | 'water' | 'consistency' | 'weight';
+  /** Free answer for "Otro". */
+  note?: string;
+}
+
+export interface Wellbeing {
+  sleepHours?: 'lt6' | '6to7' | '7to8' | 'gt8' | 'skip';
+  rest?: 'good' | 'ok' | 'poor' | 'skip';
+  stress?: 'low' | 'medium' | 'high' | 'skip';
+  regularSchedule?: 'yes' | 'sometimes' | 'no' | 'skip';
+  improve?: ('sleep' | 'stress' | 'screens' | 'water' | 'movement' | 'routine')[];
 }
 
 export interface GoalRecord {
