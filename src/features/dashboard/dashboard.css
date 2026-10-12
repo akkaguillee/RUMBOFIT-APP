@@ -5,6 +5,7 @@
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     'hero'
+    'streak'
     'actions'
     'today'
     'week'
@@ -17,6 +18,7 @@
     gap: var(--space-5);
     grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
     grid-template-areas:
+      'hero streak'
       'hero actions'
       'hero today'
       'week today'
@@ -27,6 +29,9 @@
 
 .dash__hero {
   grid-area: hero;
+}
+.dash__streak {
+  grid-area: streak;
 }
 .dash__actions {
   grid-area: actions;
@@ -385,21 +390,6 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-}
-
-.streak {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: var(--weight-bold);
-  font-size: var(--text-sm);
-}
-
-.streak svg {
-  width: 18px;
-  height: 18px;
-  color: var(--accent);
-  filter: drop-shadow(0 0 6px var(--accent-glow));
 }
 
 /* Next milestone */

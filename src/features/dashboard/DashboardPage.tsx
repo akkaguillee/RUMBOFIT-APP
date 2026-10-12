@@ -1,4 +1,4 @@
-import { CalendarDays, Check, ChevronRight, Dumbbell, Droplets, Flame, Footprints, Lightbulb, Plus, Scale, X } from 'lucide-react';
+import { CalendarDays, Check, ChevronRight, Dumbbell, Droplets, Footprints, Lightbulb, Plus, Scale, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -29,6 +29,7 @@ import { StepsSheet } from '../shared/sheets/StepsSheet';
 import { WaterSheet } from '../shared/sheets/WaterSheet';
 import { WeightSheet } from '../shared/sheets/WeightSheet';
 import { unitsApi } from '../shared/units';
+import { StreakCard } from '../streak/StreakCard';
 import { RumboMeter } from './RumboMeter';
 import './dashboard.css';
 
@@ -252,6 +253,9 @@ export default function DashboardPage() {
           )}
         </GlassCard>
 
+        {/* ── Streak ────────────────────────────────────────────── */}
+        <StreakCard className="dash__streak" />
+
         {/* ── Quick actions ─────────────────────────────────────── */}
         <motion.nav className="dash__actions glass card card--tight" variants={riseVariants} aria-label="Registro rápido">
           <div className="quick">
@@ -380,9 +384,8 @@ export default function DashboardPage() {
               <CalendarDays aria-hidden="true" />
               Esta semana
             </h2>
-            <span className="streak">
-              <Flame aria-hidden="true" />
-              {model.metrics.currentStreak} {model.metrics.currentStreak === 1 ? 'día' : 'días'} de racha
+            <span className="t-small t-num">
+              {days.filter((d) => model.activeDays.has(d)).length}/7 días activos
             </span>
           </div>
           <div className="week">

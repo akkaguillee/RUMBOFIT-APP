@@ -5,6 +5,7 @@ import { useProfile } from '@/db/hooks';
 import { syncAchievements } from '@/db/sync';
 import type { Profile } from '@/domain/types';
 import { UnlockCelebration } from '@/features/milestones/UnlockCelebration';
+import { StreakCelebration } from '@/features/streak/StreakCelebration';
 import { Loader } from '@/ui/Loader';
 import { ToastViewport } from '@/ui/ToastViewport';
 import { sectionOf } from './nav';
@@ -87,6 +88,7 @@ export function App() {
   const profile = useProfile();
   const [introMode] = useState(introModeForThisLoad);
   const [splash, setSplash] = useState(introMode !== null);
+  const [streakShowing, setStreakShowing] = useState(false);
   const finishSplash = useCallback(() => {
     markIntroSeen();
     setSplash(false);
@@ -130,7 +132,8 @@ export function App() {
         {splash && introMode && <Splash key="splash" mode={introMode} ready={!loading} onDone={finishSplash} />}
       </AnimatePresence>
       <ToastViewport />
-      {profile && <UnlockCelebration enabled={!splash} />}
+      {profile && <StreakCelebration profile={profile} enabled={!splash} onActiveChange={setStreakShowing} />}
+      {profile && <UnlockCelebration enabled={!splash && !streakShowing} />}
     </>
   );
 }

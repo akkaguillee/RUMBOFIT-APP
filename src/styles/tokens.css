@@ -250,6 +250,9 @@
   --orb-2: color-mix(in srgb, var(--acc-deep) 48%, transparent);
   --orb-3: color-mix(in srgb, var(--acc) 16%, transparent);
   --noise-opacity: 0.05;
+  --flame-off: #4a4d57;
+  --flame-off-deep: #34363e;
+  --flame-off-light: #5d606b;
   --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px color-mix(in srgb, var(--acc-text-d) 85%, transparent);
   --focus-color: color-mix(in srgb, var(--acc-text-d) 90%, transparent);
 }
@@ -317,6 +320,9 @@
   --orb-2: color-mix(in srgb, var(--acc-hi) 26%, transparent);
   --orb-3: color-mix(in srgb, var(--acc-deep) 10%, transparent);
   --noise-opacity: 0.035;
+  --flame-off: #c9c3c6;
+  --flame-off-deep: #b5aeb2;
+  --flame-off-light: #ddd8da;
   --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px color-mix(in srgb, var(--acc-text-l) 75%, transparent);
   --focus-color: color-mix(in srgb, var(--acc-text-l) 85%, transparent);
 }
