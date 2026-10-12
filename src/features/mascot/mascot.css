@@ -1,0 +1,87 @@
+/* ── Rumbi ──────────────────────────────────────────────────────────────
+   A pearl sphere lit from the top left, with a rim light and a soft glow
+   in the interface accent. All movement comes from the JavaScript rig
+   (rig.ts): this file only sets colours and the tap target.
+   ────────────────────────────────────────────────────────────────────── */
+
+.mascot {
+  --mascot-hi: #fbfbfd;
+  --mascot-mid: #e4e4eb;
+  --mascot-lo: #b3b4c1;
+  --mascot-edge: #8d8e9f;
+  --mascot-ink: #111218;
+  --mascot-rim: var(--acc);
+  --mascot-rim-mid: 0.32;
+  --mascot-rim-edge: 0.92;
+  --mascot-glow: var(--acc);
+  --mascot-glow-a: 0.5;
+  --mascot-glow-b: 0.22;
+  --mascot-warm: #ff9e8a;
+  --mascot-cool: #a3bcff;
+  --mascot-shadow: #000000;
+  --mascot-shadow-a: 0.6;
+  --mascot-edge-line: rgba(255, 255, 255, 0.35);
+  --mascot-badge-ring: var(--surface-solid);
+
+  position: relative;
+  width: var(--mascot-size, 72px);
+  height: var(--mascot-size, 72px);
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+}
+
+:root[data-theme='light'] .mascot {
+  --mascot-mid: #ebe8ec;
+  --mascot-lo: #c4bec7;
+  --mascot-edge: #a29aa6;
+  --mascot-ink: #15121a;
+  --mascot-rim-mid: 0.3;
+  --mascot-rim-edge: 0.85;
+  --mascot-glow-a: 0.34;
+  --mascot-glow-b: 0.14;
+  --mascot-shadow: #50162a;
+  --mascot-shadow-a: 0.32;
+  --mascot-edge-line: rgba(80, 22, 42, 0.1);
+}
+
+.mascot__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.mascot__edge {
+  fill: none;
+  stroke: var(--mascot-edge-line);
+  stroke-width: 0.6;
+}
+
+.mascot__eyes {
+  fill: var(--mascot-ink);
+}
+
+.mascot__badge rect {
+  fill: var(--accent);
+  stroke: var(--mascot-badge-ring);
+  stroke-width: 1.8;
+}
+
+.mascot__badge circle {
+  fill: var(--on-accent);
+}
+
+.mascot--interactive {
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}

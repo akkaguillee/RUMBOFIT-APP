@@ -6,7 +6,7 @@ import { NumberField, TextField } from '@/ui/Field';
 import { GOALS, usesWeightGoal } from '../shared/labels';
 import type { UnitsApi } from '../shared/units';
 import { questionVariants } from './motion';
-import { ChoiceList, DayPicker, MultiQuestion, Question, SingleQuestion } from './PrefControls';
+import { ChoiceList, CountPicker, DayPicker, MultiQuestion, Question, SingleQuestion } from './PrefControls';
 import {
   ACTIVITY_TYPE_OPTIONS,
   ALLERGEN_OPTIONS,
@@ -32,20 +32,26 @@ import {
   SCHEDULE_OPTIONS,
   SECONDARY_MAX,
   SLEEP_OPTIONS,
+  spreadTrainingDays,
   STRESS_OPTIONS,
   STYLE_OPTIONS,
+  trainingCountLabel,
+  TRAINING_DAYS_MAX,
   WATER_OPTIONS,
   wantsFoodDetails,
   wantsMotivationNote,
+  weekdaysText,
   WELLBEING_IMPROVE_OPTIONS,
   type ActivityAnswers,
   type GoalChoice,
   type Option,
+  type QuickActivity,
 } from './preferences';
 
 /**
- * The personalisation questions, grouped as onboarding shows them. Perfil
- * reuses the same groups in its edit sheets, so both always ask the same.
+ * The personalisation questions. Perfil edits every group in full in its
+ * sheets; onboarding asks a short version of the same questions (the groups
+ * at the end of this file), so both always use the same wording and controls.
  */
 
 type Patch<T> = (patch: Partial<T>) => void;
@@ -139,16 +145,15 @@ interface TargetProps {
   /** Under 18: no target weight, only a gentle note. */
   minor: boolean;
   /**
-   * Onboarding: asks for the height here too when step 1 left it empty (or not
-   * valid), since a target always needs it to stay above a BMI of 18.5.
+   * Onboarding: asks for the height here too when «Sobre ti» left it empty (or
+   * not valid), since a target always needs it to stay above a BMI of 18.5.
    */
   height?: { value: string; onChange: (v: string) => void };
 }
 
-/** Target weight (only for weight goals) and secondary goals. */
-export function GoalDetailQuestions({ value, onChange, ...t }: { value: GoalAnswers; onChange: Patch<GoalAnswers> } & TargetProps) {
+/** Target weight (only for weight goals); under 18, a gentle note instead. */
+export function TargetQuestions(t: TargetProps) {
   const weightGoal = t.goal !== null && usesWeightGoal(t.goal);
-  const mainGoal = value.choice === 'other' ? null : value.choice;
   return (
     <>
       {t.height && (
@@ -182,6 +187,16 @@ export function GoalDetailQuestions({ value, onChange, ...t }: { value: GoalAnsw
           <p>Como eres menor de edad, no fijamos un peso objetivo. Si quieres cambiar tu peso, coméntalo antes con un profesional sanitario.</p>
         </motion.div>
       )}
+    </>
+  );
+}
+
+/** Target weight and secondary goals (Perfil). */
+export function GoalDetailQuestions({ value, onChange, ...t }: { value: GoalAnswers; onChange: Patch<GoalAnswers> } & TargetProps) {
+  const mainGoal = value.choice === 'other' ? null : value.choice;
+  return (
+    <>
+      <TargetQuestions {...t} />
       <MultiQuestion
         label="¿Quieres trabajar algo más?"
         options={GOAL_OPTIONS.filter((o) => o.value !== 'other' && o.value !== mainGoal).map(({ value: v, label }) => ({ value: v as GoalType, label }))}
@@ -353,12 +368,7 @@ export function MotivationDriverQuestions({ value, onChange }: { value: Motivati
     <>
       <MultiQuestion label="¿Qué te motiva?" options={MOTIVATOR_OPTIONS} values={value.motivators} onChange={(motivators) => onChange({ motivators })} />
       <SingleQuestion label="¿Cómo prefieres avanzar?" options={STYLE_OPTIONS} value={value.style} onChange={(style) => onChange({ style })} layout="cards" />
-      <SingleQuestion
-        label="¿Cuánto tiempo puedes dedicarte al día?"
-        options={MINUTES_OPTIONS}
-        value={value.dailyMinutes === undefined ? null : (String(value.dailyMinutes) as (typeof MINUTES_OPTIONS)[number]['value'])}
-        onChange={(v) => onChange({ dailyMinutes: Number(v) as NonNullable<MotivationProfile['dailyMinutes']> })}
-      />
+      <MinutesQuestion value={value} onChange={onChange} />
       <SingleQuestion
         label="¿Qué quieres mejorar primero?"
         options={FIRST_FOCUS_OPTIONS}
@@ -395,5 +405,118 @@ export function WellbeingQuestions({ value, onChange }: { value: Wellbeing; onCh
         onChange={(improve) => onChange({ improve })}
       />
     </>
+  );
+}
+
+// ── Onboarding: the essentials ─────────────────────────────────────────
+
+/** How you spend the day, how many days you train (0–7) and, if you do, your experience. */
+export function QuickActivityQuestions({ value, onChange }: { value: QuickActivity; onChange: Patch<QuickActivity> }) {
+  const days = value.days;
+  return (
+    <>
+      <SingleQuestion
+        label="¿Cómo pasas la mayor parte del día?"
+        options={POSTURE_OPTIONS}
+        value={value.posture}
+        onChange={(posture) => onChange({ posture })}
+        layout="tiles"
+      />
+      <Question
+        label="¿Cuántos días entrenas a la semana?"
+        hint={
+          days === null
+            ? 'Cuenta cualquier entreno: gimnasio, correr, deporte o clases.'
+            : days === 0
+              ? 'Sin problema: moverte en tu día a día también cuenta.'
+              : days === TRAINING_DAYS_MAX
+                ? 'Te proponemos todos los días, alternando intensidades: descansar también forma parte del progreso.'
+                : `Te proponemos ${weekdaysText(spreadTrainingDays(days))}. Podrás cambiar los días en Perfil.`
+        }
+      >
+        {({ labelId, hintId }) => (
+          <CountPicker
+            value={days}
+            onChange={(n) => onChange({ days: n })}
+            max={TRAINING_DAYS_MAX}
+            labelOf={trainingCountLabel}
+            labelledBy={labelId}
+            describedBy={hintId}
+          />
+        )}
+      </Question>
+      <Reveal show={days !== null && days > 0}>
+        <SingleQuestion
+          label="¿Qué experiencia tienes?"
+          options={EXPERIENCE_OPTIONS.map(({ value: v, label }) => ({ value: v, label }))}
+          value={value.experience}
+          onChange={(experience) => onChange({ experience })}
+          hint={EXPERIENCE_OPTIONS.find((o) => o.value === value.experience)?.description ?? 'Así ajustamos series, cargas y descansos a tu nivel.'}
+        />
+      </Reveal>
+    </>
+  );
+}
+
+interface HabitsProps {
+  food: FoodHabits;
+  wellbeing: Wellbeing;
+  onFood: Patch<FoodHabits>;
+  onWellbeing: Patch<Wellbeing>;
+  waterHint: string;
+}
+
+/** Food (and what costs most, only for those who want to improve it), water and sleep. */
+export function HabitsQuestions({ food, wellbeing, onFood, onWellbeing, waterHint }: HabitsProps) {
+  return (
+    <>
+      <SingleQuestion
+        label="¿Te gustaría mejorar tu alimentación?"
+        options={FOOD_IMPROVE_OPTIONS}
+        value={food.improve}
+        onChange={(improve) => onFood({ improve })}
+      />
+      <Reveal show={wantsFoodDetails(food)}>
+        <MultiQuestion
+          label="¿Qué te cuesta más?"
+          options={FOOD_DIFFICULTY_OPTIONS}
+          values={food.difficulties}
+          onChange={(difficulties) => onFood({ difficulties })}
+        />
+      </Reveal>
+      <SingleQuestion label="¿Cuánta agua bebes al día?" options={WATER_OPTIONS} value={food.water} onChange={(water) => onFood({ water })} hint={waterHint} />
+      <SingleQuestion
+        label="¿Cuántas horas duermes normalmente?"
+        options={SLEEP_OPTIONS}
+        value={wellbeing.sleepHours}
+        onChange={(sleepHours) => onWellbeing({ sleepHours })}
+      />
+    </>
+  );
+}
+
+/** What stopped them before and the time they can give each day. */
+export function MotivationQuickQuestions({ value, onChange }: { value: MotivationProfile; onChange: Patch<MotivationProfile> }) {
+  return (
+    <>
+      <MultiQuestion
+        label="¿Qué te ha frenado otras veces?"
+        options={BLOCKER_OPTIONS}
+        values={value.blockers}
+        onChange={(blockers) => onChange({ blockers })}
+      />
+      <MinutesQuestion value={value} onChange={onChange} />
+    </>
+  );
+}
+
+function MinutesQuestion({ value, onChange }: { value: MotivationProfile; onChange: Patch<MotivationProfile> }) {
+  return (
+    <SingleQuestion
+      label="¿Cuánto tiempo puedes dedicarte al día?"
+      options={MINUTES_OPTIONS}
+      value={value.dailyMinutes === undefined ? null : (String(value.dailyMinutes) as (typeof MINUTES_OPTIONS)[number]['value'])}
+      onChange={(v) => onChange({ dailyMinutes: Number(v) as NonNullable<MotivationProfile['dailyMinutes']> })}
+    />
   );
 }

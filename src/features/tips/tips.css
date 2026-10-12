@@ -4,55 +4,106 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  container: tip-card / inline-size;
+}
+
+/*
+ * Rumbi delivers the tip. Narrow cards: Rumbi and the heading share the first
+ * row and the tip uses the full width below. Wider cards: Rumbi keeps its own
+ * column and everything else reads as its message.
+ */
+.tip-card__layout {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'mascot head'
+    'content content';
+  column-gap: 14px;
+  row-gap: var(--space-4);
+  align-items: center;
+  min-width: 0;
+}
+
+.tip-card__mascot {
+  grid-area: mascot;
+  /* Optical alignment: the sphere is 80 % of the box, so pull it to the text edge. */
+  margin: -2px 0 -2px -6px;
 }
 
 .tip-card__head {
+  grid-area: head;
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
-  margin-bottom: var(--space-4);
 }
 
-.tip-card__icon {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: var(--accent-soft);
-  color: var(--accent-text);
+.tip-card__content {
+  grid-area: content;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-.tip-card__icon svg {
-  width: 17px;
-  height: 17px;
+@container tip-card (min-width: 440px) {
+  .tip-card__layout {
+    grid-template-areas:
+      'mascot head'
+      'mascot content';
+    grid-template-rows: auto 1fr;
+    column-gap: var(--space-5);
+    row-gap: var(--space-3);
+    align-items: start;
+  }
+
+  .tip-card .tip-card__mascot {
+    width: 76px;
+    height: 76px;
+    margin: -4px 0 0 -6px;
+  }
+
+  .tip-card__head {
+    padding-top: 4px;
+  }
 }
 
 .tip-card__label {
-  flex: 1;
   min-width: 0;
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: var(--weight-semibold);
-  letter-spacing: -0.005em;
-  color: var(--text-2);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.tip-card__topic {
-  flex: none;
-  max-width: 45%;
-  font-size: var(--text-2xs);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
+.tip-card__byline {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  font-size: var(--text-sm);
+  line-height: 1.35;
   color: var(--text-3);
   white-space: nowrap;
+}
+
+.tip-card__name {
+  flex: none;
+  font-weight: var(--weight-semibold);
+  color: var(--accent-text);
+}
+
+.tip-card__topic {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.tip-card__topic::before {
+  content: '·';
+  margin: 0 6px;
 }
 
 .tip-card__main {
@@ -88,7 +139,7 @@
   text-wrap: pretty;
 }
 
-.tip-card__head + .tip-card__body {
+.tip-card__body--lead {
   margin-top: 0;
 }
 

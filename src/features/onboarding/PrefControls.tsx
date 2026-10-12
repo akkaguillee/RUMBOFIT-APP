@@ -5,6 +5,7 @@ import { ACTIVITY_LEVELS } from '@/domain/health';
 import type { ActivityLevel } from '@/domain/types';
 import { WEEKDAY_LABELS, WEEKDAY_SHORT } from '@/domain/dates';
 import { cx } from '@/ui/cx';
+import { spring } from '@/ui/motion';
 import { questionVariants } from './motion';
 import type { Option } from './preferences';
 import './prefs.css';
@@ -266,6 +267,57 @@ export function DayPicker({ days, onChange, labelledBy }: { days: number[]; onCh
             onClick={() => onChange(on ? days.filter((x) => x !== i) : [...days, i].sort((a, b) => a - b))}
           >
             {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+interface CountPickerProps {
+  value: number | null;
+  onChange: (n: number) => void;
+  /** Highest count offered; the picker shows 0 to `max`. */
+  max: number;
+  /** Accessible name of each count, e.g. «3 días». */
+  labelOf: (n: number) => string;
+  labelledBy: string;
+  describedBy?: string;
+}
+
+/**
+ * A row of equal cells from 0 to `max` (radio group with arrow keys). The
+ * selection is a single thumb that glides between cells, like `Segmented`.
+ */
+export function CountPicker({ value, onChange, max, labelOf, labelledBy, describedBy }: CountPickerProps) {
+  const thumbId = useId();
+  const options = Array.from({ length: max + 1 }, (_, n) => ({ value: String(n), label: labelOf(n) }));
+  const { onKey, ref } = useRoving(options, (v) => onChange(Number(v)));
+  return (
+    <div
+      role="radiogroup"
+      aria-labelledby={labelledBy}
+      aria-describedby={describedBy}
+      className="count-picker"
+      style={{ gridTemplateColumns: `repeat(${max + 1}, minmax(0, 1fr))` }}
+    >
+      {options.map((o, n) => {
+        const on = n === value;
+        return (
+          <button
+            key={o.value}
+            ref={ref(n)}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            aria-label={o.label}
+            tabIndex={n === (value ?? 0) ? 0 : -1}
+            className="count-picker__cell"
+            onClick={() => onChange(n)}
+            onKeyDown={(e) => onKey(e, n)}
+          >
+            {on && <motion.span layoutId={thumbId} className="count-picker__thumb" transition={spring.snappy} aria-hidden="true" />}
+            <span className="count-picker__n t-num">{n}</span>
           </button>
         );
       })}

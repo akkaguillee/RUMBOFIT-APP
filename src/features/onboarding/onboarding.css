@@ -360,6 +360,37 @@
   margin-top: 1px;
 }
 
+/* «Sobre ti»: the units switch lines up with the weight field beside it. */
+.onb-units .segmented {
+  min-height: 52px;
+  align-items: stretch;
+}
+
+/* «¿Empezaste antes?»: question and action wrap as whole phrases; the fields open right under it, as one group. */
+.onb-start__toggle {
+  flex-wrap: wrap;
+  column-gap: 6px;
+  row-gap: 0;
+  text-align: left;
+}
+
+.onb-start__ask {
+  font-weight: var(--weight-medium);
+  color: var(--text-2);
+}
+
+.onb-start__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  color: var(--accent-text);
+}
+
+.onb-start + .q-reveal > .q-stack {
+  padding-top: var(--space-3);
+}
+
 /* ── Summary ────────────────────────────────────────────────────────── */
 
 .sum-goal {
@@ -410,13 +441,6 @@
   letter-spacing: -0.012em;
   color: var(--text);
   overflow-wrap: anywhere;
-}
-
-.sum-goal__more {
-  font-size: var(--text-sm);
-  line-height: 1.4;
-  color: var(--text-2);
-  text-wrap: pretty;
 }
 
 .sum-tiles {

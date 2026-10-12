@@ -1,14 +1,14 @@
-import { AlertTriangle, Check, Clock, Droplets, Flag, Gauge, PenLine, Scale, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, Check, Droplets, Flag, Gauge, Moon, PenLine, Scale, type LucideIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { ACTIVITY_LEVELS } from '@/domain/health';
 import type { ActivityLevel, FoodHabits, GoalType, MotivationProfile, Wellbeing } from '@/domain/types';
 import { formatInt } from '@/domain/units';
 import { cx } from '@/ui/cx';
-import { GOALS, goalLabel } from '../shared/labels';
+import { GOALS } from '../shared/labels';
 import type { UnitsApi } from '../shared/units';
 import { questionVariants } from './motion';
-import { habitsToImprove, joinList, labelOf, mainDifficulties, MINUTES_OPTIONS, supportStyle, trainingDaysText } from './preferences';
+import { habitsToImprove, labelOf, mainDifficulties, SLEEP_OPTIONS, supportFor, trainingDaysText } from './preferences';
 
 /** Everything the summary shows, exactly as it will be saved. Weights in kg. */
 export interface SummaryData {
@@ -17,7 +17,6 @@ export interface SummaryData {
   goalLabel: string;
   /** «Otro objetivo personal». */
   custom: boolean;
-  secondary: GoalType[];
   currentKg: number | null;
   /** Only when it predates today. */
   initialKg: number | null;
@@ -26,9 +25,9 @@ export interface SummaryData {
   weightGoal: boolean;
   targetKg: number | null;
   refKg: number | null;
+  /** Estimated from the activity answers, or the default one when they were skipped. */
   level: ActivityLevel;
-  /** False while the level is the default one (activity questions skipped). */
-  levelEstimated: boolean;
+  /** Null when the activity questions were skipped. */
   trainingDays: number | null;
   waterMl: number;
   stepsGoal: number;
@@ -50,9 +49,9 @@ interface Props {
 export function OnboardingSummary({ data, u, consent, onConsent, invalid, temporary }: Props) {
   const GoalIcon = data.custom ? PenLine : (GOALS.find((g) => g.id === data.goal)?.icon ?? Flag);
   const difficulties = mainDifficulties(data.motivation, data.food);
-  const habits = habitsToImprove(data.motivation, data.wellbeing);
-  const support = supportStyle(data.motivation);
-  const minutes = data.motivation?.dailyMinutes;
+  const habits = habitsToImprove(data.food, data.wellbeing, data.trainingDays);
+  const support = supportFor(data.motivation);
+  const sleep = data.wellbeing?.sleepHours && data.wellbeing.sleepHours !== 'skip' ? data.wellbeing.sleepHours : null;
 
   return (
     <>
@@ -63,7 +62,6 @@ export function OnboardingSummary({ data, u, consent, onConsent, invalid, tempor
         <div className="sum-goal__text">
           <p className="sum-goal__label">Tu objetivo</p>
           <p className="sum-goal__value">{data.goalLabel}</p>
-          {data.secondary.length > 0 && <p className="sum-goal__more">También: {joinList(data.secondary.map((g) => goalLabel(g).toLowerCase()))}</p>}
         </div>
       </motion.div>
 
@@ -85,11 +83,11 @@ export function OnboardingSummary({ data, u, consent, onConsent, invalid, tempor
           />
         ) : (
           <Tile
-            icon={Clock}
-            label="Tiempo al día"
-            value={minutes ? labelOf(MINUTES_OPTIONS, String(minutes) as (typeof MINUTES_OPTIONS)[number]['value']) : 'Sin indicar'}
-            sub={minutes ? 'Para cuidarte' : 'Puedes añadirlo luego'}
-            muted={!minutes}
+            icon={Moon}
+            label="Descanso"
+            value={sleep ? labelOf(SLEEP_OPTIONS, sleep) : 'Sin indicar'}
+            sub={sleep ? 'Sueño habitual' : 'Puedes añadirlo luego'}
+            muted={!sleep}
           />
         )}
         <Tile
@@ -105,15 +103,9 @@ export function OnboardingSummary({ data, u, consent, onConsent, invalid, tempor
         <Row label="Principales dificultades">{difficulties.length ? <Tags items={difficulties} /> : <Empty />}</Row>
         <Row label="Hábitos a mejorar">{habits.length ? <Tags items={habits} /> : <Empty />}</Row>
         <Row label="Acompañamiento">
-          {support ? (
-            <span className="sum-support">
-              <strong>{support.title}.</strong> {support.text}
-            </span>
-          ) : (
-            <span className="sum-support">
-              <strong>A tu ritmo.</strong> Lo ajustaremos según cómo avances.
-            </span>
-          )}
+          <span className="sum-support">
+            <strong>{support.title}.</strong> {support.text}
+          </span>
         </Row>
       </motion.dl>
 

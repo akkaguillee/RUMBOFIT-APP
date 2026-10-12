@@ -3,14 +3,13 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  ChevronDown,
   ChevronRight,
   Compass,
   Droplets,
   Dumbbell,
   Flame,
   Footprints,
-  Info,
-  Moon,
   Salad,
   ShieldCheck,
   Sparkles,
@@ -20,7 +19,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion, type Variants } from 'motion/react';
-import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { RunnerMark, Wordmark } from '@/brand/Logo';
 import { storageMode } from '@/db/backend';
 import { createProfile } from '@/db/repos/profile';
@@ -43,33 +42,20 @@ import {
   cleanFood,
   cleanMotivation,
   cleanWellbeing,
-  EMPTY_ACTIVITY,
-  foodSummary,
+  EMPTY_QUICK_ACTIVITY,
   goalFromChoice,
+  habitsSummary,
   mainGoalLabel,
   motivationSummary,
-  activityMissing,
+  quickActivityMissing,
+  quickActivityProfile,
+  spreadTrainingDays,
   targetWeightError,
-  toActivityProfile,
-  trainingDaysOf,
+  trainingCountLabel,
   waterGoalFor,
-  wantsFoodDetails,
-  wellbeingSummary,
-  type ActivityAnswers,
+  type QuickActivity,
 } from './preferences';
-import {
-  ActivityDailyQuestions,
-  ActivityTrainingQuestions,
-  FoodBasicQuestions,
-  FoodDetailQuestions,
-  GoalDetailQuestions,
-  GoalMainQuestions,
-  MotivationBlockerQuestions,
-  MotivationDriverQuestions,
-  Reveal,
-  WellbeingQuestions,
-  type GoalAnswers,
-} from './questions';
+import { GoalMainQuestions, HabitsQuestions, MotivationQuickQuestions, QuickActivityQuestions, Reveal, TargetQuestions, type GoalAnswers } from './questions';
 import './onboarding.css';
 
 interface Draft {
@@ -83,50 +69,36 @@ interface Draft {
   startDate: string;
   goal: GoalAnswers;
   target: string;
-  activity: ActivityAnswers;
+  activity: QuickActivity;
   food: FoodHabits;
-  motivation: MotivationProfile;
   wellbeing: Wellbeing;
+  motivation: MotivationProfile;
   consent: boolean;
 }
 
-type ScreenId =
-  | 'welcome'
-  | 'about'
-  | 'body'
-  | 'goal'
-  | 'goal-details'
-  | 'daily'
-  | 'training'
-  | 'food'
-  | 'food-details'
-  | 'blockers'
-  | 'drivers'
-  | 'wellbeing'
-  | 'summary';
+type StepId = 'about' | 'goal' | 'activity' | 'habits' | 'motivation' | 'summary';
+type ScreenId = 'welcome' | StepId;
 
-interface StepMeta {
-  title: string;
-  icon: LucideIcon;
-  screens: ScreenId[];
-}
-
-/** Seven steps; each groups one or two short screens of questions. */
-const STEPS: StepMeta[] = [
-  { title: 'Datos personales', icon: UserRound, screens: ['about', 'body'] },
-  { title: 'Objetivos', icon: Target, screens: ['goal', 'goal-details'] },
-  { title: 'Actividad cotidiana', icon: Footprints, screens: ['daily', 'training'] },
-  { title: 'Alimentación y hábitos', icon: Salad, screens: ['food', 'food-details'] },
-  { title: 'Obstáculos y motivación', icon: Compass, screens: ['blockers', 'drivers'] },
-  { title: 'Sueño y bienestar', icon: Moon, screens: ['wellbeing'] },
-  { title: 'Resumen', icon: Sparkles, screens: ['summary'] },
+/**
+ * Only the essentials (about fifteen questions, some only when they apply):
+ * five short screens and the summary. Everything else stays editable in Perfil.
+ */
+const STEPS: { id: StepId; title: string; icon: LucideIcon }[] = [
+  { id: 'about', title: 'Sobre ti', icon: UserRound },
+  { id: 'goal', title: 'Tu objetivo', icon: Target },
+  { id: 'activity', title: 'Tu actividad', icon: Footprints },
+  { id: 'habits', title: 'Tus hábitos', icon: Salad },
+  { id: 'motivation', title: 'Tu motivación', icon: Compass },
+  { id: 'summary', title: 'Resumen', icon: Sparkles },
 ];
 
-const ORDER: ScreenId[] = ['welcome', ...STEPS.flatMap((s) => s.screens)];
-const stepIndexOf = (s: ScreenId) => STEPS.findIndex((st) => st.screens.includes(s));
+const ORDER: ScreenId[] = ['welcome', ...STEPS.map((s) => s.id)];
+const stepIndexOf = (s: ScreenId) => STEPS.findIndex((st) => st.id === s);
+const nextOf = (from: ScreenId): ScreenId => ORDER[ORDER.indexOf(from) + 1] ?? 'summary';
+const prevOf = (from: ScreenId): ScreenId => ORDER[ORDER.indexOf(from) - 1] ?? 'welcome';
 
 /** Screens that can be skipped with «Ahora no» (nothing on them is required). */
-const OPTIONAL: ScreenId[] = ['body', 'goal-details', 'daily', 'food', 'food-details', 'blockers', 'drivers', 'wellbeing'];
+const OPTIONAL: ScreenId[] = ['activity', 'habits', 'motivation'];
 
 /** Used until the activity questions are answered. */
 const DEFAULT_LEVEL: ActivityLevel = 'light';
@@ -178,18 +150,6 @@ function useScrollFade(ref: RefObject<HTMLElement | null>) {
   }, [ref]);
 }
 
-function Why({ children }: { children: ReactNode }) {
-  return (
-    <motion.div className="callout" variants={questionVariants}>
-      <Info aria-hidden="true" />
-      <p>
-        <strong>¿Por qué lo pedimos? </strong>
-        {children}
-      </p>
-    </motion.div>
-  );
-}
-
 export default function OnboardingPage() {
   const today = todayKey();
   const reduce = useReducedMotion();
@@ -201,6 +161,8 @@ export default function OnboardingPage() {
   const [returning, setReturning] = useState(false);
   /** The goal screen also asks for the height: decided on arrival, so the field never vanishes while it is being typed. */
   const [heightInGoal, setHeightInGoal] = useState(false);
+  /** «¿Empezaste antes?»: an earlier starting weight and its date, collapsed unless already answered. */
+  const [startOpen, setStartOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -215,10 +177,10 @@ export default function OnboardingPage() {
     startDate: today,
     goal: { choice: null, note: '', secondary: [] },
     target: '',
-    activity: EMPTY_ACTIVITY,
+    activity: EMPTY_QUICK_ACTIVITY,
     food: {},
-    motivation: {},
     wellbeing: {},
+    motivation: {},
     consent: false,
   });
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => {
@@ -227,7 +189,7 @@ export default function OnboardingPage() {
   };
   /** Merges a partial answer into one of the grouped answers. */
   const patch =
-    <K extends 'goal' | 'activity' | 'food' | 'motivation' | 'wellbeing'>(k: K) =>
+    <K extends 'goal' | 'activity' | 'food' | 'wellbeing' | 'motivation'>(k: K) =>
     (p: Partial<Draft[K]>) => {
       setError(null);
       setD((prev) => ({ ...prev, [k]: { ...prev[k], ...p } }));
@@ -249,46 +211,38 @@ export default function OnboardingPage() {
   const minor = age !== null && age < 18;
   const goal = d.goal.choice ? goalFromChoice(d.goal.choice, d.goal.note) : null;
   const weightGoal = goal !== null && usesWeightGoal(goal.goal) && !minor;
-  const activity = toActivityProfile(d.activity);
+  const activity = quickActivityProfile(d.activity);
   const level = activity ? estimateActivityLevel(activity) : null;
   const waterMl = waterGoalFor(d.food.water, currentKg ?? undefined);
 
-  const visible = (s: ScreenId) => (s === 'training' ? d.activity.exercises === true : s === 'food-details' ? wantsFoodDetails(d.food) : true);
-  const nextOf = (from: ScreenId) => ORDER.slice(ORDER.indexOf(from) + 1).find(visible) ?? 'summary';
-  const prevOf = (from: ScreenId) => [...ORDER.slice(0, ORDER.indexOf(from))].reverse().find(visible) ?? 'welcome';
-  const nextStepOf = (from: ScreenId) => STEPS[stepIndexOf(from) + 1]?.screens[0] ?? 'summary';
-
   const stepIndex = stepIndexOf(screen);
   const step = STEPS[stepIndex];
-  // Progress within the step uses its full list of screens, so the bar never moves backwards.
-  const fill = step ? (step.screens.indexOf(screen) + 1) / step.screens.length : 0;
 
-  /** Returns an error message for the current screen, or null when it can continue. */
+  /** Returns an error message for a screen, or null when it can continue. */
   const validate = (s: ScreenId = screen): string | null => {
     switch (s) {
-      case 'about':
+      case 'about': {
         if (!d.name.trim()) return 'Escribe un nombre o alias para continuar.';
         if (d.name.trim().length > 40) return 'El nombre no puede superar 40 caracteres.';
-        return d.age ? checkRange(age, LIMITS.age) : null;
-      case 'body':
-        if (d.height && checkRange(heightCm, LIMITS.heightCm)) return checkRange(heightCm, LIMITS.heightCm);
-        if (d.current && checkRange(currentKg, LIMITS.weightKg)) return checkRange(currentKg, LIMITS.weightKg);
-        if (d.initial && checkRange(initialKg, LIMITS.weightKg)) return checkRange(initialKg, LIMITS.weightKg);
+        const range =
+          (d.age && checkRange(age, LIMITS.age)) ||
+          (d.height && checkRange(heightCm, LIMITS.heightCm)) ||
+          (d.current && checkRange(currentKg, LIMITS.weightKg)) ||
+          (d.initial && checkRange(initialKg, LIMITS.weightKg));
+        if (range) return range;
         if (d.initial && !d.current) return 'Indica también tu peso actual.';
         if (d.startDate > today) return 'La fecha de inicio no puede estar en el futuro.';
         // An initial weight different from today's needs the day it was taken, or it would be saved as today's start.
         if (d.initial && initialKg !== currentKg && d.startDate === today) return 'Indica la fecha de inicio: el día en que pesabas eso, antes de hoy.';
         return null;
+      }
       case 'goal':
         if (!d.goal.choice) return 'Elige el objetivo que mejor te describa.';
         if (d.goal.choice === 'other' && !d.goal.note.trim()) return 'Escribe tu objetivo en pocas palabras.';
-        return null;
-      case 'goal-details':
         if (d.height && checkRange(heightCm, LIMITS.heightCm)) return checkRange(heightCm, LIMITS.heightCm);
         return goal && weightGoal && d.target ? targetWeightError(goal.goal, targetKg ?? NaN, refKg, heightCm, u.weight) : null;
-      case 'daily':
-      case 'training':
-        return activityMissing(d.activity);
+      case 'activity':
+        return quickActivityMissing(d.activity);
       case 'summary':
         return d.consent ? null : 'Marca la casilla para crear tu RUMBO.';
       default:
@@ -299,7 +253,7 @@ export default function OnboardingPage() {
   /** First answered screen that would not pass its own check, e.g. after changing the goal from «Editar respuestas». */
   const firstInvalid = (): { screen: ScreenId; error: string } | null => {
     for (const s of ORDER) {
-      if (s === 'summary' || !visible(s)) continue;
+      if (s === 'summary') continue;
       const err = validate(s);
       if (err) return { screen: s, error: err };
     }
@@ -310,8 +264,9 @@ export default function OnboardingPage() {
     setError(message);
     setDir(direction);
     setScreen(target);
-    // Without a height from step 1 (or with one that is not valid), the target weight asks for it on its own screen.
-    if (target === 'goal-details') setHeightInGoal(!d.height || checkRange(heightCm, LIMITS.heightCm) !== null);
+    // Without a valid height from «Sobre ti», the target weight asks for it on its own screen.
+    if (target === 'goal') setHeightInGoal(!d.height || checkRange(heightCm, LIMITS.heightCm) !== null);
+    if (target === 'about') setStartOpen(d.initial !== '' || d.startDate !== today);
   };
 
   /** Opens the summary only when every answer is still valid; otherwise shows the first one to fix. */
@@ -332,34 +287,30 @@ export default function OnboardingPage() {
 
   const back = () => goTo(prevOf(screen), -1);
 
-  /** «Ahora no»: clears what this screen asked (and the rest of its step when it opens it), so nothing half-answered is saved. */
+  /** «Ahora no»: clears what this screen asked, so nothing half-answered is saved. */
   const skip = () => {
-    let target = nextOf(screen);
     setD((p) => {
       switch (screen) {
-        case 'body':
-          return { ...p, height: '', current: '', initial: '', startDate: today };
-        case 'goal-details':
-          return { ...p, target: '', goal: { ...p.goal, secondary: [] } };
-        case 'daily':
-          return { ...p, activity: EMPTY_ACTIVITY };
-        case 'food':
-          return { ...p, food: {} };
-        case 'food-details':
-          return { ...p, food: { ...p.food, restrictions: undefined, difficulties: undefined, eatingOut: undefined, schedule: undefined } };
-        case 'blockers':
+        case 'activity':
+          return { ...p, activity: EMPTY_QUICK_ACTIVITY };
+        case 'habits':
+          return { ...p, food: {}, wellbeing: {} };
+        case 'motivation':
           return { ...p, motivation: {} };
-        case 'drivers':
-          return { ...p, motivation: { ...p.motivation, motivators: undefined, style: undefined, dailyMinutes: undefined, firstFocus: undefined } };
-        case 'wellbeing':
-          return { ...p, wellbeing: {} };
         default:
           return p;
       }
     });
-    if (screen === 'daily' || screen === 'food' || screen === 'blockers') target = nextStepOf(screen);
+    const target = nextOf(screen);
     if (target === 'summary') return toSummary();
     goTo(target, 1);
+  };
+
+  /** Closing «¿Empezaste antes?» removes what it held: what is on screen is what gets saved. */
+  const toggleStart = () => {
+    if (startOpen) setD((p) => ({ ...p, initial: '', startDate: today }));
+    setError(null);
+    setStartOpen(!startOpen);
   };
 
   const backToSummary = () => {
@@ -368,10 +319,10 @@ export default function OnboardingPage() {
     toSummary();
   };
 
-  const editStep = (i: number) => {
+  const editStep = (id: StepId) => {
     setEditOpen(false);
     setReturning(true);
-    goTo(STEPS[i]!.screens[0]!, -1);
+    goTo(id, -1);
   };
 
   const finish = async () => {
@@ -392,14 +343,13 @@ export default function OnboardingPage() {
         heightCm: heightCm ?? undefined,
         goal: goal.goal,
         goalNote: goal.goalNote,
-        secondaryGoals: d.goal.secondary,
         currentWeightKg: currentKg ?? undefined,
         startWeightKg: initialKg ?? undefined,
         goalWeightKg: weightGoal ? (targetKg ?? undefined) : undefined,
         activityLevel: level ?? DEFAULT_LEVEL,
         units: d.units,
         startDate: d.startDate,
-        trainingDays: activity ? trainingDaysOf(d.activity) : [],
+        trainingDays: activity ? spreadTrainingDays(activity.trainingDays) : [],
         waterGoalMl: waterMl,
         stepsGoal: DEFAULT_STEPS_GOAL,
         activity,
@@ -419,7 +369,6 @@ export default function OnboardingPage() {
     goal: goal.goal,
     goalLabel: mainGoalLabel(goal),
     custom: d.goal.choice === 'other',
-    secondary: d.goal.secondary,
     currentKg,
     initialKg: initialKg !== null && d.startDate < today ? initialKg : null,
     heightCm,
@@ -427,7 +376,6 @@ export default function OnboardingPage() {
     targetKg: weightGoal ? targetKg : null,
     refKg,
     level: level ?? DEFAULT_LEVEL,
-    levelEstimated: level !== null,
     trainingDays: activity?.trainingDays ?? null,
     waterMl,
     stepsGoal: DEFAULT_STEPS_GOAL,
@@ -436,9 +384,9 @@ export default function OnboardingPage() {
     wellbeing: cleanWellbeing(d.wellbeing),
   };
 
-  const levelDetail = level
-    ? `Según tu día a día${activity!.trainingDays ? ` y ${activity!.trainingDays} ${activity!.trainingDays === 1 ? 'día' : 'días'} de entreno` : ''}. Lo usamos para estimar tus calorías; podrás ajustarlo en Perfil.`
-    : 'Responde a las preguntas para calcularlo.';
+  const levelDetail = activity
+    ? `Según tu día a día${activity.trainingDays ? ` y ${trainingCountLabel(activity.trainingDays)} de entreno` : ''}. Lo usamos para estimar tus calorías; podrás ajustarlo en Perfil.`
+    : 'Responde a las dos primeras preguntas para calcularlo.';
   const waterHint =
     d.food.water === 'low' || d.food.water === 'medium'
       ? `Empezaremos con ${u.volume(waterMl)} al día, una meta alcanzable que podrás subir poco a poco.`
@@ -446,19 +394,11 @@ export default function OnboardingPage() {
 
   const titles: Record<ScreenId, { title: string; subtitle?: string }> = {
     welcome: { title: 'Vamos a preparar tu RUMBO' },
-    about: { title: 'Cuéntanos sobre ti' },
-    body: { title: 'Tu punto de partida', subtitle: 'Todo es opcional. Lo usamos para tu IMC, tus calorías y tu evolución.' },
+    about: { title: 'Cuéntanos sobre ti', subtitle: 'Solo el nombre es obligatorio.' },
     goal: { title: '¿Qué quieres conseguir?', subtitle: 'Elige tu objetivo principal. Podrás cambiarlo cuando quieras.' },
-    'goal-details': weightGoal
-      ? { title: 'Tu meta', subtitle: 'Un objetivo realista y, si quieres, algo más en lo que trabajar.' }
-      : { title: '¿Algo más?', subtitle: 'Puedes sumar otros objetivos a tu objetivo principal.' },
-    daily: { title: '¿Cómo es tu día a día?', subtitle: 'Así estimamos tu nivel de actividad sin que tengas que adivinarlo.' },
-    training: { title: 'Tu entrenamiento' },
-    food: { title: 'Tu alimentación', subtitle: 'Todo es opcional y no hace falta seguir ninguna dieta: solo queremos que los consejos encajen contigo.' },
-    'food-details': { title: 'Tus hábitos de comida', subtitle: 'Elige lo que encaje contigo. Nada de esto es una valoración médica.' },
-    blockers: { title: '¿Qué te lo ha puesto difícil?', subtitle: 'Así podemos acompañarte mejor. Elige todas las que quieras.' },
-    drivers: { title: '¿Qué te ayuda a seguir?' },
-    wellbeing: { title: '¿Cómo descansas?', subtitle: 'Opcional. Solo para darte consejos generales de bienestar, nunca una valoración médica.' },
+    activity: { title: '¿Cómo es tu día a día?', subtitle: 'Así estimamos tu nivel de actividad sin que tengas que adivinarlo.' },
+    habits: { title: 'Tus hábitos', subtitle: 'Opcional. No hace falta seguir ninguna dieta: solo queremos que los consejos encajen contigo.' },
+    motivation: { title: 'Para acompañarte mejor', subtitle: 'Opcional. Así ajustamos el ritmo y el tono de tus consejos.' },
     summary: { title: `Encantados, ${d.name.trim()}`, subtitle: 'Este es tu punto de partida. Revísalo antes de empezar.' },
   };
   const t = titles[screen];
@@ -472,7 +412,7 @@ export default function OnboardingPage() {
             <IconButton label="Paso anterior" size="sm" onClick={back} disabled={saving}>
               <ArrowLeft />
             </IconButton>
-            <StepsProgress step={stepIndex} fill={fill} />
+            <StepsProgress step={stepIndex} />
             <span className="t-small t-num onb__count" aria-hidden="true">
               {stepIndex + 1}/{STEPS.length}
             </span>
@@ -564,117 +504,103 @@ export default function OnboardingPage() {
                       onKeyDown={(e) => e.key === 'Enter' && next()}
                     />
                   </motion.div>
-                  <motion.div variants={questionVariants}>
-                    <NumberField
-                      label="Edad"
-                      value={d.age}
-                      onChange={(e) => set('age', e.target.value.replace(/\D/g, ''))}
-                      suffix="años"
-                      decimals={false}
-                      placeholder="Opcional"
-                    />
+                  <motion.div variants={questionVariants} className="grid-2">
+                    <NumberField label="Edad" value={d.age} onChange={(e) => set('age', e.target.value.replace(/\D/g, ''))} suffix="años" decimals={false} />
+                    <NumberField label="Altura" value={d.height} onChange={(e) => set('height', e.target.value)} suffix={u.h} />
+                  </motion.div>
+                  <motion.div variants={questionVariants} className="grid-2">
+                    <NumberField label="Peso actual" value={d.current} onChange={(e) => set('current', e.target.value)} suffix={u.w} />
+                    <div className="field onb-units">
+                      <span className="field__label" aria-hidden="true">
+                        Unidades
+                      </span>
+                      <Segmented
+                        label="Unidades"
+                        options={[
+                          { value: 'metric', label: 'kg · cm' },
+                          { value: 'imperial', label: 'lb · in' },
+                        ]}
+                        value={d.units}
+                        onChange={(v) => {
+                          const conv = unitsApi(v);
+                          setD((p) => ({
+                            ...p,
+                            units: v,
+                            height: heightCm ? conv.heightToInput(heightCm) : '',
+                            current: currentKg ? conv.weightToInput(currentKg) : '',
+                            initial: initialKg ? conv.weightToInput(initialKg) : '',
+                            target: targetKg ? conv.weightToInput(targetKg) : '',
+                          }));
+                        }}
+                        block
+                      />
+                    </div>
                   </motion.div>
                   <motion.div variants={questionVariants} className="field">
-                    <span className="field__label">Sexo biológico</span>
+                    <span className="field__label" aria-hidden="true">
+                      Sexo biológico
+                    </span>
                     <Segmented label="Sexo biológico" options={SEX_OPTIONS} value={d.sex} onChange={(v) => set('sex', v)} block />
+                    <p className="field__hint">Solo para estimar tu metabolismo. Sin él usamos un valor intermedio, algo menos preciso.</p>
                   </motion.div>
-                  <Why>
-                    Solo para estimar tu metabolismo. Si prefieres no indicar el sexo, usamos un valor intermedio, algo menos preciso.
-                  </Why>
-                </>
-              )}
-
-              {screen === 'body' && (
-                <>
-                  <motion.div variants={questionVariants} className="field">
-                    <span className="field__label">Unidades</span>
-                    <Segmented
-                      label="Sistema de unidades"
-                      options={[
-                        { value: 'metric', label: 'Métrico (kg, cm)' },
-                        { value: 'imperial', label: 'Imperial (lb, in)' },
-                      ]}
-                      value={d.units}
-                      onChange={(v) => {
-                        const conv = unitsApi(v);
-                        setD((p) => ({
-                          ...p,
-                          units: v,
-                          height: heightCm ? conv.heightToInput(heightCm) : '',
-                          current: currentKg ? conv.weightToInput(currentKg) : '',
-                          initial: initialKg ? conv.weightToInput(initialKg) : '',
-                          target: targetKg ? conv.weightToInput(targetKg) : '',
-                        }));
-                      }}
-                      block
-                    />
+                  <motion.div variants={questionVariants} className="onb-start">
+                    <button type="button" className="disclosure onb-start__toggle" aria-expanded={startOpen} aria-controls="onb-start" onClick={toggleStart}>
+                      {!startOpen && <span className="onb-start__ask">¿Empezaste antes?</span>}
+                      <span className="onb-start__action">
+                        {startOpen ? 'Quitar peso y fecha de inicio' : 'Añadir peso y fecha de inicio'}
+                        <ChevronDown aria-hidden="true" />
+                      </span>
+                    </button>
                   </motion.div>
-                  <motion.div variants={questionVariants} className="grid-2">
-                    <NumberField label="Altura" value={d.height} onChange={(e) => set('height', e.target.value)} suffix={u.h} size="lg" />
-                    <NumberField label="Peso actual" value={d.current} onChange={(e) => set('current', e.target.value)} suffix={u.w} size="lg" />
-                  </motion.div>
-                  <motion.div variants={questionVariants} className="grid-2">
-                    <NumberField
-                      label="Peso inicial"
-                      hint="Si empezaste antes de hoy"
-                      value={d.initial}
-                      onChange={(e) => set('initial', e.target.value)}
-                      suffix={u.w}
-                      placeholder="Opcional"
-                    />
-                    <TextField
-                      label="Fecha de inicio"
-                      type="date"
-                      value={d.startDate}
-                      max={today}
-                      min={addDays(today, -3650)}
-                      onChange={(e) => set('startDate', e.target.value || today)}
-                    />
-                  </motion.div>
-                </>
-              )}
-
-              {screen === 'goal' && <GoalMainQuestions value={d.goal} onChange={patch('goal')} />}
-
-              {screen === 'goal-details' && (
-                <GoalDetailQuestions
-                  value={d.goal}
-                  onChange={patch('goal')}
-                  goal={goal?.goal ?? null}
-                  target={d.target}
-                  onTarget={(v) => set('target', v)}
-                  u={u}
-                  minor={minor}
-                  height={heightInGoal && (weightGoal || d.height !== '') ? { value: d.height, onChange: (v) => set('height', v) } : undefined}
-                  targetHint={
-                    refKg !== null && targetKg !== null && !validate('goal-details')
-                      ? `${targetKg < refKg ? 'Perder' : 'Ganar'} ${u.weight(Math.abs(refKg - targetKg))} desde tu punto de partida.`
-                      : null
-                  }
-                />
-              )}
-
-              {screen === 'daily' && (
-                <>
-                  <ActivityDailyQuestions value={d.activity} onChange={patch('activity')} />
-                  <Reveal show={d.activity.exercises === false}>
-                    <LevelEstimate level={level} detail={levelDetail} />
+                  <Reveal show={startOpen}>
+                    <div id="onb-start" className="grid-2">
+                      <NumberField label="Peso inicial" value={d.initial} onChange={(e) => set('initial', e.target.value)} suffix={u.w} />
+                      <TextField
+                        label="Fecha de inicio"
+                        type="date"
+                        value={d.startDate}
+                        max={today}
+                        min={addDays(today, -3650)}
+                        onChange={(e) => set('startDate', e.target.value || today)}
+                      />
+                    </div>
                   </Reveal>
                 </>
               )}
 
-              {screen === 'training' && (
+              {screen === 'goal' && (
                 <>
-                  <ActivityTrainingQuestions value={d.activity} onChange={patch('activity')} />
+                  <GoalMainQuestions value={d.goal} onChange={patch('goal')} />
+                  <Reveal show={goal !== null && usesWeightGoal(goal.goal)}>
+                    <TargetQuestions
+                      goal={goal?.goal ?? null}
+                      target={d.target}
+                      onTarget={(v) => set('target', v)}
+                      u={u}
+                      minor={minor}
+                      height={heightInGoal && (weightGoal || d.height !== '') ? { value: d.height, onChange: (v) => set('height', v) } : undefined}
+                      targetHint={
+                        refKg !== null && targetKg !== null && !validate('goal')
+                          ? `${targetKg < refKg ? 'Perder' : 'Ganar'} ${u.weight(Math.abs(refKg - targetKg))} desde tu punto de partida.`
+                          : null
+                      }
+                    />
+                  </Reveal>
+                </>
+              )}
+
+              {screen === 'activity' && (
+                <>
+                  <QuickActivityQuestions value={d.activity} onChange={patch('activity')} />
                   <LevelEstimate level={level} detail={levelDetail} />
                 </>
               )}
 
-              {screen === 'food' && <FoodBasicQuestions value={d.food} onChange={patch('food')} waterHint={waterHint} />}
-              {screen === 'food-details' && <FoodDetailQuestions value={d.food} onChange={patch('food')} />}
-              {screen === 'blockers' && <MotivationBlockerQuestions value={d.motivation} onChange={patch('motivation')} />}
-              {screen === 'drivers' && <MotivationDriverQuestions value={d.motivation} onChange={patch('motivation')} />}
-              {screen === 'wellbeing' && <WellbeingQuestions value={d.wellbeing} onChange={patch('wellbeing')} />}
+              {screen === 'habits' && (
+                <HabitsQuestions food={d.food} wellbeing={d.wellbeing} onFood={patch('food')} onWellbeing={patch('wellbeing')} waterHint={waterHint} />
+              )}
+
+              {screen === 'motivation' && <MotivationQuickQuestions value={d.motivation} onChange={patch('motivation')} />}
 
               {screen === 'summary' && summary && (
                 <OnboardingSummary
@@ -703,7 +629,7 @@ export default function OnboardingPage() {
                 Empezar
               </Button>
               <p className="onb__hint" aria-hidden="true">
-                Unos 3 minutos · Puedes saltar lo opcional
+                Unos 2 minutos · Puedes saltar lo opcional
               </p>
             </>
           )}
@@ -741,8 +667,8 @@ export default function OnboardingPage() {
       <Sheet open={editOpen} onClose={() => setEditOpen(false)} title="Editar respuestas" description="Elige qué quieres revisar. Tus respuestas se conservan.">
         <ul className="onb-edit">
           {STEPS.slice(0, -1).map((s, i) => (
-            <li key={s.title}>
-              <button type="button" className="onb-edit__row pressable pressable--lg" onClick={() => editStep(i)}>
+            <li key={s.id}>
+              <button type="button" className="onb-edit__row pressable pressable--lg" onClick={() => editStep(s.id)}>
                 <span className="onb-edit__icon" aria-hidden="true">
                   <s.icon />
                 </span>
@@ -751,7 +677,7 @@ export default function OnboardingPage() {
                     <span className="onb-edit__n">{i + 1}</span>
                     {s.title}
                   </span>
-                  <span className="onb-edit__sub">{stepSummary(i)}</span>
+                  <span className="onb-edit__sub">{stepSummary(s.id)}</span>
                 </span>
                 <ChevronRight className="onb-edit__chev" aria-hidden="true" />
               </button>
@@ -763,32 +689,30 @@ export default function OnboardingPage() {
   );
 
   /** One line per step for the «Editar respuestas» list. */
-  function stepSummary(i: number): string {
-    switch (i) {
-      case 0:
+  function stepSummary(id: StepId): string {
+    switch (id) {
+      case 'about':
         return [d.name.trim(), age !== null && `${age} años`, currentKg !== null && u.weight(currentKg)].filter(Boolean).join(' · ');
-      case 1:
-        return goal ? mainGoalLabel(goal) : 'Sin elegir';
-      case 2:
+      case 'goal':
+        return goal ? [mainGoalLabel(goal), weightGoal && targetKg !== null && `Meta: ${u.weight(targetKg)}`].filter(Boolean).join(' · ') : 'Sin elegir';
+      case 'activity':
         return activity ? describeActivity(activity) : 'Sin responder';
-      case 3:
-        return foodSummary(cleanFood(d.food)) ?? 'Sin responder';
-      case 4:
-        return motivationSummary(cleanMotivation(d.motivation)) ?? 'Sin responder';
+      case 'habits':
+        return habitsSummary(cleanFood(d.food), cleanWellbeing(d.wellbeing)) ?? 'Sin responder';
       default:
-        return wellbeingSummary(cleanWellbeing(d.wellbeing)) ?? 'Sin responder';
+        return motivationSummary(cleanMotivation(d.motivation)) ?? 'Sin responder';
     }
   }
 }
 
-/** Seven segments; the current one fills as its screens are completed. */
-function StepsProgress({ step, fill }: { step: number; fill: number }) {
-  const value = Math.round(((step + fill) / STEPS.length) * 100);
+/** One segment per step; those reached so far are filled. */
+function StepsProgress({ step }: { step: number }) {
+  const value = Math.round(((step + 1) / STEPS.length) * 100);
   return (
     <div className="onb-progress" role="progressbar" aria-label="Progreso de la configuración" aria-valuemin={0} aria-valuemax={100} aria-valuenow={value}>
       {STEPS.map((s, i) => (
-        <span key={s.title} className="onb-progress__seg">
-          <span className="onb-progress__fill" style={{ transform: `scaleX(${i < step ? 1 : i === step ? fill : 0})` }} />
+        <span key={s.id} className="onb-progress__seg">
+          <span className="onb-progress__fill" style={{ transform: `scaleX(${i <= step ? 1 : 0})` }} />
         </span>
       ))}
     </div>
@@ -806,4 +730,3 @@ function StepTitle({ id, eyebrow, title, subtitle }: { id: string; eyebrow: stri
     </motion.div>
   );
 }
-

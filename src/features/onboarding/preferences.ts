@@ -1,4 +1,5 @@
 import { Armchair, Footprints, PersonStanding, type LucideIcon } from 'lucide-react';
+import { WEEKDAY_LABELS } from '@/domain/dates';
 import { calculateBmi, estimateActivityLevel, suggestWaterGoal, weightForBmi } from '@/domain/health';
 import type { ActivityLevel, ActivityProfile, Allergen, ExperienceLevel, FoodHabits, GoalType, MotivationProfile, Profile, Wellbeing } from '@/domain/types';
 import { checkRange, LIMITS } from '@/domain/validation';
@@ -6,8 +7,9 @@ import { goalLabel } from '../shared/labels';
 
 /**
  * Wording and pure helpers for the personalisation answers gathered in
- * onboarding and edited in Perfil → Tu personalización. Shared so both screens
- * (and the coach) always use the same labels.
+ * onboarding (a short version: only the essentials) and edited in full in
+ * Perfil → Tu personalización. Shared so both screens (and the coach) always
+ * use the same labels.
  *
  * "unsure" = «No lo sé / No estoy seguro»; "skip" = «Prefiero no responder».
  * Options flagged `quiet` are those meta answers: they are drawn more softly.
@@ -188,6 +190,54 @@ export function estimatedLevel(a: ActivityAnswers): ActivityLevel | null {
 
 export const trainingDaysText = (n: number) => (n === 0 ? 'Sin entreno habitual' : `${n} ${n === 1 ? 'día' : 'días'} de entreno`);
 
+/**
+ * Onboarding asks only how you spend the day, how many days a week you train
+ * and, if you do, your experience. The job is not asked: it is stored as
+ * «Otro», which leaves the estimate to the posture and the training days and
+ * can be refined later in Perfil.
+ */
+export interface QuickActivity {
+  posture: Posture | null;
+  /** Sessions a week, 0–7. */
+  days: number | null;
+  experience: ExperienceLevel | null;
+}
+
+export const EMPTY_QUICK_ACTIVITY: QuickActivity = { posture: null, days: null, experience: null };
+
+export const TRAINING_DAYS_MAX = 7;
+
+/** Usual weekdays (Monday = 0) for a number of sessions, spread so rest days fall in between. */
+const SPREAD: readonly (readonly number[])[] = [[], [0], [0, 3], [0, 2, 4], [0, 1, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6]];
+
+export const spreadTrainingDays = (n: number): number[] => [...(SPREAD[Math.max(0, Math.min(TRAINING_DAYS_MAX, Math.round(n)))] ?? [])];
+
+/** "lunes, miércoles y viernes" */
+export const weekdaysText = (days: number[]) => joinList(days.map((d) => WEEKDAY_LABELS[d]?.toLowerCase() ?? ''));
+
+/** «Ningún día», «1 día», «3 días»: accessible names of the 0–7 picker. */
+export const trainingCountLabel = (n: number) => (n === 0 ? 'Ningún día' : `${n} ${n === 1 ? 'día' : 'días'}`);
+
+/** What is still missing to estimate the activity level, once the user has started answering. */
+export function quickActivityMissing(a: QuickActivity): string | null {
+  if (a.posture === null && a.days === null) return null;
+  if (a.posture === null) return 'Indica también cómo pasas el día para estimar tu nivel de actividad.';
+  if (a.days === null) return 'Indica también cuántos días entrenas para estimar tu nivel de actividad.';
+  return null;
+}
+
+/** The stored activity profile, or undefined while it is incomplete. */
+export function quickActivityProfile(a: QuickActivity): ActivityProfile | undefined {
+  if (a.posture === null || a.days === null) return undefined;
+  return {
+    posture: a.posture,
+    job: 'other',
+    trainingDays: a.days,
+    activityTypes: [],
+    ...(a.days > 0 && a.experience ? { experience: a.experience } : {}),
+  };
+}
+
 // ── Alimentación y hábitos ─────────────────────────────────────────────
 
 export const FOOD_IMPROVE_OPTIONS: Option<Answer<FoodHabits['improve']>>[] = [
@@ -359,28 +409,17 @@ export function cleanMotivation(m: MotivationProfile): MotivationProfile | undef
   return compact({ ...m, note: wantsMotivationNote(m) ? cleanText(m.note ?? '', NOTE_MAX) : undefined });
 }
 
-const MOTIVATOR_PHRASES: Record<Item<MotivationProfile['motivators']>, string> = {
-  progress: 'ver tu progreso',
-  streaks: 'mantener la racha',
-  tips: 'los consejos prácticos',
-  challenges: 'los retos',
-  health: 'sentirte mejor',
-  routine: 'tener una rutina',
-};
-
-/** Preferred kind of support, from how they like to progress and what keeps them going. */
-export function supportStyle(m: MotivationProfile | undefined): { title: string; text: string } | null {
-  if (!m?.style && !m?.motivators?.length) return null;
-  const base =
-    m.style === 'small'
-      ? { title: 'Paso a paso', text: 'Metas pequeñas y alcanzables' }
-      : m.style === 'challenging'
-        ? { title: 'Con retos', text: 'Objetivos exigentes, siempre con descanso' }
-        : m.style === 'balanced'
-          ? { title: 'Equilibrado', text: 'Constancia con algún reto de vez en cuando' }
-          : { title: 'A tu ritmo', text: 'Sin prisas y adaptado a ti' };
-  const motivators = MOTIVATOR_OPTIONS.filter((o) => m.motivators?.includes(o.value)).map((o) => MOTIVATOR_PHRASES[o.value]);
-  return { title: base.title, text: motivators.length ? `${base.text}. Te impulsa: ${joinList(motivators)}.` : `${base.text}.` };
+/**
+ * Kind of support, from the time they can give each day: small steps when
+ * there is little time, complete sessions (always with rest) when there is more.
+ */
+export function supportFor(m: MotivationProfile | undefined): { title: string; text: string } {
+  const minutes = m?.dailyMinutes;
+  if (!minutes) return { title: 'A tu ritmo', text: 'Lo ajustaremos según cómo avances.' };
+  const time = labelOf(MINUTES_OPTIONS, String(minutes) as (typeof MINUTES_OPTIONS)[number]['value']);
+  if (minutes <= 20) return { title: 'Paso a paso', text: `Metas pequeñas que caben en ${time} al día.` };
+  if (minutes <= 30) return { title: 'Equilibrado', text: `Constancia con ${time} al día y algún reto de vez en cuando.` };
+  return { title: 'Con margen', text: `${time} al día para sesiones completas, siempre con descanso.` };
 }
 
 // ── Sueño y bienestar ──────────────────────────────────────────────────
@@ -427,12 +466,6 @@ export const cleanWellbeing = (w: Wellbeing): Wellbeing | undefined => compact({
 
 // ── Summaries ──────────────────────────────────────────────────────────
 
-const HARDEST_PHRASES: Record<Exclude<Answer<MotivationProfile['hardest']>, 'unsure'>, string> = {
-  start: 'Dar el primer paso',
-  consistency: 'Mantener la constancia',
-  results: 'Ver resultados',
-};
-
 /** Up to `max` main difficulties: what stopped them before, then what costs them most with food. */
 export function mainDifficulties(m: MotivationProfile | undefined, f: FoodHabits | undefined, max = 4): string[] {
   const out = [
@@ -440,22 +473,35 @@ export function mainDifficulties(m: MotivationProfile | undefined, f: FoodHabits
       BLOCKER_OPTIONS.filter((o) => o.value !== 'other'),
       m?.blockers ?? [],
     ),
-    ...(m?.hardest && m.hardest !== 'unsure' ? [HARDEST_PHRASES[m.hardest]] : []),
     ...labelsOf(FOOD_DIFFICULTY_OPTIONS, f?.difficulties ?? []),
   ];
   return out.slice(0, max);
 }
 
-/** Up to `max` habits to work on: the first focus leads, then the wellbeing habits (no duplicates). */
-export function habitsToImprove(m: MotivationProfile | undefined, w: Wellbeing | undefined, max = 4): string[] {
-  const out: string[] = [];
-  if (m?.firstFocus) out.push(labelOf(FIRST_FOCUS_OPTIONS, m.firstFocus));
-  const same: Partial<Record<Item<Wellbeing['improve']>, Answer<MotivationProfile['firstFocus']>>> = { sleep: 'sleep', water: 'water', movement: 'movement' };
-  for (const v of w?.improve ?? []) {
-    if (m?.firstFocus && same[v] === m.firstFocus) continue;
-    out.push(labelOf(WELLBEING_IMPROVE_OPTIONS, v));
-  }
-  return out.slice(0, max);
+/**
+ * Habits to start with, read only from what the user answered: wanting to eat
+ * better, drinking under a litre, sleeping under six hours or not training.
+ */
+export function habitsToImprove(f: FoodHabits | undefined, w: Wellbeing | undefined, trainingDays: number | null): string[] {
+  return [
+    (f?.improve === 'yes' || f?.improve === 'a_bit') && 'Alimentación',
+    f?.water === 'low' && 'Hidratación',
+    w?.sleepHours === 'lt6' && 'Descanso',
+    trainingDays === 0 && 'Movimiento diario',
+  ].filter(Boolean) as string[];
+}
+
+const sleepText = (h: Answer<Wellbeing['sleepHours']>) => `Duermes ${labelOf(SLEEP_OPTIONS, h).toLowerCase()}`;
+
+/** One line for the habits asked in onboarding: food, water and sleep. */
+export function habitsSummary(f: FoodHabits | undefined, w: Wellbeing | undefined): string | null {
+  if (!f && !w) return null;
+  const parts = [
+    f?.improve && f.improve !== 'unsure' && (f.improve === 'no' ? 'Alimentación sin cambios' : f.improve === 'yes' ? 'Mejorar tu alimentación' : 'Mejorar un poco tu alimentación'),
+    f?.water && f.water !== 'unsure' && `Agua: ${labelOf(WATER_OPTIONS, f.water).toLowerCase()}`,
+    w?.sleepHours && w.sleepHours !== 'skip' && sleepText(w.sleepHours),
+  ].filter(Boolean) as string[];
+  return parts.length ? parts.join(' · ') : 'Respuestas guardadas';
 }
 
 export function foodSummary(f: FoodHabits | undefined): string | null {
@@ -487,7 +533,7 @@ export function motivationSummary(m: MotivationProfile | undefined): string | nu
 export function wellbeingSummary(w: Wellbeing | undefined): string | null {
   if (!w) return null;
   const parts = [
-    w.sleepHours && w.sleepHours !== 'skip' && `Duermes ${labelOf(SLEEP_OPTIONS, w.sleepHours).toLowerCase()}`,
+    w.sleepHours && w.sleepHours !== 'skip' && sleepText(w.sleepHours),
     w.stress && w.stress !== 'skip' && `Estrés ${labelOf(STRESS_OPTIONS, w.stress).toLowerCase()}`,
     w.improve?.length && labelsOf(WELLBEING_IMPROVE_OPTIONS, w.improve)[0],
   ].filter(Boolean) as string[];

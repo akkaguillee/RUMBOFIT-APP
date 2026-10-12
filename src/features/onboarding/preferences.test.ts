@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { estimateActivityLevel } from '@/domain/health';
 import type { Profile } from '@/domain/types';
 import { unitsApi } from '../shared/units';
 import {
@@ -9,20 +10,28 @@ import {
   cleanMotivation,
   cleanWellbeing,
   EMPTY_ACTIVITY,
+  EMPTY_QUICK_ACTIVITY,
   estimatedLevel,
   goalChoiceOf,
   goalFromChoice,
+  habitsSummary,
   habitsToImprove,
   inputOrStored,
   joinList,
   mainDifficulties,
   mainGoalLabel,
-  supportStyle,
+  quickActivityMissing,
+  quickActivityProfile,
+  spreadTrainingDays,
+  supportFor,
   targetWeightError,
   toActivityProfile,
+  trainingCountLabel,
   trainingDaysOf,
   waterGoalFor,
+  weekdaysText,
   type ActivityAnswers,
+  type QuickActivity,
 } from './preferences';
 
 const kg = (n: number) => `${n} kg`;
@@ -117,6 +126,47 @@ describe('activity answers', () => {
   });
 });
 
+describe('onboarding activity (posture, training days and experience)', () => {
+  const quick = (patch: Partial<QuickActivity>): QuickActivity => ({ ...EMPTY_QUICK_ACTIVITY, ...patch });
+
+  it('needs the posture and the training days once the user starts answering', () => {
+    expect(quickActivityMissing(EMPTY_QUICK_ACTIVITY)).toBeNull();
+    expect(quickActivityMissing(quick({ posture: 'standing' }))).toMatch(/cuántos días entrenas/);
+    expect(quickActivityMissing(quick({ days: 3 }))).toMatch(/cómo pasas el día/);
+    expect(quickActivityMissing(quick({ posture: 'sitting', days: 0 }))).toBeNull();
+    expect(quickActivityProfile(quick({ posture: 'sitting' }))).toBeUndefined();
+  });
+
+  it('stores the job as «Otro», so the level depends only on the posture and the training days', () => {
+    const profile = quickActivityProfile(quick({ posture: 'standing', days: 3, experience: 'beginner' }));
+    expect(profile).toEqual({ posture: 'standing', job: 'other', trainingDays: 3, activityTypes: [], experience: 'beginner' });
+    // The e2e profile: on your feet with three sessions a week is a moderate level.
+    expect(estimateActivityLevel(profile!)).toBe('moderate');
+    expect(estimateActivityLevel(quickActivityProfile(quick({ posture: 'sitting', days: 3 }))!)).toBe('light');
+    expect(estimateActivityLevel(quickActivityProfile(quick({ posture: 'moving', days: 6 }))!)).toBe('very_active');
+  });
+
+  it('keeps no experience for someone who does not train', () => {
+    expect(quickActivityProfile(quick({ posture: 'sitting', days: 0, experience: 'advanced' }))).toEqual({
+      posture: 'sitting',
+      job: 'other',
+      trainingDays: 0,
+      activityTypes: [],
+    });
+  });
+
+  it('spreads the sessions over the week with rest days in between', () => {
+    expect(spreadTrainingDays(0)).toEqual([]);
+    expect(spreadTrainingDays(2)).toEqual([0, 3]);
+    expect(spreadTrainingDays(3)).toEqual([0, 2, 4]);
+    expect(spreadTrainingDays(7)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(spreadTrainingDays(12)).toHaveLength(7);
+    for (let n = 0; n <= 7; n++) expect(spreadTrainingDays(n)).toHaveLength(n);
+    expect(weekdaysText(spreadTrainingDays(3))).toBe('lunes, miércoles y viernes');
+    expect([0, 1, 3].map(trainingCountLabel)).toEqual(['Ningún día', '1 día', '3 días']);
+  });
+});
+
 describe('food habits', () => {
   it('keeps no details when the user does not want to change how they eat', () => {
     expect(cleanFood({ improve: 'no', quality: 'good', restrictions: ['gluten'], difficulties: ['portions'], water: 'low' })).toEqual({
@@ -137,7 +187,7 @@ describe('food habits', () => {
   });
 });
 
-describe('motivation and wellbeing', () => {
+describe('motivation, wellbeing and the summary', () => {
   it('keeps the free answer only when «Otro» is chosen', () => {
     expect(cleanMotivation({ blockers: ['time'], note: 'Turnos' })).toEqual({ blockers: ['time'] });
     expect(cleanMotivation({ dropReasons: ['other'], note: '  Turnos de noche ' })).toEqual({ dropReasons: ['other'], note: 'Turnos de noche' });
@@ -146,24 +196,30 @@ describe('motivation and wellbeing', () => {
     expect(cleanWellbeing({ stress: 'skip' })).toEqual({ stress: 'skip' });
   });
 
-  it('describes the preferred kind of support', () => {
-    expect(supportStyle(undefined)).toBeNull();
-    expect(supportStyle({ style: 'small', motivators: ['progress', 'streaks'] })).toEqual({
-      title: 'Paso a paso',
-      text: 'Metas pequeñas y alcanzables. Te impulsa: ver tu progreso y mantener la racha.',
-    });
-    expect(supportStyle({ motivators: ['tips'] })?.title).toBe('A tu ritmo');
+  it('describes the kind of support from the time available each day', () => {
+    expect(supportFor(undefined)).toEqual({ title: 'A tu ritmo', text: 'Lo ajustaremos según cómo avances.' });
+    expect(supportFor({ dailyMinutes: 10 })).toEqual({ title: 'Paso a paso', text: 'Metas pequeñas que caben en 10 min al día.' });
+    expect(supportFor({ dailyMinutes: 30 }).title).toBe('Equilibrado');
+    expect(supportFor({ dailyMinutes: 60 })).toEqual({ title: 'Con margen', text: '1 h o más al día para sesiones completas, siempre con descanso.' });
   });
 
-  it('lists the main difficulties and the habits to improve without repeats', () => {
-    expect(mainDifficulties({ blockers: ['time', 'other'], hardest: 'consistency' }, { difficulties: ['impulse', 'portions'] })).toEqual([
+  it('lists the main difficulties and the habits to start with', () => {
+    expect(mainDifficulties({ blockers: ['time', 'other', 'stress'] }, { difficulties: ['impulse', 'portions', 'planning'] })).toEqual([
       'Falta de tiempo',
-      'Mantener la constancia',
+      'Estrés o cansancio',
+      'Organizarme',
       'Las cantidades',
-      'Comer por impulso',
     ]);
-    expect(habitsToImprove({ firstFocus: 'sleep' }, { improve: ['sleep', 'screens'] })).toEqual(['Descansar mejor', 'Menos pantallas de noche']);
-    expect(habitsToImprove(undefined, undefined)).toEqual([]);
+    expect(habitsToImprove({ improve: 'a_bit', water: 'low' }, { sleepHours: 'lt6' }, 0)).toEqual(['Alimentación', 'Hidratación', 'Descanso', 'Movimiento diario']);
+    expect(habitsToImprove({ improve: 'no', water: 'medium' }, { sleepHours: '7to8' }, 3)).toEqual([]);
+    // Skipped questions never suggest anything.
+    expect(habitsToImprove(undefined, undefined, null)).toEqual([]);
+  });
+
+  it('summarises the habits asked in onboarding', () => {
+    expect(habitsSummary(undefined, undefined)).toBeNull();
+    expect(habitsSummary({ improve: 'yes', water: 'medium' }, { sleepHours: '6to7' })).toBe('Mejorar tu alimentación · Agua: de 1 a 2 litros · Duermes 6–7 h');
+    expect(habitsSummary({ improve: 'unsure' }, { sleepHours: 'skip' })).toBe('Respuestas guardadas');
   });
 
   it('joins lists in Spanish', () => {
