@@ -48,7 +48,7 @@
 /* Top bar (mobile + desktop) */
 .topbar {
   position: sticky;
-  top: 0;
+  top: var(--notice-h, 0px);
   z-index: var(--z-header);
   padding-top: var(--safe-top);
   transition:
@@ -148,7 +148,7 @@
 @media (min-width: 1024px) {
   .sidebar {
     position: sticky;
-    top: 0;
+    top: var(--notice-h, 0px);
     display: flex;
     height: calc(100dvh - var(--notice-h, 0px));
     padding: var(--space-4) 0 var(--space-4) var(--space-4);
@@ -627,7 +627,8 @@
 /* ── Storage notice & skip link ─────────────────────────────────────── */
 
 .storage-notice {
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: calc(var(--z-header) + 1);
   display: flex;
   align-items: flex-start;

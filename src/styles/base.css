@@ -84,6 +84,11 @@ a {
   text-decoration: none;
 }
 
+/* Taps during the theme/accent reveal reach the live page, not the transition overlay. */
+::view-transition {
+  pointer-events: none;
+}
+
 :focus:not(:focus-visible) {
   outline: none;
 }

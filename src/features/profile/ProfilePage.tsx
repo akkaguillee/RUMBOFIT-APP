@@ -385,8 +385,8 @@ function DataSection() {
       <div className="vstack">
         {storageMode() === 'memory' ? (
           <p className="t-small">
-            <strong>Modo temporal:</strong> este navegador no permite guardar datos aquí, así que todo se borrará al cerrar o recargar. Descarga una
-            copia de seguridad antes de salir y restáurala en un navegador normal. Nada se envía a ningún servidor.
+            <strong>Modo temporal:</strong> ahora mismo no se puede guardar en este dispositivo, así que todo se borrará al cerrar o recargar.
+            Descarga una copia de seguridad antes de salir para restaurarla después. Nada se envía a ningún servidor.
           </p>
         ) : (
           <p className="t-small">

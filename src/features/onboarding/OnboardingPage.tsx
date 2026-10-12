@@ -255,7 +255,7 @@ export default function OnboardingPage() {
                 <motion.p variants={itemVariants} className="onb__privacy">
                   <ShieldCheck aria-hidden="true" />
                   {storageMode() === 'memory'
-                    ? 'Modo temporal: este navegador no permite guardar datos, así que nada se conservará al cerrar.'
+                    ? 'Modo temporal: ahora mismo no se puede guardar en este dispositivo, así que nada se conservará al cerrar.'
                     : 'Tus datos se guardan solo en este dispositivo y no se envían a ningún servidor.'}
                 </motion.p>
               </div>

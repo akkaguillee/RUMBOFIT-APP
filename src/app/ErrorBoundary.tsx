@@ -1,5 +1,6 @@
 import { AlertTriangle, Download, Home, RotateCcw } from 'lucide-react';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { downloadJson, exportAll } from '@/db/repos/data';
 import { todayKey } from '@/domain/dates';
 
@@ -71,10 +72,11 @@ export class ErrorBoundary extends Component<Props, State> {
                 Descargar copia de mis datos
               </button>
             ) : (
-              <a className="btn btn--secondary" href={import.meta.env.MODE === 'standalone' ? '#/' : '/'}>
+              // A router link: a full reload would wipe data in temporary (memory) mode.
+              <Link className="btn btn--secondary" to="/">
                 <Home aria-hidden="true" />
                 Ir al inicio
-              </a>
+              </Link>
             )}
           </div>
           <details className="crash__details">

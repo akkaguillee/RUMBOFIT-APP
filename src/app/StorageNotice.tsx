@@ -1,6 +1,6 @@
 import { TriangleAlert, X } from 'lucide-react';
 import { useLayoutEffect, useRef, useState } from 'react';
-import { storageMode } from '@/db/backend';
+import { memoryReason, storageMode } from '@/db/backend';
 
 /**
  * Shown when the browser blocks IndexedDB and RUMBO runs on the temporary
@@ -33,10 +33,17 @@ export function StorageNotice() {
   return (
     <div ref={ref} className="storage-notice" role="alert">
       <TriangleAlert aria-hidden="true" />
-      <p>
-        <strong>Modo temporal.</strong> Este navegador no permite guardar datos aquí, así que lo que registres se perderá al cerrar. Abre RUMBO en
-        una ventana normal de Chrome, Safari, Edge o Firefox para conservar tu progreso.
-      </p>
+      {memoryReason() === 'open-failed' ? (
+        <p>
+          <strong>Modo temporal.</strong> No se han podido abrir tus datos guardados en este dispositivo. Cierra otras pestañas de RUMBO y vuelve a
+          cargar la página para recuperarlos; lo que registres ahora no se conservará.
+        </p>
+      ) : (
+        <p>
+          <strong>Modo temporal.</strong> Este navegador no permite guardar datos aquí, así que lo que registres se perderá al cerrar. Abre RUMBO en
+          una ventana normal de Chrome, Safari, Edge o Firefox para conservar tu progreso.
+        </p>
+      )}
       <button
         type="button"
         className="icon-btn icon-btn--sm icon-btn--plain"

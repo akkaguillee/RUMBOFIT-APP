@@ -76,7 +76,15 @@ function useInteractiveField(canvasRef: RefObject<HTMLCanvasElement | null>) {
       const cs = getComputedStyle(root);
       accent = parseColor(cs.getPropertyValue('--acc'), accent);
       dark = root.dataset.theme !== 'light';
+      const wasEnabled = enabled;
       enabled = !reduceMq.matches && !root.classList.contains('lite');
+      if (wasEnabled && !enabled) {
+        // Effects turned off mid-interaction: stop and leave a clean static field.
+        if (frame) cancelAnimationFrame(frame);
+        frame = 0;
+        ripples.length = 0;
+        strength = strengthTarget = 0;
+      }
     };
 
     const resize = () => {
@@ -246,7 +254,10 @@ function useInteractiveField(canvasRef: RefObject<HTMLCanvasElement | null>) {
       const t = e.touches[0];
       if (t) point(t.clientX, t.clientY, true);
     };
-    const onLeave = () => {
+    // Only hover-capable pointers "leave"; touch fires pointerleave right after
+    // every tap, and touch lenses already fade on their own timer.
+    const onLeave = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
       strengthTarget = 0;
       schedule();
     };

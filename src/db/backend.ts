@@ -16,6 +16,9 @@ export type StorageMode = 'persistent' | 'memory';
 
 let override: { factory: IDBFactory; keyRange: typeof IDBKeyRange } | null = null;
 let mode: StorageMode = 'persistent';
+/** Why the temporary store is in use: storage blocked by the browser, or the saved database failed to open. */
+export type MemoryReason = 'blocked' | 'open-failed';
+let reason: MemoryReason = 'blocked';
 
 const factory = (): IDBFactory => {
   const f = override?.factory ?? (globalThis as { indexedDB?: IDBFactory }).indexedDB;
@@ -91,11 +94,12 @@ export async function initStorage(): Promise<StorageMode> {
     mode = 'persistent';
     return mode;
   }
-  return switchToMemory();
+  return switchToMemory('blocked');
 }
 
 /** Routes every database call to the temporary in-memory store. */
-export async function switchToMemory(): Promise<StorageMode> {
+export async function switchToMemory(why: MemoryReason): Promise<StorageMode> {
+  reason = why;
   const fake = await import('fake-indexeddb');
   override = { factory: fake.indexedDB, keyRange: fake.IDBKeyRange };
   // Dexie's liveQuery() stays idle unless its global dependencies point to a
@@ -108,4 +112,8 @@ export async function switchToMemory(): Promise<StorageMode> {
 
 export function storageMode(): StorageMode {
   return mode;
+}
+
+export function memoryReason(): MemoryReason {
+  return reason;
 }

@@ -31,7 +31,7 @@ async function boot() {
   } catch (e) {
     console.error('RUMBO: no se pudo abrir la base de datos', e);
     db.close();
-    await switchToMemory();
+    await switchToMemory('open-failed');
     await db.open();
   }
 }
