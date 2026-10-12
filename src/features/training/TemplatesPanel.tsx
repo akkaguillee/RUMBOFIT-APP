@@ -28,7 +28,9 @@ export function TemplatesPanel() {
   return (
     <div className="vstack">
       <div className="hstack" style={{ justifyContent: 'space-between' }}>
-        <p className="t-small">Rutinas reutilizables con series, repeticiones y descansos de partida.</p>
+        <p className="t-small" style={{ flex: 1, minWidth: 0 }}>
+          Rutinas reutilizables con series, repeticiones y descansos de partida.
+        </p>
         <Button size="sm" icon={<Plus />} onClick={() => setEditor({ open: true, template: null })}>
           Nueva plantilla
         </Button>

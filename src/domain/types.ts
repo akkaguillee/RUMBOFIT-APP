@@ -26,11 +26,42 @@ export interface Profile {
   stepsGoal: number;
   /** Health flags that make standard calorie targets inappropriate. */
   healthFlags: HealthFlag[];
+  nutrition?: NutritionPrefs;
+  training?: TrainingPrefs;
+  /** What makes reaching the goal hardest; drives coaching tips. */
+  challenges?: Challenge[];
   createdAt: number;
   updatedAt: number;
 }
 
 export type HealthFlag = 'pregnancy' | 'eating_disorder' | 'medical_condition';
+
+// ── Preferences gathered in onboarding (all optional, editable in Perfil) ──
+
+export type DietType = 'omnivore' | 'flexitarian' | 'pescatarian' | 'vegetarian' | 'vegan';
+export type Allergen = 'gluten' | 'lactose' | 'egg' | 'nuts' | 'peanut' | 'soy' | 'fish' | 'shellfish';
+export type NutritionInterest = 'plan' | 'ideas' | 'none';
+export type CookingTime = 'quick' | 'normal' | 'any';
+export type Challenge = 'motivation' | 'time' | 'cravings' | 'consistency' | 'knowledge' | 'sleep' | 'stress' | 'social' | 'plateau';
+export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
+export type TrainingPlace = 'gym' | 'home' | 'outdoor';
+
+export interface NutritionPrefs {
+  /** "Quiero un plan" / "Solo ideas" / "Ahora no". */
+  interest: NutritionInterest;
+  diet: DietType;
+  allergens: Allergen[];
+  mealsPerDay: 3 | 4 | 5;
+  cookingTime: CookingTime;
+  /** Free text ("champiñones, atún…"), matched against recipe ingredients. */
+  dislikes?: string;
+}
+
+export interface TrainingPrefs {
+  experience: ExperienceLevel;
+  place: TrainingPlace;
+  sessionMinutes: 30 | 45 | 60 | 90;
+}
 
 export interface GoalRecord {
   id?: number;
@@ -140,12 +171,24 @@ export interface CustomExercise extends Exercise {
   createdAt: number;
 }
 
+/** Warm-up sets never count towards volume or personal records. */
+export type SetKind = 'warmup' | 'normal' | 'drop' | 'failure';
+
 export interface SetEntry {
   uid: string;
+  /** Load in kg (for bodyweight exercises: added load, e.g. a weight belt). */
   kg?: number;
   reps?: number;
   durationSec?: number;
   distanceKm?: number;
+  /** Defaults to 'normal' when absent (older records). */
+  kind?: SetKind;
+  /** Rate of perceived exertion, 6–10 in 0.5 steps. */
+  rpe?: number;
+  /** Cardio: average heart rate (bpm). */
+  avgHr?: number;
+  /** Cardio machines: incline (%) or resistance level. */
+  level?: number;
   done: boolean;
   completedAt?: number;
 }

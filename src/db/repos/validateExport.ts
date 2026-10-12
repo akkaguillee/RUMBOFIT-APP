@@ -27,7 +27,35 @@ const units = oneOf('metric', 'imperial');
 const weekday = (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 6;
 const autoId = (v: unknown) => v === undefined || (Number.isInteger(v) && (v as number) > 0);
 
-const set = (s: unknown) => obj(s) && str(s.uid) && bool(s.done) && optNum(s.kg) && optNum(s.reps) && optNum(s.durationSec) && optNum(s.distanceKm);
+const setKind = oneOf('warmup', 'normal', 'drop', 'failure');
+const set = (s: unknown) =>
+  obj(s) &&
+  str(s.uid) &&
+  bool(s.done) &&
+  optNum(s.kg) &&
+  optNum(s.reps) &&
+  optNum(s.durationSec) &&
+  optNum(s.distanceKm) &&
+  (s.kind === undefined || setKind(s.kind)) &&
+  optNum(s.rpe) &&
+  optNum(s.avgHr) &&
+  optNum(s.level);
+
+const diet = oneOf('omnivore', 'flexitarian', 'pescatarian', 'vegetarian', 'vegan');
+const allergen = oneOf('gluten', 'lactose', 'egg', 'nuts', 'peanut', 'soy', 'fish', 'shellfish');
+const challenge = oneOf('motivation', 'time', 'cravings', 'consistency', 'knowledge', 'sleep', 'stress', 'social', 'plateau');
+const nutritionPrefs = (v: unknown) =>
+  v === undefined ||
+  (obj(v) &&
+    oneOf('plan', 'ideas', 'none')(v.interest) &&
+    diet(v.diet) &&
+    arrOf(v.allergens, allergen) &&
+    [3, 4, 5].includes(v.mealsPerDay as number) &&
+    oneOf('quick', 'normal', 'any')(v.cookingTime) &&
+    optStr(v.dislikes));
+const trainingPrefs = (v: unknown) =>
+  v === undefined ||
+  (obj(v) && oneOf('beginner', 'intermediate', 'advanced')(v.experience) && oneOf('gym', 'home', 'outdoor')(v.place) && num(v.sessionMinutes));
 const workoutExercise = (e: unknown) => obj(e) && str(e.uid) && str(e.exerciseId) && num(e.restSec) && arrOf(e.sets, set);
 const templateExercise = (e: unknown) => obj(e) && str(e.exerciseId) && num(e.sets) && num(e.restSec);
 
@@ -49,6 +77,9 @@ const ROW_CHECKS: Record<TableName, (r: Row) => boolean> = {
     optNum(r.heightCm) &&
     optNum(r.startWeightKg) &&
     optNum(r.goalWeightKg) &&
+    nutritionPrefs(r.nutrition) &&
+    trainingPrefs(r.training) &&
+    (r.challenges === undefined || arrOf(r.challenges, challenge)) &&
     num(r.createdAt) &&
     num(r.updatedAt),
   goals: (r) => autoId(r.id) && goal(r.type) && isDate(r.startDate) && optDate(r.endDate) && bool(r.reached) && optNum(r.startWeightKg) && optNum(r.goalWeightKg),

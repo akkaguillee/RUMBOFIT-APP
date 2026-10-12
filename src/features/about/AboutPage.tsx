@@ -68,12 +68,10 @@ export default function AboutPage() {
               {p}
             </motion.p>
           ))}
-          <motion.p className="about__signature" variants={riseVariants}>
-            Este es mi RUMBO.
-          </motion.p>
-          <motion.p className="about__closing" variants={riseVariants}>
-            Ahora es el momento de encontrar el tuyo.
-          </motion.p>
+          <motion.div className="about__outro" variants={riseVariants}>
+            <p className="about__signature">Este es mi RUMBO.</p>
+            <p className="about__closing">Ahora es el momento de encontrar el tuyo.</p>
+          </motion.div>
         </div>
 
         <motion.ul className="about__socials rise-group" variants={liftVariants} aria-label="Redes sociales de Guille">

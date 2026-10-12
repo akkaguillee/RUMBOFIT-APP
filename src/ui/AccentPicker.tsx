@@ -6,7 +6,7 @@ import { Sheet } from './Sheet';
 import { spring } from './motion';
 
 /** Radio group of accent palettes. The new colour is revealed from the tapped swatch. */
-export function AccentPicker({ compact }: { compact?: boolean }) {
+export function AccentPicker() {
   const { accent, setAccent } = useTheme();
   const ring = useId();
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -30,7 +30,7 @@ export function AccentPicker({ compact }: { compact?: boolean }) {
   };
 
   return (
-    <div role="radiogroup" aria-label="Color de la interfaz" className={compact ? 'accent-grid accent-grid--compact' : 'accent-grid'}>
+    <div role="radiogroup" aria-label="Color de la interfaz" className="accent-grid">
       {ACCENTS.map((a, i) => {
         const selected = a.id === accent;
         return (
@@ -42,22 +42,22 @@ export function AccentPicker({ compact }: { compact?: boolean }) {
             type="button"
             role="radio"
             aria-checked={selected}
-            aria-label={`${a.name} (${a.color})`}
+            aria-label={`${a.name.charAt(0)}${a.name.slice(1).toLowerCase()} (${a.color})`}
             tabIndex={selected ? 0 : -1}
             className="accent-opt"
+            data-on-dark={a.id === 'rojo' || a.id === 'violeta' || a.id === 'fucsia'}
             onClick={() => choose(i)}
             onKeyDown={(e) => onKey(e, i)}
           >
-            <span className="accent-opt__orb" style={{ background: `radial-gradient(circle at 32% 26%, ${a.swatch[0]}, ${a.swatch[1]} 78%)` }} aria-hidden="true">
+            <span className="accent-opt__chip" style={{ background: a.swatch[0] }} aria-hidden="true">
               {selected && (
-                <motion.span className="accent-opt__check" initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={spring.bouncy}>
+                <motion.span className="accent-opt__check" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.18 }}>
                   <Check strokeWidth={3} />
                 </motion.span>
               )}
             </span>
-            {selected && <motion.span layoutId={ring} className="accent-opt__ring" transition={spring.snappy} aria-hidden="true" />}
             <span className="accent-opt__name">{a.name}</span>
-            {!compact && <span className="accent-opt__color">{a.color}</span>}
+            {selected && <motion.span layoutId={ring} className="accent-opt__ring" style={{ borderColor: a.swatch[0] }} transition={spring.snappy} aria-hidden="true" />}
           </button>
         );
       })}

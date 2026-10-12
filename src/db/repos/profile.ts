@@ -1,6 +1,6 @@
 import { nowTime, todayKey, type DateKey } from '@/domain/dates';
 import { goalProgress } from '@/domain/weight';
-import type { ActivityLevel, GoalType, HealthFlag, Profile, Sex, Units } from '@/domain/types';
+import type { ActivityLevel, Challenge, GoalType, HealthFlag, NutritionPrefs, Profile, Sex, TrainingPrefs, Units } from '@/domain/types';
 import { assertRange, assertText, LIMITS, ValidationError } from '@/domain/validation';
 import { db } from '../db';
 import { scheduleSync } from '../sync';
@@ -21,6 +21,9 @@ export interface ProfileInput {
   waterGoalMl: number;
   stepsGoal: number;
   healthFlags?: HealthFlag[];
+  nutrition?: NutritionPrefs;
+  training?: TrainingPrefs;
+  challenges?: Challenge[];
 }
 
 function validate(input: ProfileInput) {
@@ -57,6 +60,9 @@ export async function createProfile(input: ProfileInput): Promise<void> {
     waterGoalMl: input.waterGoalMl,
     stepsGoal: input.stepsGoal,
     healthFlags: input.healthFlags ?? [],
+    ...(input.nutrition ? { nutrition: input.nutrition } : {}),
+    ...(input.training ? { training: input.training } : {}),
+    ...(input.challenges ? { challenges: input.challenges } : {}),
     createdAt: now,
     updatedAt: now,
   };

@@ -124,20 +124,34 @@
   }
 }
 
-.about__signature {
-  margin-top: var(--space-3);
-  font-size: var(--text-xl);
-  font-weight: var(--weight-bold);
-  letter-spacing: -0.015em;
-  color: var(--text);
+/* Closing lines: set solid (line-height 1) and a touch larger so they stand out. */
+.about__outro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: var(--space-4);
   text-align: center;
 }
 
+.about__signature,
 .about__closing {
-  margin-top: -0.6em;
+  line-height: 1;
+  text-wrap: balance;
+}
+
+.about__signature {
+  font-size: clamp(1.5rem, 1.3rem + 0.8vw, 1.75rem);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.about__closing {
+  font-size: clamp(1.125rem, 1.05rem + 0.4vw, 1.25rem);
   font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
   color: var(--accent-text);
-  text-align: center;
 }
 
 .about__socials {
