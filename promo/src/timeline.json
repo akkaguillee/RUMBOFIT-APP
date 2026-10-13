@@ -1,186 +1,49 @@
 {
   "fps": 30,
-  "frames": 600,
+  "frames": 1200,
   "bpm": 120,
   "scenes": {
-    "hook": [
+    "intro": [
       0,
-      90
+      150
     ],
     "brand": [
-      90,
-      165
+      150,
+      240
     ],
-    "product": [
-      165,
-      300
+    "progress": [
+      240,
+      420
+    ],
+    "habits": [
+      420,
+      585
+    ],
+    "training": [
+      585,
+      735
     ],
     "streak": [
-      300,
-      390
+      735,
+      885
     ],
-    "tip": [
-      390,
-      510
+    "rumbi": [
+      885,
+      1050
     ],
     "end": [
-      510,
-      600
+      1050,
+      1200
     ]
   },
   "cuts": [
-    90,
-    165,
-    300,
-    390,
-    510
+    150,
+    240,
+    420,
+    585,
+    735,
+    885,
+    1050
   ],
-  "voice": [
-    {
-      "id": "v1",
-      "at": 9,
-      "text": "¿Y si esta vez fuera diferente?"
-    },
-    {
-      "id": "v2",
-      "at": 98,
-      "text": "Esto es rumbo."
-    },
-    {
-      "id": "v3a",
-      "at": 172,
-      "text": "Tu peso,"
-    },
-    {
-      "id": "v3b",
-      "at": 196,
-      "text": "tus hábitos"
-    },
-    {
-      "id": "v3c",
-      "at": 220,
-      "text": "y tus entrenos,"
-    },
-    {
-      "id": "v3d",
-      "at": 251,
-      "text": "en un solo lugar."
-    },
-    {
-      "id": "v4a",
-      "at": 304,
-      "text": "Cada día suma."
-    },
-    {
-      "id": "v4b",
-      "at": 340,
-      "text": "Enciende tu racha."
-    },
-    {
-      "id": "v5",
-      "at": 400,
-      "text": "Y Rumbi te guía con un consejo cada día."
-    },
-    {
-      "id": "v6",
-      "at": 516,
-      "text": "Ahora es el momento de encontrar el tuyo."
-    }
-  ],
-  "sfx": [
-    {
-      "type": "boop",
-      "at": 18
-    },
-    {
-      "type": "whoosh",
-      "at": 82
-    },
-    {
-      "type": "impact",
-      "at": 96
-    },
-    {
-      "type": "pop",
-      "at": 140
-    },
-    {
-      "type": "whoosh",
-      "at": 158
-    },
-    {
-      "type": "pop",
-      "at": 177
-    },
-    {
-      "type": "tick",
-      "at": 180,
-      "count": 10,
-      "every": 3
-    },
-    {
-      "type": "pop",
-      "at": 199
-    },
-    {
-      "type": "pop",
-      "at": 223
-    },
-    {
-      "type": "shimmer",
-      "at": 250
-    },
-    {
-      "type": "whoosh",
-      "at": 292
-    },
-    {
-      "type": "ignite",
-      "at": 302
-    },
-    {
-      "type": "tick",
-      "at": 308,
-      "count": 13,
-      "every": 3
-    },
-    {
-      "type": "chime",
-      "at": 322,
-      "count": 7,
-      "every": 4
-    },
-    {
-      "type": "pop",
-      "at": 352
-    },
-    {
-      "type": "whoosh",
-      "at": 382
-    },
-    {
-      "type": "pop",
-      "at": 410
-    },
-    {
-      "type": "boop",
-      "at": 452
-    },
-    {
-      "type": "shimmer",
-      "at": 488
-    },
-    {
-      "type": "whoosh",
-      "at": 502
-    },
-    {
-      "type": "impact",
-      "at": 512
-    },
-    {
-      "type": "shimmer",
-      "at": 560
-    }
-  ]
+  "sfx": []
 }

@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.."
 STEMS=audio/stems
 VIDEO=out/video-silent.mp4
 OUT=out/RUMBO-promo-9x16.mp4
-GRAPH="[0:a]volume=0.62[m];[2:a]asplit=2[vk][vo];[m][vk]sidechaincompress=threshold=0.025:ratio=7:attack=12:release=320:makeup=1[md];[1:a]volume=0.62[s];[vo]equalizer=f=3200:t=q:w=1.2:g=2.5,acompressor=threshold=0.1:ratio=3:attack=5:release=120:makeup=1.6[v];[md][s][v]amix=inputs=3:normalize=0,atrim=0:20,afade=t=out:st=19.4:d=0.6"
+GRAPH="[0:a]volume=0.6[m];[2:a]asplit=2[vk][vo];[m][vk]sidechaincompress=threshold=0.02:ratio=6:attack=15:release=350:makeup=1[md];[1:a]volume=0.6[s];[vo]acompressor=threshold=0.12:ratio=2.5:attack=8:release=140:makeup=1.5,alimiter=limit=0.95:attack=2:release=40[v];[md][s][v]amix=inputs=3:normalize=0,atrim=0:40,afade=t=out:st=39.3:d=0.7"
 
 # Pass 1: measure loudness
 STATS=$(ffmpeg -hide_banner -nostats -i $STEMS/music.wav -i $STEMS/sfx.wav -i $STEMS/voice.wav \
@@ -22,5 +22,5 @@ ffmpeg -hide_banner -y -i $STEMS/music.wav -i $STEMS/sfx.wav -i $STEMS/voice.wav
   -vf "scale=in_range=full:out_range=tv:out_color_matrix=bt709,format=yuv420p" \
   -c:v libx264 -preset slow -crf 19 -maxrate 14M -bufsize 28M -profile:v high -level:v 4.2 -r 30 -g 60 \
   -colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv \
-  -c:a aac -b:a 256k -ar 48000 -ac 2 -t 20 -movflags +faststart "$OUT"
+  -c:a aac -b:a 256k -ar 48000 -ac 2 -t 40 -movflags +faststart "$OUT"
 echo "Wrote $OUT"

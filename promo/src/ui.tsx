@@ -49,9 +49,12 @@ export function Words({
   out,
   lineHeight = 1.02,
   style,
+  frames,
 }: {
   text: string;
   at: number;
+  /** Explicit start frame for each word (e.g. from the voice timings); overrides at/every. */
+  frames?: number[];
   every?: number | number[];
   size?: number;
   weight?: number;
@@ -70,7 +73,7 @@ export function Words({
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: align === 'center' ? 'center' : 'flex-start', columnGap: size * 0.26, ...style }}>
       {words.map((w, i) => {
-        const start = Array.isArray(every) ? at + (every[i] ?? every[every.length - 1]!) : at + i * every;
+        const start = frames ? (frames[i] ?? frames[frames.length - 1]!) : Array.isArray(every) ? at + (every[i] ?? every[every.length - 1]!) : at + i * every;
         const s = spring({ frame: frame - start, fps, config: { damping: 20, stiffness: 170, mass: 0.8 } });
         const leave = out === undefined ? 0 : prog(frame, out + i * 1.5, out + 9 + i * 1.5, easeInOut);
         const y = (1 - s) * 105 - leave * 105;
@@ -337,6 +340,121 @@ export function LightSweep({ at, dur = 14 }: { at: number; dur?: number }) {
         }}
       />
       <div style={{ position: 'absolute', inset: 0, background: `rgba(255,70,80,${0.12 * strength})`, mixBlendMode: 'screen' }} />
+    </div>
+  );
+}
+
+// ── Additions for the 40 s cut ────────────────────────────────────────────
+
+/** Small uppercase label with a short red rule that draws in: "PROGRESO", "HÁBITOS"… */
+export function Eyebrow({ text, at, align = 'left' }: { text: string; at: number; align?: 'left' | 'center' }) {
+  const frame = useCurrentFrame();
+  const line = prog(frame, at, at + 14);
+  const txt = prog(frame, at + 4, at + 18);
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 18, justifyContent: align === 'center' ? 'center' : 'flex-start' }}>
+      <div style={{ width: 56 * line, height: 3, borderRadius: 2, background: '#ff4552' }} />
+      <div
+        style={{
+          fontSize: 26,
+          fontWeight: 700,
+          letterSpacing: '0.22em',
+          textTransform: 'uppercase',
+          color: '#ff8a8f',
+          opacity: txt,
+          transform: `translateX(${(1 - txt) * -16}px)`,
+        }}
+      >
+        {text}
+      </div>
+    </div>
+  );
+}
+
+/** Animated number (es-ES). */
+export function Counter({ from, to, at, dur, decimals = 0, style }: { from: number; to: number; at: number; dur: number; decimals?: number; style?: CSSProperties }) {
+  const frame = useCurrentFrame();
+  const p = interpolate(frame, [at, at + dur], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.16, 1, 0.3, 1) });
+  return <span style={{ fontVariantNumeric: 'tabular-nums', ...style }}>{fmt(from + (to - from) * p, decimals)}</span>;
+}
+
+/** Stroke that draws itself: put pathLength={1} on the path and spread these props. */
+export const drawn = (p: number) => ({ pathLength: 1, strokeDasharray: '1 1', strokeDashoffset: 1 - clamp(p) });
+
+/** Soft dust motes drifting in the light — deterministic, subtle. */
+export function Particles({ seed = 1, count = 26, opacity = 0.5, area = { x: 0, y: 0, w: 1080, h: 1920 } }: { seed?: number; count?: number; opacity?: number; area?: { x: number; y: number; w: number; h: number } }) {
+  const frame = useCurrentFrame();
+  const r = rng(seed);
+  const parts = Array.from({ length: count }, () => ({ x: r(), y: r(), s: 2 + r() * 4, v: 0.2 + r() * 0.6, ph: r() * 6.28, a: 0.25 + r() * 0.75 }));
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+      {parts.map((p, i) => {
+        const y = ((p.y * area.h - frame * p.v * 1.6) % area.h + area.h) % area.h;
+        const x = p.x * area.w + Math.sin(frame / 40 + p.ph) * 18;
+        return (
+          <div
+            key={i}
+            style={{
+              position: 'absolute',
+              left: area.x + x,
+              top: area.y + y,
+              width: p.s,
+              height: p.s,
+              borderRadius: '50%',
+              background: i % 4 ? 'rgba(255,190,190,0.9)' : 'rgba(255,90,99,0.9)',
+              boxShadow: '0 0 10px 2px rgba(255,90,99,0.35)',
+              opacity: opacity * p.a * (0.6 + 0.4 * Math.sin(frame / 18 + p.ph)),
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Official logo lockup for the brand and end cards: the runner inside a Liquid
+ * Glass medallion (as on the app's welcome screen) above a compact wordmark.
+ * `size` is the medallion size; the wordmark width is 2.1× that (never wider than 520 px).
+ */
+export function LogoLockup({ size = 200, at, sweepAt, id = 'lockup' }: { size?: number; at: number; sweepAt?: number; id?: string }) {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const pop = spring({ frame: frame - at, fps, config: { damping: 14, stiffness: 120, mass: 0.9 } });
+  const shine = sweepAt === undefined ? 0 : prog(frame, sweepAt, sweepAt + 26, easeInOut);
+  const wmWidth = Math.min(520, size * 2.1);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: size * 0.26 }}>
+      <div
+        style={{
+          position: 'relative',
+          width: size,
+          height: size,
+          borderRadius: size * 0.3,
+          transform: `scale(${0.6 + 0.4 * pop})`,
+          opacity: clamp(pop * 1.4),
+          background: 'linear-gradient(160deg, rgba(255,255,255,0.18), rgba(255,255,255,0.05))',
+          boxShadow:
+            'inset 0 2px 0 rgba(255,255,255,0.45), inset 0 0 0 1.5px rgba(255,255,255,0.14), 0 40px 90px -30px rgba(0,0,0,0.9), 0 0 120px -20px rgba(229,57,69,0.6)',
+          backdropFilter: 'blur(24px) saturate(170%)',
+          display: 'grid',
+          placeItems: 'center',
+          overflow: 'hidden',
+        }}
+      >
+        <RunnerLogo size={size * 0.62} frame={frame} at={at + 2} />
+        {shine > 0 && shine < 1 && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: -size,
+              background: `linear-gradient(115deg, transparent ${40 + shine * 40 - 12}%, rgba(255,255,255,0.35) ${40 + shine * 40}%, transparent ${40 + shine * 40 + 12}%)`,
+              transform: `translateX(${(shine - 0.5) * size * 1.6}px)`,
+            }}
+          />
+        )}
+      </div>
+      <Wordmark width={wmWidth} frame={frame} at={at + 10} sweepAt={sweepAt} id={`${id}-wm`} />
     </div>
   );
 }

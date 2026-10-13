@@ -1,16 +1,16 @@
 """
-RUMBO promo audio: original music, sound effects and the Spanish (Spain) voice-over.
+RUMBO promo audio (40 s): original music, sound design and the Spanish voice-over.
 
 Everything is generated here, so every sound is ours to use:
-- music and effects are synthesised with numpy/scipy (120 BPM, A minor);
-- the voice is Piper "es_ES-davefx-medium" (dataset licence CC0) run locally with sherpa-onnx.
-Timings come from src/timeline.json, the same file the Remotion scenes use.
+- music and effects are synthesised with numpy/scipy (120 BPM, A minor / C major);
+- the voice is Kokoro-82M (Apache-2.0), Spanish male voice "em_alex", run locally
+  with sherpa-onnx — dry, no reverb, only EQ here and gentle compression in the mix.
+Timings come from src/timeline.json (scenes, sound cues) and src/voice.json (lines).
 Outputs 48 kHz stereo stems in audio/stems/; audio/mux.sh mixes them with FFmpeg.
 """
 
 import json
 import os
-import subprocess
 import tarfile
 import urllib.request
 
@@ -21,445 +21,513 @@ from scipy import signal
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 TL = json.load(open(os.path.join(ROOT, 'src', 'timeline.json')))
+VOICE = json.load(open(os.path.join(ROOT, 'src', 'voice.json')))
 SR = 48000
 FPS = TL['fps']
-BPM = TL['bpm']
-BEAT = 60 / BPM
-LENGTH = TL['frames'] / FPS + 0.6  # small tail, trimmed by the mux
+BEAT = 60 / TL['bpm']
+BAR = 4 * BEAT
+LENGTH = TL['frames'] / FPS + 0.8
 N = int(LENGTH * SR)
 STEMS = os.path.join(HERE, 'stems')
 os.makedirs(STEMS, exist_ok=True)
-rng = np.random.default_rng(2026)
+rng = np.random.default_rng(40)
 
 
-def t_of(frame):
+# ── DSP helpers ──────────────────────────────────────────────────────────
+def tf(frame):
     return frame / FPS
 
 
-def note(name):
+def hz(name):
     names = {'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10, 'B': 11}
-    n, octave = name[:-1], int(name[-1])
-    return 440.0 * 2 ** ((names[n] + 12 * (octave + 1) - 69) / 12)
+    return 440.0 * 2 ** ((names[name[:-1]] + 12 * (int(name[-1]) + 1) - 69) / 12)
 
 
-def env_adsr(n, a=0.005, d=0.1, s=0.6, r=0.2, sr=SR):
-    a_n, d_n, r_n = int(a * sr), int(d * sr), int(r * sr)
+def sos(kind, f, order=2):
+    if kind == 'band':
+        return signal.butter(order, [f[0], min(f[1], SR * 0.45)], 'band', fs=SR, output='sos')
+    return signal.butter(order, min(f, SR * 0.45), kind, fs=SR, output='sos')
+
+
+def lp(x, f, order=2):
+    return signal.sosfilt(sos('low', f, order), x, axis=0)
+
+
+def hp(x, f, order=2):
+    return signal.sosfilt(sos('high', f, order), x, axis=0)
+
+
+def bp(x, lo, hi, order=2):
+    return signal.sosfilt(sos('band', (lo, hi), order), x, axis=0)
+
+
+def peaking(x, f0, gain_db, q=1.0):
+    a = 10 ** (gain_db / 40)
+    w = 2 * np.pi * f0 / SR
+    alpha = np.sin(w) / (2 * q)
+    b = np.array([1 + alpha * a, -2 * np.cos(w), 1 - alpha * a])
+    den = np.array([1 + alpha / a, -2 * np.cos(w), 1 - alpha / a])
+    return signal.lfilter(b / den[0], den / den[0], x, axis=0)
+
+
+def sweep(x, f0, f1, kind='low', block=480):
+    out = np.zeros_like(x)
+    zi = None
+    nb = int(np.ceil(len(x) / block))
+    for i in range(nb):
+        c = f0 * (f1 / f0) ** (i / max(1, nb - 1))
+        s = sos(kind, c)
+        if zi is None:
+            zi = np.zeros((s.shape[0], 2))
+        seg = x[i * block:(i + 1) * block]
+        out[i * block:i * block + len(seg)], zi = signal.sosfilt(s, seg, zi=zi)
+    return out
+
+
+def env(n, a=0.005, d=0.1, s=0.7, r=0.15):
+    a_n, d_n, r_n = int(a * SR), int(d * SR), int(r * SR)
     sus = max(0, n - a_n - d_n - r_n)
     e = np.concatenate([np.linspace(0, 1, a_n, endpoint=False), np.linspace(1, s, d_n, endpoint=False), np.full(sus, s), np.linspace(s, 0, r_n)])
     return e[:n] if len(e) >= n else np.pad(e, (0, n - len(e)))
 
 
-def saw(freq, n, detune=0.0, phase=0.0):
-    t = np.arange(n) / SR
-    f = freq * (1 + detune)
-    x = (t * f + phase) % 1.0
-    return 2 * x - 1
+def saw(f, n, ph=0.0):
+    """Saw with PolyBLEP anti-aliasing."""
+    t = (np.arange(n) * f / SR + ph) % 1.0
+    dt = f / SR
+    y = 2 * t - 1
+    m1 = t < dt
+    tt = t[m1] / dt
+    y[m1] -= tt + tt - tt * tt - 1
+    m2 = t > 1 - dt
+    tt = (t[m2] - 1) / dt
+    y[m2] -= tt * tt + tt + tt + 1
+    return y
 
 
-def lowpass(x, cutoff, order=2):
-    sos = signal.butter(order, min(cutoff, SR * 0.45), 'low', fs=SR, output='sos')
-    return signal.sosfilt(sos, x)
+def sine(f, n, ph=0.0):
+    return np.sin(2 * np.pi * (np.arange(n) * f / SR + ph))
 
 
-def highpass(x, cutoff, order=2):
-    sos = signal.butter(order, cutoff, 'high', fs=SR, output='sos')
-    return signal.sosfilt(sos, x)
-
-
-def bandpass(x, lo, hi, order=2):
-    sos = signal.butter(order, [lo, min(hi, SR * 0.45)], 'band', fs=SR, output='sos')
-    return signal.sosfilt(sos, x)
-
-
-def sweep_filter(x, start, end, kind='low', block=512):
-    """Time-varying filter: cutoff moves exponentially from start to end (Hz)."""
-    out = np.zeros_like(x)
-    zi = None
-    nb = int(np.ceil(len(x) / block))
-    for i in range(nb):
-        c = start * (end / start) ** (i / max(1, nb - 1))
-        sos = signal.butter(2, min(c, SR * 0.45), kind, fs=SR, output='sos')
-        if zi is None:
-            zi = np.zeros((sos.shape[0], 2))
-        seg = x[i * block:(i + 1) * block]
-        out[i * block:i * block + len(seg)], zi = signal.sosfilt(sos, seg, zi=zi)
-    return out
-
-
-def reverb_ir(seconds=1.8, decay=3.2, seed=1):
+def make_ir(seconds, decay, seed, bright=6500):
     r = np.random.default_rng(seed)
     n = int(seconds * SR)
     t = np.arange(n) / SR
-    e = np.exp(-decay * t)
-    left = r.standard_normal(n) * e
-    right = r.standard_normal(n) * e
-    left, right = lowpass(left, 7000), lowpass(right, 7000)
-    ir = np.stack([left, right], 1)
-    return ir / np.sqrt((ir ** 2).sum())
+    e = np.exp(-decay * t) * (1 - np.exp(-t * 400))
+    x = lp(np.stack([r.standard_normal(n) * e, r.standard_normal(n) * e], 1), bright)
+    return x / np.sqrt((x ** 2).sum() / 2)
 
 
-IR = reverb_ir()
-IR_SHORT = reverb_ir(0.7, 6.0, seed=3)
+HALL = make_ir(2.4, 2.4, 1)
+ROOM = make_ir(0.6, 7.0, 2)
 
 
-def reverb(x, ir=IR, wet=0.25):
-    """x: (n, 2). Returns x with convolution reverb (same length)."""
-    wet_sig = np.stack([signal.fftconvolve(x[:, c], ir[:, c])[: len(x)] for c in range(2)], 1)
-    return x * (1 - wet) + wet_sig * wet * 3.0
+def verb(x, impulse, wet):
+    w = np.stack([signal.fftconvolve(x[:, c], impulse[:, c])[: len(x)] for c in range(2)], 1)
+    return x + w * wet
 
 
-def place(buf, x, at_s, gain=1.0, pan=0.0):
-    """Mix mono or stereo x into buf at time at_s with constant-power pan."""
-    i = int(at_s * SR)
+def st(x, pan=0.0, width=0):
+    lg, rg = np.cos((pan + 1) * np.pi / 4) * 1.414, np.sin((pan + 1) * np.pi / 4) * 1.414
+    r = np.roll(x, width) if width else x
+    return np.stack([x * lg, r * rg], 1)
+
+
+def add(buf, x, at, gain=1.0, pan=0.0):
+    i = int(round(at * SR))
     if i >= len(buf):
         return
     if x.ndim == 1:
-        lg, rg = np.cos((pan + 1) * np.pi / 4), np.sin((pan + 1) * np.pi / 4)
-        x = np.stack([x * lg * 1.414, x * rg * 1.414], 1)
+        x = st(x, pan)
+    if i < 0:
+        x, i = x[-i:], 0
     n = min(len(x), len(buf) - i)
     buf[i:i + n] += x[:n] * gain
 
 
-def stereo(x):
-    return np.stack([x, x], 1)
+# ── Arrangement (seconds) ────────────────────────────────────────────────
+DROP = 6.0             # music downbeat; the logo impact SFX lands on the word "rumbo"
+BREAK = (29.5, 35.0)   # Rumbi: drums drop out, playful keys
+FINAL = 35.0           # end card
+CHORDS = [['A3', 'C4', 'E4'], ['F3', 'A3', 'C4'], ['C4', 'E4', 'G4'], ['G3', 'B3', 'D4']]
+ROOTS = ['A1', 'F1', 'C2', 'G1']
 
 
-# ── Music ────────────────────────────────────────────────────────────────
+def chord(t):
+    return int(t // BAR) % 4
+
+
 music = np.zeros((N, 2))
-CHORDS = [  # one chord per bar (2 s): Am – F – C – G
-    ['A2', 'C4', 'E4', 'A4'],
-    ['F2', 'C4', 'F4', 'A4'],
-    ['C3', 'E4', 'G4', 'C5'],
-    ['G2', 'D4', 'G4', 'B4'],
-]
-BAR = 4 * BEAT
-n_bars = int(np.ceil(LENGTH / BAR))
+
+# Pad (wide, warm) across the film
+for b in range(int(np.ceil(LENGTH / BAR))):
+    t0 = b * BAR
+    n = int((BAR + 0.6) * SR)
+    x = np.zeros(n)
+    notes = CHORDS[b % 4] + [CHORDS[b % 4][0][:-1] + str(int(CHORDS[b % 4][0][-1]) + 1)]
+    for nm in notes:
+        for d in (-0.005, 0.0, 0.006):
+            x += saw(hz(nm) * (1 + d), n, rng.random())
+    x = lp(x / 12 * env(n, 0.45, 0.3, 0.85, 0.55), 1400 if t0 < DROP else 1900)
+    g = 0.16 if t0 < DROP else (0.2 if BREAK[0] <= t0 < BREAK[1] else 0.11)
+    if t0 >= FINAL:
+        g = 0.2
+    add(music, np.stack([x, np.roll(x, 300)], 1), t0, g)
 
 
-def chord_at(bar):
-    return CHORDS[bar % 4]
-
-
-# Pad: detuned saws, filter opening through the intro, sustained to the end.
-for bar in range(n_bars):
-    start = bar * BAR
-    n = int(BAR * SR) + int(0.4 * SR)
-    sig = np.zeros(n)
-    for nm in chord_at(bar)[1:]:
-        f = note(nm)
-        for d in (-0.006, 0.0, 0.007):
-            sig += saw(f, n, d, phase=rng.random())
-    sig /= 9
-    e = env_adsr(n, a=0.35, d=0.4, s=0.85, r=0.4)
-    cutoff = 900 if bar >= 2 else 450 + 300 * bar
-    if bar >= 8:  # ending: warmer and open
-        cutoff = 1500
-    sig = lowpass(sig * e, cutoff)
-    gain = 0.20 if bar < 2 else 0.14
-    if 6 <= bar < 8:
-        gain = 0.17  # Rumbi section: pad carries the harmony
-    place(music, np.stack([sig, np.roll(sig, 240)], 1), start, gain)
-
-# Sub pulse in the intro (quarters, low)
-for k in range(6):
-    n = int(0.42 * SR)
+def keys(f, dur=1.2):
+    """Piano-like tone: decaying, slightly inharmonic partials with a soft hammer."""
+    n = int(dur * SR)
     t = np.arange(n) / SR
-    f = note('A1')
-    x = np.sin(2 * np.pi * f * t) * np.exp(-t * 7)
-    place(music, x, k * BEAT, 0.18 + 0.05 * k)
+    y = sum((0.6 ** k) * np.sin(2 * np.pi * f * (k + 1) * (1 + 0.0004 * k * k) * t) * np.exp(-t * (2.2 + k * 1.3)) for k in range(6))
+    y = y + lp(rng.standard_normal(n), 2500) * np.exp(-t * 90) * 0.05
+    return y * (1 - np.exp(-t * 300))
 
-# Riser into the drop (1.6 → 3.0 s) and reverse cymbal
-n = int(1.4 * SR)
-noise = rng.standard_normal(n)
-riser = sweep_filter(noise, 400, 9000, 'low') * np.linspace(0, 1, n) ** 2
-place(music, riser, 1.6, 0.11, 0.0)
-rev = highpass(rng.standard_normal(int(0.9 * SR)), 5000) * np.linspace(0, 1, int(0.9 * SR)) ** 3
-place(music, rev, 3.0 - 0.9, 0.14)
 
-# Drums
+MOTIF = ['E5', 'A4', 'C5', 'E5', 'D5', 'C5', 'G4', 'C5']
+for i in range(16):  # intro motif
+    t = i * BEAT / 2
+    if t >= DROP - 0.5:
+        break
+    add(music, keys(hz(MOTIF[i % 8])), t, 0.11 if t < 4 else 0.08, -0.2 + 0.4 * (i % 2))
+for i in range(22):  # Rumbi section: playful, an octave up
+    t = BREAK[0] + i * BEAT / 2
+    if t >= BREAK[1] - 0.25:
+        break
+    add(music, keys(hz(MOTIF[i % 8]) * 2, 0.9), t, 0.075, -0.3 + 0.6 * (i % 2))
+
+# Heartbeat sub in the intro
+for i in range(10):
+    t = i * BEAT
+    if t > 4.5:
+        break
+    n = int(0.35 * SR)
+    tt = np.arange(n) / SR
+    add(music, np.sin(2 * np.pi * (52 + 30 * np.exp(-tt * 30)) * tt) * np.exp(-tt * 9), t, 0.22 if i % 2 == 0 else 0.12)
+
+# Risers into the drop and into the end card
+for start, end in ((4.0, DROP), (BREAK[1] - 2.0, FINAL)):
+    n = int((end - start) * SR)
+    x = sweep(rng.standard_normal(n), 300, 8000, 'low') * np.linspace(0, 1, n) ** 2.2
+    add(music, st(x, 0, 120), start, 0.09)
+
+
 def kick():
-    n = int(0.45 * SR)
+    n = int(0.5 * SR)
     t = np.arange(n) / SR
-    f = 46 + 110 * np.exp(-t * 28)
-    ph = 2 * np.pi * np.cumsum(f) / SR
-    body = np.sin(ph) * np.exp(-t * 6.5)
-    click = highpass(rng.standard_normal(n), 3000) * np.exp(-t * 180) * 0.25
-    return np.tanh((body + click) * 1.6) * 0.9
+    f = 48 + 120 * np.exp(-t * 32)
+    body = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 6)
+    click = hp(rng.standard_normal(n), 2500) * np.exp(-t * 220) * 0.3
+    return np.tanh((body + click) * 1.8) * 0.85
 
 
 def clap():
-    n = int(0.35 * SR)
+    n = int(0.4 * SR)
     t = np.arange(n) / SR
-    x = bandpass(rng.standard_normal(n), 900, 5200)
-    e = np.zeros(n)
-    for off in (0, 0.011, 0.022):
-        e += np.where(t >= off, np.exp(-(t - off) * 55), 0)
-    e += np.exp(-t * 16) * 0.4
-    return x * e * 0.6
+    noise = bp(rng.standard_normal(n), 900, 6000)
+    e = sum(np.where(t >= o, np.exp(-(t - o) * 60), 0) for o in (0, 0.009, 0.019)) + 0.5 * np.exp(-t * 14)
+    body = np.sin(2 * np.pi * 190 * t) * np.exp(-t * 30) * 0.4
+    return (noise * e * 0.55 + body) * 0.8
 
 
 def hat(open_=False):
-    n = int((0.22 if open_ else 0.06) * SR)
+    n = int((0.25 if open_ else 0.05) * SR)
     t = np.arange(n) / SR
-    x = highpass(rng.standard_normal(n), 7500)
-    return x * np.exp(-t * (18 if open_ else 70)) * 0.35
+    return hp(rng.standard_normal(n), 8000) * np.exp(-t * (14 if open_ else 80)) * 0.3
 
 
-K, C, H, HO = kick(), clap(), hat(), hat(True)
-kick_times = []
-
-
-def in_range(t, a, b):
-    return a <= t < b
-
-
-total_beats = int(LENGTH / BEAT)
-for b in range(total_beats):
+K, CL, HC, HO = kick(), clap(), hat(), hat(True)
+kicks = []
+for b in range(int(LENGTH / BEAT)):
     t = b * BEAT
-    # Kick: drop at 3.0 s; breath (half-time) 13–15 s; back for the build; final hit at 17 s then outro.
-    if in_range(t, 3.0, 13.0) or in_range(t, 15.0, 17.0):
-        place(music, K, t, 0.95)
-        kick_times.append(t)
-    elif in_range(t, 13.0, 15.0) and (b % 2 == 0):
-        place(music, K, t, 0.7)
-        kick_times.append(t)
-    elif abs(t - 17.0) < 1e-6:
-        place(music, K, t, 1.0)
-        kick_times.append(t)
-    # Claps on 2 and 4 from 5.5 s
-    if in_range(t, 5.5, 17.0) and b % 2 == 1:
-        place(music, C, t, 0.42, 0.05)
-    # Hats on the off-beats
-    if in_range(t, 3.0, 17.0):
-        place(music, H, t + BEAT / 2, 0.3, 0.3)
-        if in_range(t, 5.5, 13.0):
-            place(music, H, t + BEAT / 4, 0.12, -0.3)
-            place(music, H, t + 3 * BEAT / 4, 0.12, -0.3)
-    if in_range(t, 9.0, 13.0) and b % 4 == 3:
-        place(music, HO, t + BEAT / 2, 0.35, 0.4)
+    groove = DROP <= t < BREAK[0] or FINAL <= t < 38.0
+    if groove:
+        add(music, K, t, 0.9)
+        kicks.append(t)
+        swing = 0.012 if b % 2 else 0.0
+        add(music, HC, t + BEAT / 2 + swing, 0.32, 0.25)
+        if 19.5 <= t < BREAK[0]:  # training + streak: 16ths
+            add(music, HC, t + BEAT / 4, 0.12, -0.25)
+            add(music, HC, t + 3 * BEAT / 4, 0.12, -0.25)
+    elif BREAK[0] + 2 <= t < BREAK[1] and b % 4 == 0:
+        add(music, K, t, 0.45)
+        kicks.append(t)
+    if (DROP + 2 <= t < BREAK[0] or FINAL <= t < 38.0) and b % 2 == 1:
+        add(music, CL, t, 0.4)
+    if 24.5 <= t < BREAK[0] and b % 4 == 3:
+        add(music, HO, t + BEAT / 2, 0.22, 0.4)
+for i in range(16):  # snare roll into the end card
+    add(music, CL, FINAL - 1.0 + i * BEAT / 8, 0.06 + 0.02 * i)
 
-# Snare-roll build 16.0 → 17.0
-for i in range(16):
-    t = 16.0 + i * BEAT / 8
-    place(music, C, t, 0.12 + 0.03 * i, 0.0)
-
-# Bass: root in 8ths with sidechain pumping, 3.0–17.0
-roots = {0: 'A1', 1: 'F1', 2: 'C2', 3: 'G1'}
-for b8 in range(int(LENGTH / (BEAT / 2))):
-    t = b8 * BEAT / 2
-    if not in_range(t, 3.0, 17.0):
+# Bass: syncopated 8ths, sidechained below
+PAT = [1, 0, 0.6, 1, 0, 0.6, 1, 0.6]
+for k in range(int(LENGTH / (BEAT / 2))):
+    t = k * BEAT / 2
+    if not (DROP <= t < BREAK[0] or FINAL <= t < 38.0):
         continue
-    bar = int(t // BAR)
-    f = note(roots[bar % 4])
-    if b8 % 2 == 1:
-        f *= 2  # octave bounce on the off-beat
-    n = int(BEAT / 2 * SR)
-    x = (saw(f, n) * 0.6 + np.sin(2 * np.pi * f * np.arange(n) / SR) * 0.8) * env_adsr(n, 0.004, 0.08, 0.7, 0.05)
-    x = lowpass(x, 700)
-    place(music, x, t, 0.36)
-
-# Pluck arpeggio (16ths) over the chords 5.5–17.0, brighter during the streak
-pattern = [0, 1, 2, 3, 2, 1, 2, 3]
-for s16 in range(int(LENGTH / (BEAT / 4))):
-    t = s16 * BEAT / 4
-    if not in_range(t, 5.5, 17.0):
+    v = PAT[k % 8]
+    if not v:
         continue
-    bar = int(t // BAR)
-    tones = chord_at(bar)[1:] + [chord_at(bar)[1][:-1] + str(int(chord_at(bar)[1][-1]) + 1)]
-    nm = tones[pattern[s16 % 8] % len(tones)]
-    f = note(nm) * 2
+    f = hz(ROOTS[chord(t)]) * (2 if k % 8 in (3, 7) else 1)
+    n = int(BEAT / 2 * 0.95 * SR)
+    x = sine(f, n) * 0.9 + lp(saw(f, n), 600) * 0.5
+    add(music, x * env(n, 0.003, 0.08, 0.75, 0.04), t, 0.32 * v)
+
+# Chord stabs on the off-beat 8ths during the groove
+for k in range(int(LENGTH / (BEAT / 2))):
+    t = k * BEAT / 2
+    if not (DROP <= t < BREAK[0]) or k % 2 == 0:
+        continue
     n = int(0.22 * SR)
-    tt = np.arange(n) / SR
-    x = (np.sign(np.sin(2 * np.pi * f * tt)) * 0.35 + np.sin(2 * np.pi * f * tt)) * np.exp(-tt * 22)
-    bright = 3200 if in_range(t, 10.0, 13.0) else 2200
-    x = lowpass(x, bright)
-    pan = 0.35 if s16 % 2 else -0.35
-    place(music, x, t, 0.11 if not in_range(t, 13.0, 15.0) else 0.08, pan)
+    x = np.zeros(n)
+    for nm in CHORDS[chord(t)]:
+        x += saw(hz(nm) * 2, n, rng.random())
+    x = lp(x / 3, 3200) * np.exp(-np.arange(n) / SR * 16)
+    add(music, np.stack([x, np.roll(x, 200)], 1), t, 0.07)
 
-# Final impact and ending chord at 17.0 (stab + bell melody)
-n = int(1.8 * SR)
+# Arp (16ths) from habits to streak, brighter in the streak
+ARP = [0, 1, 2, 1, 2, 0, 2, 1]
+for k in range(int(LENGTH / (BEAT / 4))):
+    t = k * BEAT / 4
+    if not (14.0 <= t < BREAK[0]):
+        continue
+    f = hz(CHORDS[chord(t)][ARP[k % 8]]) * 4
+    n = int(0.18 * SR)
+    tt = np.arange(n) / SR
+    x = (np.sign(np.sin(2 * np.pi * f * tt)) * 0.3 + np.sin(2 * np.pi * f * tt)) * np.exp(-tt * 26)
+    add(music, lp(x, 4200 if t >= 24.5 else 2800), t, 0.06, -0.4 if k % 2 else 0.4)
+
+# Lead melody in the streak section (rising, uplifting)
+LEAD = [('E5', 0, 1), ('G5', 1, 1), ('A5', 2, 2), ('C6', 4, 2), ('B5', 6, 1), ('A5', 7, 1), ('G5', 8, 2)]
+for nm, beat, length in LEAD:
+    t = 24.5 + beat * BEAT
+    n = int(length * BEAT * SR)
+    tt = np.arange(n) / SR
+    x = lp(saw(hz(nm), n) * 0.5 + sine(hz(nm), n), 3000) * env(n, 0.02, 0.1, 0.8, 0.12)
+    x = x * (1 + 0.05 * np.sin(2 * np.pi * 5.2 * tt) * np.clip(tt * 3, 0, 1))
+    add(music, np.stack([x, np.roll(x, 400)], 1), t, 0.06)
+
+# End card: impact boom + bell chords, gentle resolve
+n = int(2.4 * SR)
 tt = np.arange(n) / SR
-boom = np.sin(2 * np.pi * (44 + 70 * np.exp(-tt * 9)) * tt) * np.exp(-tt * 2.2)
-place(music, boom, 17.0, 0.7)
-for i, nm in enumerate(['A4', 'C5', 'E5', 'A5']):
-    n = int(2.6 * SR)
-    tt = np.arange(n) / SR
-    f = note(nm)
-    bell = (np.sin(2 * np.pi * f * tt) + 0.35 * np.sin(2 * np.pi * f * 2.76 * tt) * np.exp(-tt * 3)) * np.exp(-tt * 1.4)
-    place(music, bell, 17.0 + i * BEAT / 2, 0.07, -0.3 + 0.2 * i)
+add(music, np.sin(2 * np.pi * (42 + 70 * np.exp(-tt * 8)) * tt) * np.exp(-tt * 1.8), FINAL, 0.55)
+for i, nm in enumerate(['A4', 'C5', 'E5', 'A5', 'C6']):
+    add(music, keys(hz(nm), 3.5), FINAL + 0.12 * i, 0.06, -0.4 + 0.2 * i)
+for i, nm in enumerate(['C5', 'E5', 'G5', 'C6']):
+    add(music, keys(hz(nm), 3.0), 38.0 + 0.1 * i, 0.07, -0.3 + 0.2 * i)
 
-# Sidechain pump on the music (except drums would also duck; fine for an energetic feel)
+# Sidechain pump from the kicks
 pump = np.ones(N)
-for kt in kick_times:
+for kt in kicks:
     i = int(kt * SR)
-    n = int(0.28 * SR)
-    curve = 1 - 0.38 * np.exp(-np.arange(n) / SR * 14)
-    pump[i:i + n] = np.minimum(pump[i:i + n], curve[: len(pump[i:i + n])])
+    n = int(0.3 * SR)
+    c = 1 - 0.42 * np.exp(-np.arange(n) / SR * 13)
+    pump[i:i + n] = np.minimum(pump[i:i + n], c[: len(pump[i:i + n])])
 music *= pump[:, None]
-music = reverb(music, IR, 0.16)
-# Gentle top-end roll-off so the mix stays smooth on phone speakers
-music = np.stack([lowpass(music[:, c], 11000, 1) for c in range(2)], 1)
-# Fade out the tail
-fade_from = int(19.2 * SR)
-music[fade_from:] *= np.linspace(1, 0, N - fade_from)[:, None] ** 1.5
-
-# ── Sound effects ────────────────────────────────────────────────────────
-sfx = np.zeros((N, 2))
+music = verb(music, HALL, 0.12)
+music = hp(lp(music, 13000, 1), 28, 2)
+fade = int(39.3 * SR)
+music[fade:] *= np.linspace(1, 0, N - fade)[:, None] ** 1.6
 
 
-def whoosh():
-    n = int(0.55 * SR)
+# ── Sound design ─────────────────────────────────────────────────────────
+def fx_whoosh(length=0.6):
+    n = int(length * SR)
     x = rng.standard_normal(n)
-    x = sweep_filter(x, 300, 6000, 'low') - sweep_filter(x, 120, 1200, 'low') * 0.5
-    e = np.sin(np.linspace(0, np.pi, n)) ** 2
-    pan_l = np.linspace(-0.8, 0.8, n)
-    l = x * e * np.cos((pan_l + 1) * np.pi / 4)
-    r = x * e * np.sin((pan_l + 1) * np.pi / 4)
-    return np.stack([l, r], 1) * 0.9
+    x = sweep(x, 250, 7000, 'low') * 0.8 + sweep(x, 6000, 600, 'high') * 0.25
+    e = np.sin(np.linspace(0, np.pi, n)) ** 2.4
+    p = np.linspace(-0.7, 0.7, n)
+    return np.stack([x * e * np.cos((p + 1) * np.pi / 4), x * e * np.sin((p + 1) * np.pi / 4)], 1) * 1.2
 
 
-def impact():
-    n = int(1.6 * SR)
+def fx_impact():
+    n = int(2.0 * SR)
     t = np.arange(n) / SR
-    sub = np.sin(2 * np.pi * (40 + 90 * np.exp(-t * 10)) * t) * np.exp(-t * 2.6)
-    crack = lowpass(rng.standard_normal(n), 3500) * np.exp(-t * 18) * 0.5
-    return reverb(stereo(np.tanh((sub + crack) * 1.4)), IR, 0.3)
+    sub = np.sin(2 * np.pi * (38 + 95 * np.exp(-t * 11)) * t) * np.exp(-t * 2.2)
+    crack = lp(rng.standard_normal(n), 4000) * np.exp(-t * 22) * 0.6
+    tail = lp(rng.standard_normal(n), 1200) * np.exp(-t * 3) * 0.12
+    return verb(st(np.tanh((sub + crack + tail) * 1.3)), HALL, 0.35)
 
 
-def pop():
-    n = int(0.12 * SR)
+def fx_pop():
+    n = int(0.14 * SR)
     t = np.arange(n) / SR
-    f = 950 * np.exp(-t * 18) + 380
-    x = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 34)
-    return x * 0.6
+    f = 1000 * np.exp(-t * 20) + 420
+    return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 32) * 0.6
 
 
-def tick():
-    n = int(0.03 * SR)
+def fx_tick():
+    n = int(0.025 * SR)
     t = np.arange(n) / SR
-    return np.sin(2 * np.pi * 2600 * t) * np.exp(-t * 260) * 0.35
+    return (np.sin(2 * np.pi * 3100 * t) + 0.5 * np.sin(2 * np.pi * 5200 * t)) * np.exp(-t * 300) * 0.25
 
 
-SCALE = ['A5', 'C6', 'D6', 'E6', 'G6', 'A6', 'C7']
+SCALE = ['A5', 'C6', 'D6', 'E6', 'G6', 'A6', 'C7', 'D7']
 
 
-def chime(k):
-    n = int(0.9 * SR)
+def fx_bell(nm, dur=1.0):
+    n = int(dur * SR)
     t = np.arange(n) / SR
-    f = note(SCALE[k % len(SCALE)])
-    x = (np.sin(2 * np.pi * f * t) + 0.3 * np.sin(2 * np.pi * f * 2.0 * t) * np.exp(-t * 6)) * np.exp(-t * 4.5)
-    return x * 0.28
+    f = hz(nm)
+    mod = np.sin(2 * np.pi * f * 3.5 * t) * 2.2 * np.exp(-t * 6)
+    return np.sin(2 * np.pi * f * t + mod) * np.exp(-t * 4) * 0.3
 
 
-def ignite():
-    n = int(1.0 * SR)
+def fx_ignite():
+    n = int(1.3 * SR)
     t = np.arange(n) / SR
-    x = sweep_filter(rng.standard_normal(n), 200, 3500, 'low') * (np.exp(-t * 3.5) * (1 - np.exp(-t * 40)))
+    x = sweep(rng.standard_normal(n), 180, 4000, 'low') * np.exp(-t * 2.8) * (1 - np.exp(-t * 30))
     crackle = np.zeros(n)
-    for _ in range(40):
-        i = int(rng.random() * n * 0.8)
-        crackle[i:i + 40] += rng.standard_normal(min(40, n - i)) * rng.random() * 0.8
-    return (x * 0.8 + highpass(crackle, 2500) * 0.3) * 0.8
+    for _ in range(60):
+        i = int(rng.random() * n * 0.9)
+        k = min(30, n - i)
+        crackle[i:i + k] += rng.standard_normal(k) * rng.random()
+    boom = np.sin(2 * np.pi * (60 + 60 * np.exp(-t * 12)) * t) * np.exp(-t * 5) * 0.6
+    return (x * 0.8 + hp(crackle, 2500) * 0.25 + boom) * 0.8
 
 
-def boop():
-    out = np.zeros(int(0.32 * SR))
-    for k, (f0, f1, at) in enumerate([(520, 760, 0.0), (760, 1040, 0.11)]):
-        n = int(0.16 * SR)
+def fx_boop():
+    out = np.zeros(int(0.34 * SR))
+    for f0, f1, at in ((540, 780, 0.0), (780, 1080, 0.12)):
+        n = int(0.15 * SR)
         t = np.arange(n) / SR
         f = f0 + (f1 - f0) * (1 - np.exp(-t * 30))
-        x = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.sin(np.pi * np.minimum(1, t / 0.16)) ** 1.5
+        x = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.sin(np.pi * np.minimum(1, t / 0.15)) ** 1.5
         i = int(at * SR)
-        out[i:i + n] += x[: len(out) - i] * 0.5
+        out[i:i + n] += x[: len(out) - i] * 0.45
     return out
 
 
-def shimmer():
-    out = np.zeros((int(1.6 * SR), 2))
+def fx_shimmer():
+    out = np.zeros((int(1.8 * SR), 2))
     for i, nm in enumerate(['E6', 'A6', 'C7', 'E7', 'A7']):
-        n = int(1.2 * SR)
+        add(out, fx_bell(nm, 1.2) * 0.5, i * 0.05, 1.0, -0.6 + 0.3 * i)
+    return verb(out, HALL, 0.4)
+
+
+def fx_click():
+    n = int(0.02 * SR)
+    t = np.arange(n) / SR
+    return hp(rng.standard_normal(n), 3000) * np.exp(-t * 400) * 0.5
+
+
+def fx_check():
+    out = np.zeros(int(0.3 * SR))
+    for f, at in ((880, 0.0), (1320, 0.07)):
+        n = int(0.18 * SR)
         t = np.arange(n) / SR
-        f = note(nm)
-        x = np.sin(2 * np.pi * f * t) * np.exp(-t * 5) * 0.14
-        place(out, x, i * 0.045, 1.0, -0.6 + 0.3 * i)
-    return reverb(out, IR, 0.45)
+        i = int(at * SR)
+        out[i:i + n] += (np.sin(2 * np.pi * f * t) * np.exp(-t * 18))[: len(out) - i] * 0.35
+    return out
 
 
-for ev in TL['sfx']:
-    at = t_of(ev['at'])
+def fx_thud():
+    n = int(0.4 * SR)
+    t = np.arange(n) / SR
+    return (np.sin(2 * np.pi * (70 + 90 * np.exp(-t * 25)) * t) * np.exp(-t * 12) + lp(rng.standard_normal(n), 900) * np.exp(-t * 40) * 0.3) * 0.7
+
+
+def fx_bubble():
+    n = int(0.12 * SR)
+    t = np.arange(n) / SR
+    f = 500 + 900 * t / 0.12
+    return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.sin(np.pi * t / 0.12) * 0.25
+
+
+def fx_riser(length):
+    n = int(length * SR)
+    x = sweep(rng.standard_normal(n), 400, 9000, 'low') * np.linspace(0, 1, n) ** 2
+    return st(x, 0, 150) * 0.6
+
+
+sfx = np.zeros((N, 2))
+GAIN = {'whoosh': 0.45, 'impact': 0.7, 'pop': 0.45, 'tick': 0.45, 'chime': 0.5, 'ignite': 0.55, 'boop': 0.45, 'shimmer': 0.6, 'click': 0.4, 'check': 0.5, 'thud': 0.5, 'bubble': 0.4, 'riser': 0.35}
+for ev in TL.get('sfx', []):
     kind = ev['type']
-    if kind == 'whoosh':
-        place(sfx, whoosh(), at, 0.5)
-    elif kind == 'impact':
-        place(sfx, impact(), at, 0.65)
-    elif kind == 'pop':
-        place(sfx, pop(), at, 0.55, 0.1)
-    elif kind == 'tick':
-        for k in range(ev['count']):
-            place(sfx, tick(), t_of(ev['at'] + k * ev['every']), 0.55, 0.15)
-    elif kind == 'chime':
-        for k in range(ev['count']):
-            place(sfx, chime(k), t_of(ev['at'] + k * ev['every']), 0.6, -0.5 + k / 6)
-    elif kind == 'ignite':
-        place(sfx, ignite(), at, 0.55)
-    elif kind == 'boop':
-        place(sfx, boop(), at, 0.5, 0.0)
-    elif kind == 'shimmer':
-        place(sfx, shimmer(), at, 0.8)
-sfx = reverb(sfx, IR_SHORT, 0.12)
+    count, every = ev.get('count', 1), ev.get('every', 0)
+    for k in range(count):
+        t = tf(ev['at'] + k * every)
+        g = GAIN.get(kind, 0.4) * ev.get('gain', 1.0)
+        pan = ev.get('pan', 0.0)
+        if kind == 'whoosh':
+            add(sfx, fx_whoosh(), t - 0.3, g)
+        elif kind == 'impact':
+            add(sfx, fx_impact(), t, g)
+        elif kind == 'pop':
+            add(sfx, fx_pop(), t, g, pan)
+        elif kind == 'tick':
+            add(sfx, fx_tick(), t, g, pan)
+        elif kind == 'chime':
+            add(sfx, fx_bell(SCALE[k % len(SCALE)]), t, g, -0.5 + k / max(1, count - 1))
+        elif kind == 'ignite':
+            add(sfx, fx_ignite(), t, g)
+        elif kind == 'boop':
+            add(sfx, fx_boop(), t, g, pan)
+        elif kind == 'shimmer':
+            add(sfx, fx_shimmer(), t, g)
+        elif kind == 'click':
+            add(sfx, fx_click(), t, g, pan)
+        elif kind == 'check':
+            add(sfx, fx_check(), t, g, pan)
+        elif kind == 'thud':
+            add(sfx, fx_thud(), t, g)
+        elif kind == 'bubble':
+            add(sfx, fx_bubble(), t, g, pan)
+        elif kind == 'riser':
+            add(sfx, fx_riser(ev.get('length', 1.0)), t, g)
+sfx = verb(sfx, ROOM, 0.08)
 
-# ── Voice (Piper es_ES davefx, CC0) ─────────────────────────────────────
+# ── Voice: Kokoro em_alex, dry ───────────────────────────────────────────
 CACHE = os.path.join(HERE, '.cache')
-MODEL_DIR = os.path.join(CACHE, 'vits-piper-es_ES-davefx-medium')
-if not os.path.isdir(MODEL_DIR):
+KDIR = os.path.join(CACHE, 'kokoro-multi-lang-v1_0')
+if not os.path.isdir(KDIR):
     os.makedirs(CACHE, exist_ok=True)
-    url = 'https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-es_ES-davefx-medium.tar.bz2'
-    tar_path = os.path.join(CACHE, 'voice.tar.bz2')
-    urllib.request.urlretrieve(url, tar_path)
-    with tarfile.open(tar_path) as tf:
-        tf.extractall(CACHE)
+    tar = os.path.join(CACHE, 'kokoro.tar.bz2')
+    urllib.request.urlretrieve('https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-multi-lang-v1_0.tar.bz2', tar)
+    with tarfile.open(tar) as t:
+        t.extractall(CACHE)
 
 import sherpa_onnx  # noqa: E402
 
 tts = sherpa_onnx.OfflineTts(
     sherpa_onnx.OfflineTtsConfig(
         model=sherpa_onnx.OfflineTtsModelConfig(
-            vits=sherpa_onnx.OfflineTtsVitsModelConfig(
-                model=os.path.join(MODEL_DIR, 'es_ES-davefx-medium.onnx'),
-                tokens=os.path.join(MODEL_DIR, 'tokens.txt'),
-                data_dir=os.path.join(MODEL_DIR, 'espeak-ng-data'),
-                noise_scale=0.45,
-                noise_scale_w=0.55,
-                length_scale=1.0,
+            kokoro=sherpa_onnx.OfflineTtsKokoroModelConfig(
+                model=os.path.join(KDIR, 'model.onnx'),
+                voices=os.path.join(KDIR, 'voices.bin'),
+                tokens=os.path.join(KDIR, 'tokens.txt'),
+                data_dir=os.path.join(KDIR, 'espeak-ng-data'),
+                dict_dir=os.path.join(KDIR, 'dict'),
+                lexicon=os.path.join(KDIR, 'lexicon-us-en.txt'),
+                lang='es',
             ),
             num_threads=4,
         ),
-        max_num_sentences=1,
     )
 )
+SPEAKER = 29  # em_alex
 
 voice = np.zeros(N)
-report = []
-for line in TL['voice']:
-    a = tts.generate(line['text'], sid=0, speed=1.04)
-    x = np.asarray(a.samples, dtype=np.float64)
-    x = signal.resample_poly(x, 320, 147)  # 22.05 kHz → 48 kHz
-    # Trim silence at both ends
-    env = np.abs(x)
-    idx = np.where(env > 0.02 * env.max())[0]
-    x = x[max(0, idx[0] - 240): idx[-1] + 2400]
-    x = highpass(x, 85)
-    x = x / (np.sqrt(np.mean(x ** 2)) + 1e-9) * 0.12  # level-match lines
-    fade = int(0.008 * SR)
-    x[:fade] *= np.linspace(0, 1, fade)
-    x[-fade:] *= np.linspace(1, 0, fade)
-    i = int(t_of(line['at']) * SR)
+for line in VOICE:
+    # 'speak' / 'speakAt' override the on-screen text when a wording reads better aloud.
+    a = tts.generate(line.get('speak', line['text']), sid=SPEAKER, speed=1.05)
+    x = signal.resample_poly(np.asarray(a.samples, dtype=np.float64), 2, 1)  # 24 kHz → 48 kHz
+    e = np.abs(x)
+    idx = np.where(e > 0.01 * e.max())[0]
+    x = x[max(0, idx[0] - 400): idx[-1] + 2400]
+    # Clean broadcast EQ: rumble cut, less mud, presence and a little air. No reverb.
+    x = hp(x, 80, 2)
+    x = peaking(x, 280, -2.0, 0.9)
+    x = peaking(x, 3500, 2.0, 1.0)
+    x = peaking(x, 9000, 1.5, 0.8)
+    x = x / (np.sqrt(np.mean(x ** 2)) + 1e-9) * 0.11
+    f = int(0.006 * SR)
+    x[:f] *= np.linspace(0, 1, f)
+    x[-f:] *= np.linspace(1, 0, f)
+    i = int(tf(line.get('speakAt', line['at'])) * SR)
     n = min(len(x), N - i)
     voice[i:i + n] += x[:n]
-    report.append((line['id'], round(line['at'] / FPS, 2), round(len(x) / SR, 2)))
-
-voice_st = stereo(voice)
-voice_st = reverb(voice_st, IR_SHORT, 0.06)
+    print('voice', line['id'], 'at', round(tf(line['at']), 2), 's', 'len', round(len(x) / SR, 2), 's')
 
 
 def write(name, x, peak=0.89):
@@ -468,8 +536,6 @@ def write(name, x, peak=0.89):
 
 
 write('music.wav', music)
-write('sfx.wav', sfx, 0.8)
-write('voice.wav', voice_st, 0.9)
-for r in report:
-    print('voice', r)
+write('sfx.wav', sfx, 0.85)
+write('voice.wav', np.stack([voice, voice], 1), 0.9)
 print('stems written to', STEMS)
