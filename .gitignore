@@ -10,3 +10,11 @@ test-results
 e2e/screenshots
 .DS_Store
 *.tsbuildinfo
+
+# Promo video project: dependencies, voice model cache and intermediate renders
+promo/node_modules
+promo/audio/.cache
+promo/audio/stems
+promo/out/stills
+promo/out/still-*.png
+promo/out/video-silent.mp4

@@ -7,9 +7,9 @@ import { cx } from '@/ui/cx';
  * yellow inner flame has its own small lick, so the shape still reads at 16 px.
  * Original artwork drawn for RUMBO.
  */
-const OUTER =
+export const OUTER =
   'M36 3 C48 6 66 16 72 32 C76 42 74 52 77 58 C81 55 85 51 86 45 C93 54 97 66 96 79 C95 100 76 114 50 114 C25 114 5 100 5 79 C5 63 12 50 21 39 C21 46 23 52 27 56 C29 44 36 36 41 28 C45 21 45 12 36 3 Z';
-const CORE = 'M57 46 C62 58 74 68 74 87 C74 103 63 111 50 111 C37 111 28 103 28 91 C28 85 30 80 33 76 C34 81 37 84 41 85 C40 72 48 60 57 46 Z';
+export const CORE = 'M57 46 C62 58 74 68 74 87 C74 103 63 111 50 111 C37 111 28 103 28 91 C28 85 30 80 33 76 C34 81 37 84 41 85 C40 72 48 60 57 46 Z';
 
 interface Props {
   size?: number;
