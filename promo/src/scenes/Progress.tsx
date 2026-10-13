@@ -2,8 +2,8 @@ import type { CSSProperties } from 'react';
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 import { COLOR, wordAt } from '../design';
 import { Rumbi, type RumbiEvent } from '../Rumbi';
-import { Eyebrow, Particles, Words, clamp, drawn, prog } from '../ui';
-import { GlobalBackdrop, MATCH_LINE, MICRO, VesselGlass, frontWave, polyline, type Pt } from './HabitsShared';
+import { Eyebrow, Particles, clamp, drawn, prog } from '../ui';
+import { GlobalBackdrop, MATCH_LINE, MICRO, VesselGlass, WordsB, frontWave, polyline, type Pt } from './HabitsShared';
 
 /**
  * PROGRESS (global 240–420) — signature: the "Rumbo meter".
@@ -502,10 +502,10 @@ export function Progress() {
           <Eyebrow text="Progreso" at={3} />
         </div>
         <div style={{ position: 'absolute', left: 96, top: 312, width: 888 }}>
-          <Words text="Tu progreso," at={T_CLAROS} frames={[T_CLAROS, T_CLAROS + 5]} size={104} lineHeight={0.98} out={OUT - 2} />
+          <WordsB text="Tu progreso," frames={[T_CLAROS, T_CLAROS + 5]} size={104} lineHeight={0.98} out={OUT - 2} />
         </div>
         <div style={{ position: 'absolute', left: 96, top: 414, width: 888 }}>
-          <Words text="de un vistazo." at={w3(8)} frames={[w3(8), w3(9), w3(10)]} size={104} lineHeight={0.98} accent={[0, 1, 2]} out={OUT} />
+          <WordsB text="de un vistazo." frames={[w3(8), w3(9), w3(10)]} size={104} lineHeight={0.98} accent={[0, 1, 2]} out={OUT} />
         </div>
       </AbsoluteFill>
     </AbsoluteFill>

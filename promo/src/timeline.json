@@ -45,7 +45,275 @@
     885,
     1050
   ],
-  "sfx": [],
+  "sfx": [
+    {
+      "type": "whoosh",
+      "at": 1,
+      "gain": 0.6
+    },
+    {
+      "type": "riser",
+      "at": 0,
+      "length": 1.5,
+      "gain": 0.7
+    },
+    {
+      "type": "ignite",
+      "at": 45,
+      "gain": 0.6
+    },
+    {
+      "type": "boop",
+      "at": 52
+    },
+    {
+      "type": "click",
+      "at": 15,
+      "gain": 0.6
+    },
+    {
+      "type": "click",
+      "at": 32,
+      "gain": 0.6
+    },
+    {
+      "type": "click",
+      "at": 62,
+      "gain": 0.6
+    },
+    {
+      "type": "click",
+      "at": 81,
+      "gain": 0.6
+    },
+    {
+      "type": "pop",
+      "at": 130
+    },
+    {
+      "type": "boop",
+      "at": 135
+    },
+    {
+      "type": "whoosh",
+      "at": 118,
+      "gain": 0.7
+    },
+    {
+      "type": "whoosh",
+      "at": 134,
+      "gain": 0.8
+    },
+    {
+      "type": "shimmer",
+      "at": 150,
+      "gain": 0.6
+    },
+    {
+      "type": "riser",
+      "at": 150,
+      "length": 1.17
+    },
+    {
+      "type": "impact",
+      "at": 185
+    },
+    {
+      "type": "chime",
+      "at": 186,
+      "count": 1
+    },
+    {
+      "type": "thud",
+      "at": 194
+    },
+    {
+      "type": "boop",
+      "at": 199
+    },
+    {
+      "type": "shimmer",
+      "at": 203
+    },
+    {
+      "type": "whoosh",
+      "at": 232
+    },
+    {
+      "type": "whoosh",
+      "at": 240
+    },
+    {
+      "type": "tick",
+      "at": 252,
+      "count": 10,
+      "every": 3,
+      "gain": 0.7
+    },
+    {
+      "type": "pop",
+      "at": 270
+    },
+    {
+      "type": "pop",
+      "at": 295
+    },
+    {
+      "type": "check",
+      "at": 300
+    },
+    {
+      "type": "shimmer",
+      "at": 335,
+      "gain": 0.6
+    },
+    {
+      "type": "whoosh",
+      "at": 410,
+      "gain": 0.8
+    },
+    {
+      "type": "bubble",
+      "at": 432,
+      "count": 6,
+      "every": 7
+    },
+    {
+      "type": "tick",
+      "at": 440,
+      "count": 12,
+      "every": 3,
+      "gain": 0.6
+    },
+    {
+      "type": "chime",
+      "at": 470,
+      "count": 2,
+      "every": 10
+    },
+    {
+      "type": "boop",
+      "at": 478
+    },
+    {
+      "type": "whoosh",
+      "at": 580
+    },
+    {
+      "type": "pop",
+      "at": 591
+    },
+    {
+      "type": "check",
+      "at": 615
+    },
+    {
+      "type": "check",
+      "at": 629
+    },
+    {
+      "type": "check",
+      "at": 643
+    },
+    {
+      "type": "boop",
+      "at": 648
+    },
+    {
+      "type": "shimmer",
+      "at": 654
+    },
+    {
+      "type": "pop",
+      "at": 655,
+      "gain": 1.2
+    },
+    {
+      "type": "riser",
+      "at": 719,
+      "length": 0.55
+    },
+    {
+      "type": "ignite",
+      "at": 784
+    },
+    {
+      "type": "tick",
+      "at": 788,
+      "count": 13,
+      "every": 3
+    },
+    {
+      "type": "chime",
+      "at": 794,
+      "count": 7,
+      "every": 4
+    },
+    {
+      "type": "boop",
+      "at": 806
+    },
+    {
+      "type": "pop",
+      "at": 816
+    },
+    {
+      "type": "shimmer",
+      "at": 818,
+      "gain": 0.8
+    },
+    {
+      "type": "whoosh",
+      "at": 885
+    },
+    {
+      "type": "boop",
+      "at": 889
+    },
+    {
+      "type": "pop",
+      "at": 933
+    },
+    {
+      "type": "click",
+      "at": 948
+    },
+    {
+      "type": "boop",
+      "at": 988
+    },
+    {
+      "type": "shimmer",
+      "at": 1001,
+      "gain": 0.8
+    },
+    {
+      "type": "boop",
+      "at": 1028
+    },
+    {
+      "type": "riser",
+      "at": 1030,
+      "length": 0.65
+    },
+    {
+      "type": "impact",
+      "at": 1050
+    },
+    {
+      "type": "thud",
+      "at": 1056,
+      "gain": 0.6
+    },
+    {
+      "type": "shimmer",
+      "at": 1148
+    },
+    {
+      "type": "boop",
+      "at": 1150
+    }
+  ],
   "sfx_lead": [
     {
       "type": "pop",

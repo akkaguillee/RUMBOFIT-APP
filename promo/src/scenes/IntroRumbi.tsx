@@ -41,6 +41,8 @@ const ACTING: RumbiEvent[] = [
   { at: 130, press: true },
   { at: 135, tap: true }, // 1st tap → squint (happy), the launch
   { at: 141, look: [0, -0.7] },
+  // The joy squint of the launch runs out at ~163: open, attentive eyes to read the line.
+  { at: 150, expr: 'neutral' },
   // Brand: hovers and reads "Por eso existe", watches the line charge below, leaps as the
   // logo bursts in under it, lands on the medallion and winks at the camera.
   { at: 157, look: [0, -0.95] },
@@ -49,11 +51,10 @@ const ACTING: RumbiEvent[] = [
   { at: 175, look: [0, 0.9] },
   { at: 174, press: true },
   { at: 178, tap: true }, // 2nd tap → hop (surprised, then happy); the rig lifts off at ~182
-  { at: 188, expr: 'happy' },
+  // (the hop's own reaction: surprised → happy squint while in the air and on landing)
   { at: 194, press: true }, // landing squash
-  { at: 198, tap: true }, // 3rd tap → wink to camera
   { at: 196, look: [0, 0.12] },
-  { at: 222, look: [0.25, -0.15] },
+  { at: 199, tap: true }, // 3rd tap → releases the squash and winks, eyes open to the camera
 ];
 
 export const RUMBI_EVENTS: RumbiEvent[] = ACTING.map((e) => ({ ...e, at: e.at - RUMBI_DELAY })).sort((a, b) => a.at - b.at);
@@ -68,6 +69,10 @@ export function rumbiPlacement(g: number) {
   const act = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.45, 0, 0.25, 1) } as const;
   const actY = interpolate(g, [69, 80, 108, 119, 126, 134], [0, 10, 10, -12, -12, 0], act);
   const actS = interpolate(g, [69, 80, 108, 119, 126, 134], [1, 0.965, 0.965, 1.03, 1.03, 1], act);
+  // Head tilt + lean towards what it reads (the gaze range of the rig is small at this size):
+  // up-left to the headline, a worried tilt on "difícil", a glance right to "mantenerlo.", back.
+  const tilt = interpolate(g, [58, 65, 70, 78, 90, 98, 104, 112], [0, -5, -5, -8, -6, 4, 4, 0], act) * (1 - s);
+  const lean = interpolate(g, [58, 66, 90, 98, 104, 112], [0, -12, -12, 8, 8, 0], act) * (1 - s);
   let cy = lerp(RUMBI_A.cy + actY, RUMBI_B.cy, s);
   const size = lerp(RUMBI_A.size * actS, RUMBI_B.size, s);
   // Speed (px / frame) for the light trail.
@@ -84,7 +89,7 @@ export function rumbiPlacement(g: number) {
 
   // The medallion gives a little under Rumbi's landing.
   cy += medalDip(g);
-  return { cx: RUMBI_A.cx, cy, size, speed };
+  return { cx: RUMBI_A.cx + lean, cy, size, speed, tilt };
 }
 
 /** Vertical give of the medallion when Rumbi lands on it (px). */
@@ -110,7 +115,7 @@ export function cameraLift(g: number) {
 /** The act's Rumbi, positioned by global frame, with a soft comet of light while it flies. */
 export function ActRumbi({ opacity = 1 }: { opacity?: number }) {
   const g = useCurrentFrame();
-  const { cx, cy, size, speed } = rumbiPlacement(g);
+  const { cx, cy, size, speed, tilt } = rumbiPlacement(g);
   const trail = clamp(speed / 40);
   return (
     <>
@@ -138,6 +143,8 @@ export function ActRumbi({ opacity = 1 }: { opacity?: number }) {
           height: size,
           opacity,
           lineHeight: 0,
+          transform: tilt ? `rotate(${tilt}deg)` : undefined,
+          transformOrigin: '50% 90%',
         }}
       >
         <Rumbi size={size} events={RUMBI_EVENTS} delay={RUMBI_DELAY} seed={SEED} />

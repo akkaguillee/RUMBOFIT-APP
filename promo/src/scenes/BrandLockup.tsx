@@ -51,12 +51,14 @@ export function Ripples() {
  */
 export function ChargeLine() {
   const g = useCurrentFrame();
-  const grow = prog(g, 165, 178, out);
+  // Drawn out slowly while Rumbi hovers (the opening line, rhymed), so the breath after the
+  // match cut is never an empty frame.
+  const grow = prog(g, 150, 177, out);
   const collapse = prog(g, 178, IMPACT, Easing.in(Easing.cubic));
   const half = 330 * grow * (1 - collapse);
   const heat = 0.55 + 0.45 * collapse;
   const point = interpolate(g, [176, IMPACT - 1, IMPACT + 3], [0, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  if (g < 165 || g > IMPACT + 3) return null;
+  if (g < 150 || g > IMPACT + 3) return null;
   const line = (h: number, blur: number, bg: string, a: number) => (
     <div style={{ position: 'absolute', left: MEDAL.cx - half, top: MEDAL.cy - h / 2, width: half * 2, height: h, borderRadius: h, background: bg, filter: blur ? `blur(${blur}px)` : undefined, opacity: a }} />
   );

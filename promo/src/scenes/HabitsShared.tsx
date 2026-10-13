@@ -4,7 +4,7 @@
  * match cut at 420 (trend line → water surface) is pixel-continuous.
  */
 import type { CSSProperties } from 'react';
-import { Easing, interpolate, staticFile } from 'remotion';
+import { Easing, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { INK } from '../ui';
 
 /** Outer glass of the vessel (canvas px). */
@@ -175,3 +175,70 @@ export function VesselGlass({ gf }: { gf: number }) {
 
 const clampV = (v: number) => Math.min(1, Math.max(0, v));
 const drawnV = (p: number) => ({ pathLength: 1, strokeDasharray: '1 1', strokeDashoffset: 1 - clampV(p) });
+
+/**
+ * Copy of ui.tsx Words (kinetic type) with one fix: words are fully hidden
+ * before they enter and after they leave, so the 6 px blur no longer leaks a
+ * faint dash at the edge of the mask.
+ */
+export function WordsB({
+  text,
+  frames,
+  size = 104,
+  weight = 800,
+  color = '#fff',
+  accent = [],
+  out,
+  lineHeight = 0.98,
+  tracking = '-0.035em',
+  dim,
+}: {
+  text: string;
+  frames: number[];
+  size?: number;
+  weight?: number;
+  color?: string;
+  accent?: number[];
+  out?: number;
+  lineHeight?: number;
+  tracking?: string;
+  /** 0 → 1: dims the line to 35 % when the next line takes over. */
+  dim?: number;
+}) {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const words = text.split(' ');
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', columnGap: size * 0.26, opacity: 1 - 0.65 * (dim ?? 0) }}>
+      {words.map((w, i) => {
+        const start = frames[i] ?? frames[frames.length - 1]!;
+        const s = spring({ frame: frame - start, fps, config: { damping: 20, stiffness: 170, mass: 0.8 } });
+        const leave = out === undefined ? 0 : interpolate(frame, [out + i * 1.5, out + 9 + i * 1.5], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: IO_V });
+        const vis = Math.min(1, s * 2.5) * (1 - clampV((leave - 0.55) / 0.45));
+        const y = (1 - s) * 105 - leave * 105;
+        const isAccent = accent.includes(i);
+        return (
+          <span key={i} style={{ display: 'inline-block', overflow: 'hidden', paddingBottom: size * 0.12, marginBottom: -size * 0.12, lineHeight }}>
+            <span
+              style={{
+                display: 'inline-block',
+                transform: `translateY(${y}%)`,
+                fontSize: size,
+                fontWeight: weight,
+                letterSpacing: tracking,
+                color: isAccent ? 'transparent' : color,
+                backgroundImage: isAccent ? 'linear-gradient(100deg, #ff7a6b 0%, #ff4552 45%, #c81d35 100%)' : undefined,
+                WebkitBackgroundClip: isAccent ? 'text' : undefined,
+                backgroundClip: isAccent ? 'text' : undefined,
+                filter: `blur(${(1 - s) * 6 + leave * 6}px)`,
+                opacity: vis,
+              }}
+            >
+              {w}
+            </span>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
