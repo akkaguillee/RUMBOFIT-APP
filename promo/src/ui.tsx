@@ -305,7 +305,7 @@ export function Backdrop({ glow = 0.6, glowY = 0.5, hue = 0 }: { glow?: number; 
           backgroundImage: `url(${staticFile('fx/grain.png')})`,
           backgroundRepeat: 'repeat',
           backgroundPosition: `${(frame * 137) % 256}px ${(frame * 71) % 256}px`,
-          opacity: 0.06,
+          opacity: 0.045,
           mixBlendMode: 'screen',
         }}
       />

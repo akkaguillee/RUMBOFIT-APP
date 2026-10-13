@@ -201,7 +201,7 @@ function Product() {
               </svg>
               <div>
                 <div style={{ fontSize: 30, color: 'rgba(255,255,255,0.65)', fontWeight: 600 }}>Agua de hoy</div>
-                <div style={{ fontSize: 68, fontWeight: 800, letterSpacing: '-0.03em' }}>{fmt(water * 2.5, 2)} L</div>
+                <div style={{ fontSize: 64, fontWeight: 800, letterSpacing: '-0.03em', whiteSpace: 'nowrap' }}>{fmt(water * 2.5, 2)} L</div>
                 <div style={{ fontSize: 28, color: 'rgba(255,255,255,0.6)' }}>de 2,5 L</div>
               </div>
             </div>

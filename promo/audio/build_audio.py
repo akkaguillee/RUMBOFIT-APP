@@ -172,7 +172,7 @@ for k in range(6):
 n = int(1.4 * SR)
 noise = rng.standard_normal(n)
 riser = sweep_filter(noise, 400, 9000, 'low') * np.linspace(0, 1, n) ** 2
-place(music, riser, 1.6, 0.16, 0.0)
+place(music, riser, 1.6, 0.11, 0.0)
 rev = highpass(rng.standard_normal(int(0.9 * SR)), 5000) * np.linspace(0, 1, int(0.9 * SR)) ** 3
 place(music, rev, 3.0 - 0.9, 0.14)
 

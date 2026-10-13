@@ -18,5 +18,9 @@ MI=$(get input_i); MTP=$(get input_tp); MLRA=$(get input_lra); MTH=$(get input_t
 # Pass 2: apply and mux with the Remotion render
 ffmpeg -hide_banner -y -i $STEMS/music.wav -i $STEMS/sfx.wav -i $STEMS/voice.wav -i $VIDEO \
   -filter_complex "$GRAPH,loudnorm=I=-14:TP=-1.0:LRA=11:measured_I=$MI:measured_TP=$MTP:measured_LRA=$MLRA:measured_thresh=$MTH:offset=$OFF:linear=true,aresample=48000[a]" \
-  -map 3:v:0 -map "[a]" -c:v copy -c:a aac -b:a 256k -ar 48000 -ac 2 -t 20 -movflags +faststart "$OUT"
+  -map 3:v:0 -map "[a]" \
+  -vf "scale=in_range=full:out_range=tv:out_color_matrix=bt709,format=yuv420p" \
+  -c:v libx264 -preset slow -crf 19 -maxrate 14M -bufsize 28M -profile:v high -level:v 4.2 -r 30 -g 60 \
+  -colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv \
+  -c:a aac -b:a 256k -ar 48000 -ac 2 -t 20 -movflags +faststart "$OUT"
 echo "Wrote $OUT"
