@@ -39,7 +39,7 @@ export const fmt = (n: number, decimals = 0) => n.toLocaleString('es-ES', { mini
 /** Words that rise out of a mask one after another (kinetic type). */
 export function Words({
   text,
-  at,
+  at = 0,
   every = 4,
   size = 104,
   weight = 800,
@@ -52,7 +52,7 @@ export function Words({
   frames,
 }: {
   text: string;
-  at: number;
+  at?: number;
   /** Explicit start frame for each word (e.g. from the voice timings); overrides at/every. */
   frames?: number[];
   every?: number | number[];
