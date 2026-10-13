@@ -508,7 +508,24 @@ tts = sherpa_onnx.OfflineTts(
 SPEAKER = 29  # em_alex
 
 voice = np.zeros(N)
+EL_DIR = os.path.join(HERE, 'voice')
 for line in VOICE:
+    el = os.path.join(EL_DIR, f"{line['id']}.wav")
+    if os.path.exists(el):
+        # ElevenLabs take (audio/elevenlabs_voice.py): already 48 kHz; same dry EQ chain below.
+        x, _sr = sf.read(el)
+        x = np.asarray(x, dtype=np.float64)
+        e = np.abs(x)
+        idx = np.where(e > 0.01 * e.max())[0]
+        x = x[max(0, idx[0] - 400): idx[-1] + 2400]
+        x = hp(x, 80, 2)
+        x = peaking(x, 3500, 1.0, 1.0)
+        x = x / (np.sqrt(np.mean(x ** 2)) + 1e-9) * 0.11
+        i = int(tf(line.get('speakAt', line['at'])) * SR)
+        n = min(len(x), N - i)
+        voice[i:i + n] += x[:n]
+        print('voice', line['id'], '(ElevenLabs) at', round(tf(line['at']), 2), 's')
+        continue
     # 'speak' / 'speakAt' override the on-screen text when a wording reads better aloud.
     a = tts.generate(line.get('speak', line['text']), sid=SPEAKER, speed=1.05)
     x = signal.resample_poly(np.asarray(a.samples, dtype=np.float64), 2, 1)  # 24 kHz → 48 kHz
