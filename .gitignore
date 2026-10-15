@@ -25,3 +25,4 @@ promo/out/lead2
 promo/out/lead2
 promo/audio/voice/*.mp3
 promo/out/*-share.mp4
+__pycache__/
