@@ -21,9 +21,11 @@ export function UnlockCelebration({ enabled }: { enabled: boolean }) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
+  // A short pause first, so the direct feedback of what unlocked it (a ring
+  // filling up, «Hecho», Rumbi's hop) is seen before the celebration covers it.
   useEffect(() => {
     if (!enabled || batch || !unseen?.length) return;
-    const t = window.setTimeout(() => setBatch(unseen.map((u) => u.id).filter((id) => defs.has(id))), 450);
+    const t = window.setTimeout(() => setBatch(unseen.map((u) => u.id).filter((id) => defs.has(id))), 1100);
     return () => window.clearTimeout(t);
   }, [unseen, enabled, batch]);
 

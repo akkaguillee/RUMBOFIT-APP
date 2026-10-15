@@ -38,6 +38,8 @@ test.describe('Rumbi flotante', () => {
     await panel.getByRole('link', { name: /Cómo se calculan tus calorías/ }).click();
     await expect(page).toHaveURL(/tab=calorias/);
     await expect(panel).toBeHidden();
+    // The water may unlock a milestone: Rumbi waits behind its celebration and comes back after it.
+    await dismissCelebration(page);
     await expect(fab).toBeVisible();
   });
 
