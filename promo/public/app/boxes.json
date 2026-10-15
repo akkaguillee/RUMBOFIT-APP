@@ -1,0 +1,812 @@
+{
+ "inicio-top": [
+  {
+   "cls": "glass glass--glow card dash__hero",
+   "text": "Tu rumbo hacia el objetivo A favor de tu objetivo ",
+   "x": 16,
+   "y": 393,
+   "w": 358,
+   "h": 392
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "inicio-streak": [
+  {
+   "cls": "glass glass--glow card dash__hero",
+   "text": "Tu rumbo hacia el objetivo A favor de tu objetivo ",
+   "x": 16,
+   "y": -318,
+   "w": 358,
+   "h": 392
+  },
+  {
+   "cls": "glass card streak-card dash__streak",
+   "text": "Racha 17 días de racha Día 17 completado. Mañana p",
+   "x": 16,
+   "y": 90,
+   "w": 358,
+   "h": 240
+  },
+  {
+   "cls": "dash__actions glass card card--tight",
+   "text": "Peso Agua Pasos Entrenar",
+   "x": 16,
+   "y": 346,
+   "w": 358,
+   "h": 135
+  },
+  {
+   "cls": "glass habit-card",
+   "text": "Agua 64% 1,75 L de 2,75 L 250",
+   "x": 16,
+   "y": 543,
+   "w": 173,
+   "h": 213
+  },
+  {
+   "cls": "glass habit-card",
+   "text": "Pasos 79% 6.313 de 8.000",
+   "x": 201,
+   "y": 543,
+   "w": 173,
+   "h": 213
+  },
+  {
+   "cls": "glass glass--interactive train-card",
+   "text": "Día libre de entrenamiento Descansar también es pr",
+   "x": 16,
+   "y": 768,
+   "w": 358,
+   "h": 76
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "inicio-tip": [
+  {
+   "cls": "glass glass--interactive train-card",
+   "text": "Día libre de entrenamiento Descansar también es pr",
+   "x": 16,
+   "y": -2,
+   "w": 358,
+   "h": 76
+  },
+  {
+   "cls": "glass glass--interactive card dash__week",
+   "text": "Esta semana 4/7 días activos L 12 M 13 X 14 J 15 V",
+   "x": 16,
+   "y": 577,
+   "w": 358,
+   "h": 151
+  },
+  {
+   "cls": "glass glass--interactive card dash__next",
+   "text": "PRÓXIMO HITO · RARO Un Mes de Compromiso Registra ",
+   "x": 16,
+   "y": 744,
+   "w": 358,
+   "h": 164
+  },
+  {
+   "cls": "glass card tip-card dash__tip",
+   "text": "Tu consejo de hoy Rumbi Constancia 17 días seguido",
+   "x": 16,
+   "y": 90,
+   "w": 358,
+   "h": 261
+  },
+  {
+   "cls": "glass glass--interactive body-mini",
+   "text": "IMC 26,4 kg/m² Sobrepeso",
+   "x": 16,
+   "y": 413,
+   "w": 173,
+   "h": 148
+  },
+  {
+   "cls": "glass glass--interactive body-mini",
+   "text": "Calorías 2.570 kcal Objetivo orientativo Perder gr",
+   "x": 201,
+   "y": 413,
+   "w": 173,
+   "h": 148
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "inicio-body": [
+  {
+   "cls": "glass glass--interactive card dash__week",
+   "text": "Esta semana 4/7 días activos L 12 M 13 X 14 J 15 V",
+   "x": 16,
+   "y": 357,
+   "w": 358,
+   "h": 151
+  },
+  {
+   "cls": "glass glass--interactive card dash__next",
+   "text": "PRÓXIMO HITO · RARO Un Mes de Compromiso Registra ",
+   "x": 16,
+   "y": 524,
+   "w": 358,
+   "h": 164
+  },
+  {
+   "cls": "glass card tip-card dash__tip",
+   "text": "Tu consejo de hoy Rumbi Constancia 17 días seguido",
+   "x": 16,
+   "y": -130,
+   "w": 358,
+   "h": 261
+  },
+  {
+   "cls": "glass glass--interactive body-mini",
+   "text": "IMC 26,4 kg/m² Sobrepeso",
+   "x": 16,
+   "y": 193,
+   "w": 173,
+   "h": 148
+  },
+  {
+   "cls": "glass glass--interactive body-mini",
+   "text": "Calorías 2.570 kcal Objetivo orientativo Perder gr",
+   "x": 201,
+   "y": 193,
+   "w": 173,
+   "h": 148
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "progreso-top": [
+  {
+   "cls": "glass stat-tile",
+   "text": "Peso actual 85,4kg Hoy",
+   "x": 16,
+   "y": 295,
+   "w": 173,
+   "h": 108
+  },
+  {
+   "cls": "glass stat-tile",
+   "text": "Peso inicial 90kg Desde 16 ago",
+   "x": 201,
+   "y": 295,
+   "w": 173,
+   "h": 108
+  },
+  {
+   "cls": "glass stat-tile",
+   "text": "Peso perdido 4,6kg Respecto al inicio",
+   "x": 16,
+   "y": 416,
+   "w": 173,
+   "h": 122
+  },
+  {
+   "cls": "glass stat-tile",
+   "text": "Objetivo 78kg 38 % del camino",
+   "x": 201,
+   "y": 416,
+   "w": 173,
+   "h": 122
+  },
+  {
+   "cls": "glass glass--strong card",
+   "text": "Evolución del peso Registrar 7D 30D 90D 6M 1A Todo",
+   "x": 16,
+   "y": 554,
+   "w": 358,
+   "h": 936
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "progreso-chart": [
+  {
+   "cls": "glass stat-tile",
+   "text": "Peso perdido 4,6kg Respecto al inicio",
+   "x": 16,
+   "y": -8,
+   "w": 173,
+   "h": 122
+  },
+  {
+   "cls": "glass stat-tile",
+   "text": "Objetivo 78kg 38 % del camino",
+   "x": 201,
+   "y": -8,
+   "w": 173,
+   "h": 122
+  },
+  {
+   "cls": "glass glass--strong card",
+   "text": "Evolución del peso Registrar 7D 30D 90D 6M 1A Todo",
+   "x": 16,
+   "y": 130,
+   "w": 358,
+   "h": 936
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "imc": [
+  {
+   "cls": "glass glass--strong card bmi-card",
+   "text": "Tu índice de masa corporal 26,4 kg/m² Sobrepeso IM",
+   "x": 16,
+   "y": 295,
+   "w": 358,
+   "h": 513
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "calorias": [
+  {
+   "cls": "glass glass--glow card kcal-card",
+   "text": "Tus calorías diarias Estimación Objetivo orientati",
+   "x": 16,
+   "y": 295,
+   "w": 358,
+   "h": 773
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "entreno-plan": [
+  {
+   "cls": "glass glass--glow card",
+   "text": "HOY · JUEVES, 15 DE OCTUBRE Entrena a tu ritmo Ent",
+   "x": 16,
+   "y": 301,
+   "w": 358,
+   "h": 327
+  },
+  {
+   "cls": "glass card",
+   "text": "Plan semanal Organiza tu semana. Te proponemos una",
+   "x": 16,
+   "y": 644,
+   "w": 358,
+   "h": 254
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "entreno-historial": [
+  {
+   "cls": "glass glass--interactive card text-left",
+   "text": "HACE 2 DÍAS Pierna 1 h 6 series 3.220 kg Cuádricep",
+   "x": 16,
+   "y": 347,
+   "w": 358,
+   "h": 147
+  },
+  {
+   "cls": "glass glass--interactive card text-left",
+   "text": "HACE 4 DÍAS Torso 55 min 6 series 2.845 kg Pecho E",
+   "x": 16,
+   "y": 564,
+   "w": 358,
+   "h": 147
+  },
+  {
+   "cls": "glass glass--interactive card text-left",
+   "text": "HACE 6 DÍAS Fuerza 50 min 6 series 2.203 kg Espald",
+   "x": 16,
+   "y": 726,
+   "w": 358,
+   "h": 147
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "entreno-stats": [
+  {
+   "cls": "glass stat-tile",
+   "text": " Sesiones 23 6 este mes",
+   "x": 16,
+   "y": 301,
+   "w": 173,
+   "h": 150
+  },
+  {
+   "cls": "glass stat-tile",
+   "text": " Tiempo total 21 h 55 min Media 57 min",
+   "x": 201,
+   "y": 301,
+   "w": 173,
+   "h": 150
+  },
+  {
+   "cls": "glass stat-tile",
+   "text": " Volumen total 59.889kg Peso × repeticiones",
+   "x": 16,
+   "y": 463,
+   "w": 173,
+   "h": 117
+  },
+  {
+   "cls": "glass stat-tile",
+   "text": "Últimas 8 semanas 2,8 sesiones por semana",
+   "x": 201,
+   "y": 463,
+   "w": 173,
+   "h": 117
+  },
+  {
+   "cls": "glass card",
+   "text": "Entrenamientos por semana 24 ago 7 sept 21 sept 5 ",
+   "x": 16,
+   "y": 596,
+   "w": 358,
+   "h": 264
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "habitos-agua": [
+  {
+   "cls": "glass glass--glow card",
+   "text": "Agua Hoy · 15 oct 1,75 L de 2,75 L Te quedan 1 L ·",
+   "x": 16,
+   "y": 291,
+   "w": 358,
+   "h": 456
+  },
+  {
+   "cls": "glass card",
+   "text": "Registro del día 750 ml · 09:00 1 L · 13:30",
+   "x": 16,
+   "y": 762,
+   "w": 358,
+   "h": 182
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "habitos-pasos": [
+  {
+   "cls": "glass glass--glow card steps-hero",
+   "text": "Pasos Hoy · 15 oct 6.313 de 8.000 pasos 79 % Te fa",
+   "x": 16,
+   "y": 291,
+   "w": 358,
+   "h": 619
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "hitos": [
+  {
+   "cls": "glass glass--glow card ms-summary",
+   "text": "32 de 85 Colección Común 13/22 Poco común 11/21 Ra",
+   "x": 16,
+   "y": 267,
+   "w": 358,
+   "h": 352
+  },
+  {
+   "cls": "glass glass--strong card ms-next",
+   "text": "PRÓXIMO OBJETIVO Un Mes de Compromiso Registra dat",
+   "x": 16,
+   "y": 635,
+   "w": 358,
+   "h": 246
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "perfil-privacidad": [
+  {
+   "cls": "glass card profile-sec",
+   "text": "Apariencia Tema Oscuro Claro Color de la interfaz ",
+   "x": 16,
+   "y": -811,
+   "w": 358,
+   "h": 929
+  },
+  {
+   "cls": "glass card profile-sec",
+   "text": "Datos y privacidad Tus datos se guardan solo en es",
+   "x": 16,
+   "y": 133,
+   "w": 358,
+   "h": 300
+  },
+  {
+   "cls": "glass card profile-sec",
+   "text": "Uso responsable RUMBO es una herramienta de seguim",
+   "x": 16,
+   "y": 449,
+   "w": 358,
+   "h": 299
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "acentos-selector": [
+  {
+   "cls": "glass glass--glow card dash__hero",
+   "text": "Tu rumbo hacia el objetivo A favor de tu objetivo ",
+   "x": 16,
+   "y": 393,
+   "w": 358,
+   "h": 392
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  },
+  {
+   "cls": "sheet glass glass--sheet",
+   "text": "Color de la interfaz Elige el color que acompaña a",
+   "x": 0,
+   "y": 253,
+   "w": 390,
+   "h": 544
+  }
+ ],
+ "inicio-volt": [
+  {
+   "cls": "glass glass--glow card dash__hero",
+   "text": "Tu rumbo hacia el objetivo A favor de tu objetivo ",
+   "x": 16,
+   "y": 393,
+   "w": 358,
+   "h": 392
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "inicio-cian": [
+  {
+   "cls": "glass glass--glow card dash__hero",
+   "text": "Tu rumbo hacia el objetivo A favor de tu objetivo ",
+   "x": 16,
+   "y": 393,
+   "w": 358,
+   "h": 392
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "inicio-violeta": [
+  {
+   "cls": "glass glass--glow card dash__hero",
+   "text": "Tu rumbo hacia el objetivo A favor de tu objetivo ",
+   "x": 16,
+   "y": 393,
+   "w": 358,
+   "h": 392
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "inicio-naranja": [
+  {
+   "cls": "glass glass--glow card dash__hero",
+   "text": "Tu rumbo hacia el objetivo A favor de tu objetivo ",
+   "x": 16,
+   "y": 393,
+   "w": 358,
+   "h": 392
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "inicio-fucsia": [
+  {
+   "cls": "glass glass--glow card dash__hero",
+   "text": "Tu rumbo hacia el objetivo A favor de tu objetivo ",
+   "x": 16,
+   "y": 393,
+   "w": 358,
+   "h": 392
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "inicio-rojo": [
+  {
+   "cls": "glass glass--glow card dash__hero",
+   "text": "Tu rumbo hacia el objetivo A favor de tu objetivo ",
+   "x": 16,
+   "y": 393,
+   "w": 358,
+   "h": 392
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "inicio-claro-volt": [
+  {
+   "cls": "glass glass--glow card dash__hero",
+   "text": "Tu rumbo hacia el objetivo A favor de tu objetivo ",
+   "x": 16,
+   "y": 393,
+   "w": 358,
+   "h": 392
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "inicio-claro-cian": [
+  {
+   "cls": "glass glass--glow card dash__hero",
+   "text": "Tu rumbo hacia el objetivo A favor de tu objetivo ",
+   "x": 16,
+   "y": 393,
+   "w": 358,
+   "h": 392
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "inicio-claro-violeta": [
+  {
+   "cls": "glass glass--glow card dash__hero",
+   "text": "Tu rumbo hacia el objetivo A favor de tu objetivo ",
+   "x": 16,
+   "y": 393,
+   "w": 358,
+   "h": 392
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "inicio-claro-naranja": [
+  {
+   "cls": "glass glass--glow card dash__hero",
+   "text": "Tu rumbo hacia el objetivo A favor de tu objetivo ",
+   "x": 16,
+   "y": 393,
+   "w": 358,
+   "h": 392
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "inicio-claro-fucsia": [
+  {
+   "cls": "glass glass--glow card dash__hero",
+   "text": "Tu rumbo hacia el objetivo A favor de tu objetivo ",
+   "x": 16,
+   "y": 393,
+   "w": 358,
+   "h": 392
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "inicio-claro": [
+  {
+   "cls": "glass glass--glow card dash__hero",
+   "text": "Tu rumbo hacia el objetivo A favor de tu objetivo ",
+   "x": 16,
+   "y": 393,
+   "w": 358,
+   "h": 392
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ],
+ "progreso-claro": [
+  {
+   "cls": "glass stat-tile",
+   "text": "Peso actual 85,4kg Hoy",
+   "x": 16,
+   "y": 295,
+   "w": 173,
+   "h": 108
+  },
+  {
+   "cls": "glass stat-tile",
+   "text": "Peso inicial 90kg Desde 16 ago",
+   "x": 201,
+   "y": 295,
+   "w": 173,
+   "h": 108
+  },
+  {
+   "cls": "glass stat-tile",
+   "text": "Peso perdido 4,6kg Respecto al inicio",
+   "x": 16,
+   "y": 416,
+   "w": 173,
+   "h": 122
+  },
+  {
+   "cls": "glass stat-tile",
+   "text": "Objetivo 78kg 38 % del camino",
+   "x": 201,
+   "y": 416,
+   "w": 173,
+   "h": 122
+  },
+  {
+   "cls": "glass glass--strong card",
+   "text": "Evolución del peso Registrar 7D 30D 90D 6M 1A Todo",
+   "x": 16,
+   "y": 554,
+   "w": 358,
+   "h": 936
+  },
+  {
+   "cls": "tabbar__panel glass glass--nav",
+   "text": "Inicio Progreso Entreno Hábitos Hitos",
+   "x": 10,
+   "y": 717,
+   "w": 370,
+   "h": 68
+  }
+ ]
+}

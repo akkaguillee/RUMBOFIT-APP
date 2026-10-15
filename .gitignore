@@ -15,13 +15,14 @@ e2e/screenshots
 promo/node_modules
 promo/audio/.cache
 promo/audio/stems
+promo/audio/stems-cine
 promo/out/stills
 promo/out/still-*.png
 promo/out/video-silent.mp4
+promo/out/cine-silent.mp4
 promo/out/agent-*
 promo/out/test-*.png
 promo/out/lead
-promo/out/lead2
 promo/out/lead2
 promo/audio/voice/*.mp3
 promo/out/*-share.mp4

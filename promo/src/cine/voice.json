@@ -1,0 +1,811 @@
+[
+ {
+  "id": "c1",
+  "at": 45,
+  "text": "Cada cambio empieza con una decisión.",
+  "words": [
+   {
+    "w": "Cada",
+    "f": 45
+   },
+   {
+    "w": "cambio",
+    "f": 56
+   },
+   {
+    "w": "empieza",
+    "f": 67
+   },
+   {
+    "w": "con",
+    "f": 83
+   },
+   {
+    "w": "una",
+    "f": 89
+   },
+   {
+    "w": "decisión.",
+    "f": 100
+   }
+  ],
+  "dur": 2.36,
+  "voice": "elevenlabs"
+ },
+ {
+  "id": "c2",
+  "at": 138,
+  "text": "Pero para avanzar de verdad, necesitas algo más que motivación.",
+  "words": [
+   {
+    "w": "Pero",
+    "f": 138
+   },
+   {
+    "w": "para",
+    "f": 147
+   },
+   {
+    "w": "avanzar",
+    "f": 155
+   },
+   {
+    "w": "de",
+    "f": 168
+   },
+   {
+    "w": "verdad,",
+    "f": 172
+   },
+   {
+    "w": "necesitas",
+    "f": 188
+   },
+   {
+    "w": "algo",
+    "f": 208
+   },
+   {
+    "w": "más",
+    "f": 219
+   },
+   {
+    "w": "que",
+    "f": 225
+   },
+   {
+    "w": "motivación.",
+    "f": 231
+   }
+  ],
+  "dur": 3.8,
+  "voice": "elevenlabs"
+ },
+ {
+  "id": "c3",
+  "at": 285,
+  "text": "Necesitas conocer tu progreso, entender tu evolución y tener claro hacia dónde vas.",
+  "words": [
+   {
+    "w": "Necesitas",
+    "f": 285
+   },
+   {
+    "w": "conocer",
+    "f": 302
+   },
+   {
+    "w": "tu",
+    "f": 315
+   },
+   {
+    "w": "progreso,",
+    "f": 320
+   },
+   {
+    "w": "entender",
+    "f": 343
+   },
+   {
+    "w": "tu",
+    "f": 358
+   },
+   {
+    "w": "evolución",
+    "f": 364
+   },
+   {
+    "w": "y",
+    "f": 383
+   },
+   {
+    "w": "tener",
+    "f": 389
+   },
+   {
+    "w": "claro",
+    "f": 399
+   },
+   {
+    "w": "hacia",
+    "f": 409
+   },
+   {
+    "w": "dónde",
+    "f": 420
+   },
+   {
+    "w": "vas.",
+    "f": 430
+   }
+  ],
+  "dur": 5.02,
+  "voice": "elevenlabs"
+ },
+ {
+  "id": "c4",
+  "at": 455,
+  "text": "Para eso existe Rumbo.",
+  "words": [
+   {
+    "w": "Para",
+    "f": 456
+   },
+   {
+    "w": "eso",
+    "f": 467
+   },
+   {
+    "w": "existe",
+    "f": 478
+   },
+   {
+    "w": "Rumbo.",
+    "f": 493
+   }
+  ],
+  "dur": 1.64,
+  "voice": "elevenlabs"
+ },
+ {
+  "id": "c5",
+  "at": 552,
+  "text": "Registra tus datos, sigue tus objetivos y observa cómo evoluciona tu esfuerzo.",
+  "words": [
+   {
+    "w": "Registra",
+    "f": 552
+   },
+   {
+    "w": "tus",
+    "f": 567
+   },
+   {
+    "w": "datos,",
+    "f": 573
+   },
+   {
+    "w": "sigue",
+    "f": 598
+   },
+   {
+    "w": "tus",
+    "f": 607
+   },
+   {
+    "w": "objetivos",
+    "f": 612
+   },
+   {
+    "w": "y",
+    "f": 630
+   },
+   {
+    "w": "observa",
+    "f": 636
+   },
+   {
+    "w": "cómo",
+    "f": 649
+   },
+   {
+    "w": "evoluciona",
+    "f": 659
+   },
+   {
+    "w": "tu",
+    "f": 680
+   },
+   {
+    "w": "esfuerzo.",
+    "f": 686
+   }
+  ],
+  "dur": 4.91,
+  "voice": "elevenlabs"
+ },
+ {
+  "id": "c6",
+  "at": 725,
+  "text": "Tanto si quieres perder grasa como ganar masa muscular, convierte cada registro en una forma de entender mejor tu camino.",
+  "words": [
+   {
+    "w": "Tanto",
+    "f": 725
+   },
+   {
+    "w": "si",
+    "f": 735
+   },
+   {
+    "w": "quieres",
+    "f": 740
+   },
+   {
+    "w": "perder",
+    "f": 749
+   },
+   {
+    "w": "grasa",
+    "f": 758
+   },
+   {
+    "w": "como",
+    "f": 767
+   },
+   {
+    "w": "ganar",
+    "f": 777
+   },
+   {
+    "w": "masa",
+    "f": 786
+   },
+   {
+    "w": "muscular,",
+    "f": 795
+   },
+   {
+    "w": "convierte",
+    "f": 822
+   },
+   {
+    "w": "cada",
+    "f": 835
+   },
+   {
+    "w": "registro",
+    "f": 844
+   },
+   {
+    "w": "en",
+    "f": 857
+   },
+   {
+    "w": "una",
+    "f": 862
+   },
+   {
+    "w": "forma",
+    "f": 871
+   },
+   {
+    "w": "de",
+    "f": 880
+   },
+   {
+    "w": "entender",
+    "f": 885
+   },
+   {
+    "w": "mejor",
+    "f": 898
+   },
+   {
+    "w": "tu",
+    "f": 907
+   },
+   {
+    "w": "camino.",
+    "f": 912
+   }
+  ],
+  "dur": 6.66,
+  "voice": "elevenlabs"
+ },
+ {
+  "id": "c7",
+  "at": 955,
+  "text": "Controla aquello que importa, reconoce tus avances y descubre cómo pequeños pasos, repetidos cada día, pueden acercarte a tu objetivo.",
+  "words": [
+   {
+    "w": "Controla",
+    "f": 955
+   },
+   {
+    "w": "aquello",
+    "f": 969
+   },
+   {
+    "w": "que",
+    "f": 983
+   },
+   {
+    "w": "importa,",
+    "f": 988
+   },
+   {
+    "w": "reconoce",
+    "f": 1016
+   },
+   {
+    "w": "tus",
+    "f": 1036
+   },
+   {
+    "w": "avances",
+    "f": 1041
+   },
+   {
+    "w": "y",
+    "f": 1056
+   },
+   {
+    "w": "descubre",
+    "f": 1062
+   },
+   {
+    "w": "cómo",
+    "f": 1077
+   },
+   {
+    "w": "pequeños",
+    "f": 1087
+   },
+   {
+    "w": "pasos,",
+    "f": 1102
+   },
+   {
+    "w": "repetidos",
+    "f": 1120
+   },
+   {
+    "w": "cada",
+    "f": 1140
+   },
+   {
+    "w": "día,",
+    "f": 1151
+   },
+   {
+    "w": "pueden",
+    "f": 1169
+   },
+   {
+    "w": "acercarte",
+    "f": 1176
+   },
+   {
+    "w": "a",
+    "f": 1190
+   },
+   {
+    "w": "tu",
+    "f": 1194
+   },
+   {
+    "w": "objetivo.",
+    "f": 1198
+   }
+  ],
+  "dur": 8.55,
+  "voice": "elevenlabs"
+ },
+ {
+  "id": "c8",
+  "at": 1270,
+  "text": "Personaliza la experiencia a tu manera. Elige el tema que prefieras y haz que Rumbo encaje contigo.",
+  "words": [
+   {
+    "w": "Personaliza",
+    "f": 1270
+   },
+   {
+    "w": "la",
+    "f": 1288
+   },
+   {
+    "w": "experiencia",
+    "f": 1292
+   },
+   {
+    "w": "a",
+    "f": 1306
+   },
+   {
+    "w": "tu",
+    "f": 1310
+   },
+   {
+    "w": "manera.",
+    "f": 1315
+   },
+   {
+    "w": "Elige",
+    "f": 1342
+   },
+   {
+    "w": "el",
+    "f": 1356
+   },
+   {
+    "w": "tema",
+    "f": 1361
+   },
+   {
+    "w": "que",
+    "f": 1371
+   },
+   {
+    "w": "prefieras",
+    "f": 1376
+   },
+   {
+    "w": "y",
+    "f": 1390
+   },
+   {
+    "w": "haz",
+    "f": 1395
+   },
+   {
+    "w": "que",
+    "f": 1400
+   },
+   {
+    "w": "Rumbo",
+    "f": 1406
+   },
+   {
+    "w": "encaje",
+    "f": 1415
+   },
+   {
+    "w": "contigo.",
+    "f": 1429
+   }
+  ],
+  "dur": 5.75,
+  "voice": "elevenlabs"
+ },
+ {
+  "id": "c9",
+  "at": 1515,
+  "text": "Y algo fundamental: tu privacidad. Tus datos se quedan en tu dispositivo. No se envían ni siquiera al desarrollador de la aplicación.",
+  "words": [
+   {
+    "w": "Y",
+    "f": 1515
+   },
+   {
+    "w": "algo",
+    "f": 1521
+   },
+   {
+    "w": "fundamental:",
+    "f": 1530
+   },
+   {
+    "w": "tu",
+    "f": 1563
+   },
+   {
+    "w": "privacidad.",
+    "f": 1568
+   },
+   {
+    "w": "Tus",
+    "f": 1602
+   },
+   {
+    "w": "datos",
+    "f": 1607
+   },
+   {
+    "w": "se",
+    "f": 1617
+   },
+   {
+    "w": "quedan",
+    "f": 1622
+   },
+   {
+    "w": "en",
+    "f": 1631
+   },
+   {
+    "w": "tu",
+    "f": 1636
+   },
+   {
+    "w": "dispositivo.",
+    "f": 1642
+   },
+   {
+    "w": "No",
+    "f": 1675
+   },
+   {
+    "w": "se",
+    "f": 1680
+   },
+   {
+    "w": "envían",
+    "f": 1685
+   },
+   {
+    "w": "ni",
+    "f": 1693
+   },
+   {
+    "w": "siquiera",
+    "f": 1697
+   },
+   {
+    "w": "al",
+    "f": 1709
+   },
+   {
+    "w": "desarrollador",
+    "f": 1714
+   },
+   {
+    "w": "de",
+    "f": 1733
+   },
+   {
+    "w": "la",
+    "f": 1737
+   },
+   {
+    "w": "aplicación.",
+    "f": 1742
+   }
+  ],
+  "dur": 8.07,
+  "voice": "elevenlabs"
+ },
+ {
+  "id": "c10",
+  "at": 1815,
+  "text": "No se trata de hacerlo todo perfecto. Se trata de seguir avanzando, aprender de cada etapa y no perder de vista tu objetivo.",
+  "words": [
+   {
+    "w": "No",
+    "f": 1815
+   },
+   {
+    "w": "se",
+    "f": 1820
+   },
+   {
+    "w": "trata",
+    "f": 1824
+   },
+   {
+    "w": "de",
+    "f": 1833
+   },
+   {
+    "w": "hacerlo",
+    "f": 1837
+   },
+   {
+    "w": "todo",
+    "f": 1849
+   },
+   {
+    "w": "perfecto.",
+    "f": 1857
+   },
+   {
+    "w": "Se",
+    "f": 1873
+   },
+   {
+    "w": "trata",
+    "f": 1879
+   },
+   {
+    "w": "de",
+    "f": 1892
+   },
+   {
+    "w": "seguir",
+    "f": 1899
+   },
+   {
+    "w": "avanzando,",
+    "f": 1911
+   },
+   {
+    "w": "aprender",
+    "f": 1945
+   },
+   {
+    "w": "de",
+    "f": 1958
+   },
+   {
+    "w": "cada",
+    "f": 1963
+   },
+   {
+    "w": "etapa",
+    "f": 1971
+   },
+   {
+    "w": "y",
+    "f": 1984
+   },
+   {
+    "w": "no",
+    "f": 1989
+   },
+   {
+    "w": "perder",
+    "f": 1994
+   },
+   {
+    "w": "de",
+    "f": 2002
+   },
+   {
+    "w": "vista",
+    "f": 2007
+   },
+   {
+    "w": "tu",
+    "f": 2016
+   },
+   {
+    "w": "objetivo.",
+    "f": 2021
+   }
+  ],
+  "dur": 7.39,
+  "voice": "elevenlabs"
+ },
+ {
+  "id": "c11",
+  "at": 2065,
+  "text": "Empieza hoy a construir tu mejor versión.",
+  "words": [
+   {
+    "w": "Empieza",
+    "f": 2066
+   },
+   {
+    "w": "hoy",
+    "f": 2085
+   },
+   {
+    "w": "a",
+    "f": 2092
+   },
+   {
+    "w": "construir",
+    "f": 2100
+   },
+   {
+    "w": "tu",
+    "f": 2113
+   },
+   {
+    "w": "mejor",
+    "f": 2121
+   },
+   {
+    "w": "versión.",
+    "f": 2134
+   }
+  ],
+  "dur": 2.76,
+  "voice": "elevenlabs"
+ },
+ {
+  "id": "c12",
+  "at": 2172,
+  "text": "Rumbo. Tu progreso, tu camino.",
+  "words": [
+   {
+    "w": "Rumbo.",
+    "f": 2172
+   },
+   {
+    "w": "Tu",
+    "f": 2202
+   },
+   {
+    "w": "progreso,",
+    "f": 2208
+   },
+   {
+    "w": "tu",
+    "f": 2237
+   },
+   {
+    "w": "camino.",
+    "f": 2241
+   }
+  ],
+  "dur": 2.62,
+  "voice": "elevenlabs"
+ },
+ {
+  "id": "c13",
+  "at": 2280,
+  "text": "Entra ahora en rumbofit punto netlify punto app, y empieza a escribir el tuyo.",
+  "words": [
+   {
+    "w": "Entra",
+    "f": 2280
+   },
+   {
+    "w": "ahora",
+    "f": 2292
+   },
+   {
+    "w": "en",
+    "f": 2309
+   },
+   {
+    "w": "rumbofit",
+    "f": 2316
+   },
+   {
+    "w": "punto",
+    "f": 2333
+   },
+   {
+    "w": "netlify",
+    "f": 2345
+   },
+   {
+    "w": "punto",
+    "f": 2356
+   },
+   {
+    "w": "app,",
+    "f": 2368
+   },
+   {
+    "w": "y",
+    "f": 2388
+   },
+   {
+    "w": "empieza",
+    "f": 2393
+   },
+   {
+    "w": "a",
+    "f": 2403
+   },
+   {
+    "w": "escribir",
+    "f": 2407
+   },
+   {
+    "w": "el",
+    "f": 2418
+   },
+   {
+    "w": "tuyo.",
+    "f": 2422
+   }
+  ],
+  "dur": 4.98,
+  "voice": "elevenlabs"
+ }
+]

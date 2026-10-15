@@ -3,9 +3,11 @@ Places ElevenLabs takes (exported from the ElevenLabs flow as MP3) as the voice
 of the promo and re-times the on-screen words to them.
 
   python3 audio/align_voice.py v1=path/to/v1.mp3 v2=... ...
+  python3 audio/align_voice.py --voice src/cine/voice.json --out audio/voice-cine --no-sfx c1=... ...
 
-For every line it writes audio/voice/<id>.wav (48 kHz mono, used by
-build_audio.py) and rewrites the word frames in src/voice.json. Word starts
+For every line it writes <out>/<id>.wav (48 kHz mono, default audio/voice,
+used by the audio builds) and rewrites the word frames in the voice JSON
+(default src/voice.json). Word starts
 come from the take itself: voiced segments (10 ms RMS) give the pauses, which
 are matched to the punctuation of the line; inside each phrase the words are
 spread by syllable count. Accurate to a few frames, enough for kinetic type.
@@ -22,8 +24,17 @@ import soundfile as sf
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-VOICE_JSON = os.path.join(ROOT, 'src', 'voice.json')
-OUT = os.path.join(HERE, 'voice')
+args = sys.argv[1:]
+opts = {'--voice': os.path.join(ROOT, 'src', 'voice.json'), '--out': os.path.join(HERE, 'voice')}
+for flag in list(opts):
+    if flag in args:
+        i = args.index(flag)
+        opts[flag] = os.path.abspath(args[i + 1])
+        del args[i : i + 2]
+SYNC_SFX = '--no-sfx' not in args
+args = [a for a in args if a != '--no-sfx']
+VOICE_JSON = opts['--voice']
+OUT = opts['--out']
 SR = 48000
 FPS = 30
 
@@ -91,7 +102,7 @@ def word_starts(text, segs):
     return starts
 
 
-takes = dict(arg.split('=', 1) for arg in sys.argv[1:])
+takes = dict(arg.split('=', 1) for arg in args)
 lines = json.load(open(VOICE_JSON))
 before = [w['f'] for line in lines for w in line['words']]
 os.makedirs(OUT, exist_ok=True)
@@ -120,6 +131,9 @@ for line in lines:
     print(line['id'], 'segs', [(round(a, 2), round(b, 2)) for a, b in segs], '\n   ', ' '.join(f"{w['w']}@{w['f']}" for w in shown))
 json.dump(lines, open(VOICE_JSON, 'w'), ensure_ascii=False, indent=1)
 print('voice.json updated')
+
+if not SYNC_SFX:
+    sys.exit(0)
 
 # Sound effects placed on a word (within 3 frames) move with it.
 TIMELINE = os.path.join(ROOT, 'src', 'timeline.json')

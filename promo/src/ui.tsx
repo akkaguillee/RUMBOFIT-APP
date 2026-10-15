@@ -92,6 +92,7 @@ export function Words({
                 WebkitBackgroundClip: isAccent ? 'text' : undefined,
                 backgroundClip: isAccent ? 'text' : undefined,
                 filter: `blur(${(1 - s) * 6 + leave * 6}px)`,
+                opacity: s > 0.002 ? 1 : 0,
               }}
             >
               {w}
