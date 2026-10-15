@@ -14,9 +14,9 @@ export interface AccentOption {
 }
 
 export const ACCENTS: AccentOption[] = [
+  { id: 'volt', name: 'LIMA VOLT', color: 'lima', swatch: ['#c8f53a', '#c8f53a'] },
   { id: 'rojo', name: 'ROJO RUMBO', color: 'rojo', swatch: ['#e53945', '#e53945'] },
   { id: 'naranja', name: 'NARANJA BRASA', color: 'naranja', swatch: ['#ff6a1a', '#ff6a1a'] },
-  { id: 'volt', name: 'LIMA VOLT', color: 'lima', swatch: ['#c6f135', '#c6f135'] },
   { id: 'cian', name: 'CIAN GLACIAR', color: 'cian', swatch: ['#22d3ee', '#22d3ee'] },
   { id: 'violeta', name: 'VIOLETA ULTRA', color: 'violeta', swatch: ['#8b5cf6', '#8b5cf6'] },
   { id: 'fucsia', name: 'FUCSIA NEÓN', color: 'fucsia', swatch: ['#f0287a', '#f0287a'] },

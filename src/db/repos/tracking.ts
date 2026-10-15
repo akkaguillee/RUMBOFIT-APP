@@ -1,11 +1,12 @@
-import { calculateBmi, calculateEnergy, type EnergyInput } from '@/domain/health';
+import { calculateBmi, calculateEnergy, currentAge, type EnergyInput } from '@/domain/health';
 import { isDateKey, nowTime, todayKey, type DateKey } from '@/domain/dates';
-import type { BmiRecord, EnergyRecord, WeightEntry } from '@/domain/types';
+import type { ActivityLevel, BmiRecord, EnergyRecord, GoalType, Sex, WeightEntry } from '@/domain/types';
 import { round } from '@/domain/units';
+import { sortWeights } from '@/domain/weight';
 import { assertRange, LIMITS, ValidationError } from '@/domain/validation';
 import { db } from '../db';
 import { scheduleSync } from '../sync';
-import { ensureSnapshot } from './profile';
+import { ensureSnapshot, updateProfile } from './profile';
 
 function assertDate(date: DateKey) {
   if (!isDateKey(date)) throw new ValidationError('La fecha no es válida.');
@@ -158,5 +159,84 @@ export async function saveEnergy(input: EnergyInput, target?: number): Promise<v
     target,
   };
   await db.energy.add(record);
+  scheduleSync();
+}
+
+export interface CalculationInput {
+  kg: number;
+  heightCm: number;
+  age: number;
+  sex: Sex;
+  activityLevel: ActivityLevel;
+  goal: GoalType;
+  /** Calorie target picked among the ones offered for `goal`. */
+  targetId?: string;
+  proteinPerKg: number;
+  fatPct: number;
+}
+
+/**
+ * Saves «Ajustar el cálculo» so every screen agrees with it: the data go to the
+ * profile, a different weight becomes today's weight (today's latest record is
+ * corrected instead of adding a duplicate), and the estimate joins the history.
+ * All or nothing: one transaction.
+ */
+export async function applyCalculation(input: CalculationInput): Promise<void> {
+  assertRange(input.kg, LIMITS.weightKg);
+  assertRange(input.heightCm, LIMITS.heightCm);
+  assertRange(input.age, LIMITS.age);
+  if (!(input.proteinPerKg >= 0.8 && input.proteinPerKg <= 2.5)) throw new ValidationError('La proteína por kilo no es válida.');
+  if (!(input.fatPct >= 15 && input.fatPct <= 45)) throw new ValidationError('El porcentaje de grasas no es válido.');
+  const today = todayKey();
+  const kg = round(input.kg, 2);
+
+  await db.transaction('rw', [db.profile, db.goals, db.snapshots, db.weights, db.energy], async () => {
+    const current = await db.profile.get('me');
+    if (!current) throw new ValidationError('No hay perfil creado.');
+    const energyInput: EnergyInput = {
+      kg,
+      heightCm: input.heightCm,
+      age: input.age,
+      sex: input.sex,
+      activityLevel: input.activityLevel,
+      goal: input.goal,
+      healthFlags: current.healthFlags,
+    };
+    const result = calculateEnergy(energyInput);
+    const target = result.targets.find((t) => t.id === input.targetId);
+
+    const weights = await db.weights.toArray();
+    const latest = sortWeights(weights.filter((w) => w.date <= today)).at(-1);
+    if (!latest || Math.abs(latest.kg - kg) >= 0.01) {
+      const last = sortWeights(weights.filter((w) => w.date === today)).at(-1);
+      if (last?.id !== undefined) await db.weights.update(last.id, { kg, updatedAt: Date.now() });
+      else await db.weights.add({ date: today, time: nowTime(), kg, createdAt: Date.now(), updatedAt: Date.now() });
+    }
+
+    await updateProfile({
+      heightCm: input.heightCm,
+      // Only when it changed: saving the same age must not reset the date it was recorded on.
+      ...(input.age !== currentAge(current.age, current.ageRecordedOn, today) ? { age: input.age } : {}),
+      sex: input.sex,
+      activityLevel: input.activityLevel,
+      goal: input.goal,
+      energyPlan: {
+        targetId: target?.id,
+        targetGoal: target ? input.goal : undefined,
+        proteinPerKg: input.proteinPerKg,
+        fatPct: input.fatPct,
+      },
+    });
+
+    const record: EnergyRecord = {
+      date: today,
+      createdAt: Date.now(),
+      inputs: { kg, heightCm: input.heightCm, age: input.age, sex: input.sex, activityLevel: input.activityLevel, goal: input.goal },
+      bmr: result.bmr,
+      tdee: result.tdee,
+      target: target?.kcal,
+    };
+    await db.energy.add(record);
+  });
   scheduleSync();
 }

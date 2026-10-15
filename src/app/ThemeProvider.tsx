@@ -6,6 +6,9 @@ import { isAccent, ThemeContext, type Accent, type Effects, type Theme, type The
 const THEME_KEY = 'rumbo.theme';
 const EFFECTS_KEY = 'rumbo.effects';
 const ACCENT_KEY = 'rumbo.accent';
+/** Visual identity version: installs from before the lime identity switch to it once. */
+const IDENTITY_KEY = 'rumbo.identity';
+const IDENTITY = '2';
 
 function read(key: string): string | null {
   try {
@@ -30,8 +33,14 @@ function initialTheme(): Theme {
 }
 
 function initialAccent(): Accent {
+  // The pre-paint script in index.html applies the same rule before first paint.
+  if (read(IDENTITY_KEY) !== IDENTITY) {
+    write(IDENTITY_KEY, IDENTITY);
+    write(ACCENT_KEY, 'volt');
+    return 'volt';
+  }
   const stored = read(ACCENT_KEY);
-  return isAccent(stored) ? stored : 'rojo';
+  return isAccent(stored) ? stored : 'volt';
 }
 
 type Origin = { x: number; y: number };
@@ -82,8 +91,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     // The pre-paint script set an inline background; keep it in sync for overscroll areas.
-    document.documentElement.style.background = theme === 'dark' ? '#08090d' : '#f8f5f3';
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#08090d' : '#f8f5f3');
+    document.documentElement.style.background = theme === 'dark' ? '#070807' : '#f1f2ec';
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#070807' : '#f1f2ec');
   }, [theme]);
 
   useEffect(() => applyEffects(effects), [effects]);

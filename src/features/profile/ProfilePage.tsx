@@ -64,7 +64,7 @@ function ProfileContent({ profile }: { profile: Profile }) {
 
   return (
     <Page>
-      <PageHead eyebrow="Perfil" title="Perfil y ajustes" />
+      <PageHead eyebrow="Perfil" display="Perfil" title="Perfil y ajustes" />
       <GlassCard variant="glow" className="profile-hero">
         <span className="profile-hero__avatar" aria-hidden="true">
           {profile.name.charAt(0).toUpperCase()}

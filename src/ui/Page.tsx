@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { cx } from './cx';
+import { Display } from './Display';
 import { pageVariants, riseVariants } from './motion';
 
 export function Page({ children, className }: { children: ReactNode; className?: string }) {
@@ -16,15 +17,30 @@ interface PageHeadProps {
   eyebrow?: ReactNode;
   subtitle?: ReactNode;
   actions?: ReactNode;
+  /** Short word set large in the display face (decorative; replaces the eyebrow). */
+  display?: string;
+  /** Small handwritten note under the title. */
+  note?: string;
 }
 
-export function PageHead({ title, eyebrow, subtitle, actions }: PageHeadProps) {
+export function PageHead({ title, eyebrow, subtitle, actions, display, note }: PageHeadProps) {
   return (
     <motion.header className="page-head" variants={riseVariants}>
       <div className="page-head__text">
-        {eyebrow && <p className="t-eyebrow" style={{ marginBottom: 6 }}>{eyebrow}</p>}
+        {display ? (
+          <Display text={display} className="page-head__display" />
+        ) : (
+          eyebrow && (
+            <p className="t-eyebrow" style={{ marginBottom: 6 }}>
+              {eyebrow}
+            </p>
+          )
+        )}
         <h1 className="t-title">{title}</h1>
         {subtitle && <p className="page-head__sub">{subtitle}</p>}
+        {note && (
+          <p className="hand page-head__note">{note}</p>
+        )}
       </div>
       {actions && <div className="hstack">{actions}</div>}
     </motion.header>

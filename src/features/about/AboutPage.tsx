@@ -69,7 +69,7 @@ export default function AboutPage() {
             </motion.p>
           ))}
           <motion.div className="about__outro" variants={riseVariants}>
-            <p className="about__signature">Este es mi RUMBO.</p>
+            <p className="about__signature hand">Este es mi RUMBO.</p>
             <p className="about__closing">Ahora es el momento de encontrar el tuyo.</p>
           </motion.div>
         </div>

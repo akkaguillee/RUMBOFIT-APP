@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#08090d" />
+    <meta name="theme-color" content="#070807" />
     <meta name="color-scheme" content="dark light" />
     <meta name="description" content="RUMBO · Hábitos, evolución física y entrenamiento. Cada pequeño paso cuenta." />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -20,9 +20,14 @@
           var t = localStorage.getItem('rumbo.theme');
           if (t !== 'light' && t !== 'dark') t = 'dark';
           document.documentElement.dataset.theme = t;
+          // Lime identity: older installs switch to it once (see ThemeProvider).
+          if (localStorage.getItem('rumbo.identity') !== '2') {
+            localStorage.setItem('rumbo.identity', '2');
+            localStorage.setItem('rumbo.accent', 'volt');
+          }
           var a = localStorage.getItem('rumbo.accent');
-          if (/^(rojo|naranja|volt|cian|violeta|fucsia)$/.test(a)) document.documentElement.dataset.accent = a;
-          var bg = t === 'dark' ? '#08090d' : '#f8f5f3';
+          document.documentElement.dataset.accent = /^(rojo|naranja|volt|cian|violeta|fucsia)$/.test(a) ? a : 'volt';
+          var bg = t === 'dark' ? '#070807' : '#f1f2ec';
           document.documentElement.style.background = bg;
           document.querySelector('meta[name="theme-color"]').setAttribute('content', bg);
         } catch (e) {}

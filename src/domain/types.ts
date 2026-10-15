@@ -33,6 +33,8 @@ export interface Profile {
   food?: FoodHabits;
   motivation?: MotivationProfile;
   wellbeing?: Wellbeing;
+  /** Choices saved from Progreso › Calorías › «Ajustar el cálculo». */
+  energyPlan?: EnergyPlan;
   /** When the user agreed to store this information on the device. */
   consentAt?: number;
   createdAt: number;
@@ -40,6 +42,17 @@ export interface Profile {
 }
 
 export type HealthFlag = 'pregnancy' | 'eating_disorder' | 'medical_condition';
+
+/**
+ * Calorie target and macro split picked in «Ajustar el cálculo». The target only
+ * applies while the goal it was picked for is still the profile goal.
+ */
+export interface EnergyPlan {
+  targetId?: string;
+  targetGoal?: GoalType;
+  proteinPerKg: number;
+  fatPct: number;
+}
 
 // ── Personalisation gathered in onboarding (all optional, editable in Perfil) ──
 // "unsure" = «No lo sé / No estoy seguro»; "skip" = «Prefiero no responder».

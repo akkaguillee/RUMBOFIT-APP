@@ -17,7 +17,7 @@ export default function HabitsPage() {
   if (!profile) return <Loader />;
   return (
     <Page>
-      <PageHead eyebrow="Hábitos" title="Agua y movimiento" subtitle="Pequeños gestos diarios que suman." />
+      <PageHead eyebrow="Hábitos" display="Agua + pasos" title="Agua y movimiento" subtitle="Pequeños gestos diarios que suman." note="poco a poco, suma" />
       <motion.div className="tabs-row" variants={riseVariants} style={{ marginBottom: 20 }}>
         <Segmented
           mode="tabs"

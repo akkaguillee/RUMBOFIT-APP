@@ -1,0 +1,33 @@
+/* ──────────────────────────────────────────────────────────────────────
+   Brand typefaces, served from the app itself (never from a third-party
+   domain). Converted from the supplied OTF files (WOFF2 + WOFF) without
+   touching the glyphs. Only Krophed's font bounding box was corrected: the
+   original declared 0…610 units wide, and Chrome clipped wide letters (O, M,
+   W…) to it at large sizes.
+     · Krophed (Garismantra) — display, capitals only: A–Z, 0–9 and basic
+       punctuation, no accents. Used only for short titles it can set in full
+       (see src/brand/krophed.ts).
+     · 212 Baby Girl (212 Fonts) — handwriting, full Spanish set. Only for
+       short motivational notes, never for paragraphs, forms or data.
+   Interface text stays in the system sans-serif (SF Pro / Inter).
+   ────────────────────────────────────────────────────────────────────── */
+
+@font-face {
+  font-family: 'Krophed';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src:
+    url('../assets/fonts/krophed.woff2') format('woff2'),
+    url('../assets/fonts/krophed.woff') format('woff');
+}
+
+@font-face {
+  font-family: '212 Baby Girl';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    url('../assets/fonts/baby-girl.woff2') format('woff2'),
+    url('../assets/fonts/baby-girl.woff') format('woff');
+}

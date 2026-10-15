@@ -59,7 +59,13 @@ export default function MilestonesPage() {
 
   return (
     <Page>
-      <PageHead eyebrow="Hitos" title="Tus logros" subtitle="Constancia, hábitos y superación. Cada hito se calcula con tus registros reales." />
+      <PageHead
+        eyebrow="Hitos"
+        display="Hitos"
+        title="Tus logros"
+        subtitle="Constancia, hábitos y superación. Cada hito se calcula con tus registros reales."
+        note="¡cada logro cuenta!"
+      />
 
       <div className="ms-top">
         <GlassCard variant="glow" sheen className="ms-summary">

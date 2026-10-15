@@ -59,4 +59,48 @@ test.describe('Personalisation', () => {
     await expect(title).toHaveCSS('text-transform', 'uppercase');
     await expect(title).toContainText(/Progreso/);
   });
+
+  test('«Ajustar el cálculo» validates, updates the calories and keeps them after reload', async ({ page }) => {
+    await onboard(page);
+    await page.goto('/progresos?tab=calorias');
+    const trigger = page.getByRole('button', { name: /Ajustar el cálculo/ });
+    await trigger.click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('#kcal-title')).toBeFocused();
+
+    // Empty and non-numeric values are rejected with an accessible message.
+    const weight = page.getByRole('textbox', { name: 'Peso' });
+    const height = page.getByRole('textbox', { name: 'Altura' });
+    await height.fill('');
+    await weight.fill('abc');
+    const save = page.getByRole('button', { name: 'Guardar y actualizar' });
+    await save.click();
+    await expect(weight).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByRole('alert').filter({ hasText: 'El peso debe ser un número' })).toBeVisible();
+    await expect(page.getByRole('alert').filter({ hasText: 'Indica la altura' })).toBeVisible();
+    await expect(weight).toBeFocused();
+
+    // Valid data: saved to the profile, the main card updates at once.
+    await weight.fill('85,4');
+    await height.fill('180');
+    await page.getByRole('combobox', { name: /Nivel de actividad/ }).selectOption('active');
+    await save.click();
+    await expect(page.getByText(/Guardado\. Tus calorías diarias ahora son/)).toBeVisible();
+    await dismissCelebration(page);
+    const card = page.locator('.kcal-card');
+    const kcal = await card.locator('.kcal-hero__num').textContent();
+    await expect(save).toBeDisabled();
+
+    // Escape closes the panel and returns focus to its button.
+    await page.getByRole('button', { name: 'Cerrar' }).focus();
+    await page.keyboard.press('Escape');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(trigger).toBeFocused();
+
+    await page.reload();
+    await dismissCelebration(page);
+    await expect(card.locator('.kcal-hero__num')).toHaveText(kcal ?? '');
+    await page.getByRole('button', { name: /Ajustar el cálculo/ }).click();
+    await expect(page.getByRole('combobox', { name: /Nivel de actividad/ })).toHaveValue('active');
+  });
 });

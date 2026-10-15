@@ -86,6 +86,7 @@ export default function CalendarPage() {
     <Page>
       <PageHead
         eyebrow="Calendario"
+        display="Calendario"
         title="Tu historial"
         subtitle={
           lastRecord

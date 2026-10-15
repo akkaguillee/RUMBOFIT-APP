@@ -351,6 +351,24 @@ export function guardDeficit(
   };
 }
 
+/** Default protein / fat split for the optional macro view. */
+export const DEFAULT_MACRO_SPLIT = { proteinPerKg: 1.6, fatPct: 30 } as const;
+
+/** Macro split saved in «Ajustar el cálculo», or the default one. */
+export function macroSplit(profile: Profile): { proteinPerKg: number; fatPct: number } {
+  return {
+    proteinPerKg: profile.energyPlan?.proteinPerKg ?? DEFAULT_MACRO_SPLIT.proteinPerKg,
+    fatPct: profile.energyPlan?.fatPct ?? DEFAULT_MACRO_SPLIT.fatPct,
+  };
+}
+
+/** The target saved in «Ajustar el cálculo», while it was picked for the current goal and is still offered. */
+function pickedTarget(profile: Profile, options: EnergyTarget[]): EnergyTarget | undefined {
+  const plan = profile.energyPlan;
+  if (!plan?.targetId || plan.targetGoal !== profile.goal) return undefined;
+  return options.find((t) => t.id === plan.targetId);
+}
+
 export function energyEstimate(profile: Profile, weights: WeightEntry[], today: DateKey): EnergyEstimate {
   const latest = latestWeightUpTo(weights, today);
   const age = currentAge(profile.age, profile.ageRecordedOn, today);
@@ -372,7 +390,7 @@ export function energyEstimate(profile: Profile, weights: WeightEntry[], today: 
   });
   const { targets: options, restrictions } = guardDeficit(result, latest.kg, profile.heightCm, age);
   const restricted = restrictions.length > 0;
-  const recommended = options.find((t) => t.recommended) ?? options[0]!;
+  const recommended = pickedTarget(profile, options) ?? options.find((t) => t.recommended) ?? options[0]!;
   const notes = [...result.notes];
   if (activity.source === 'profile') {
     notes.push('Cuéntanos cómo es tu día a día en tu perfil para afinar el factor de actividad.');

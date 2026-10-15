@@ -44,6 +44,34 @@
   opacity: 0.45;
 }
 
+/* Loading: the icon becomes a small spinner (Button renders it) and the button stays readable. */
+.btn[aria-busy='true'] {
+  opacity: 0.85;
+  cursor: progress;
+}
+
+.btn__spinner {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: btn-spin 0.7s linear infinite;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn__spinner {
+    animation-duration: 1.6s;
+  }
+}
+
 .btn--sm {
   --btn-h: 38px;
   padding: 0 var(--space-4);

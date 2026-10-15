@@ -30,7 +30,7 @@ export const Button = forwardRef<HTMLButtonElement, Common & ButtonHTMLAttribute
       aria-busy={loading || undefined}
       {...rest}
     >
-      {icon}
+      {loading ? <span className="btn__spinner" aria-hidden="true" /> : icon}
       {children}
       {iconRight}
     </button>

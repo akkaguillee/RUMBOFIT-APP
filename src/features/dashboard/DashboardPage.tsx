@@ -33,6 +33,7 @@ import { unitsApi } from '../shared/units';
 import { StreakCard } from '../streak/StreakCard';
 import { TipCard } from '../tips/TipCard';
 import { RumboMeter } from './RumboMeter';
+import { RumboRibbon } from './RumboRibbon';
 import './dashboard.css';
 
 const toneColor = (t: string) => (t === 'good' ? 'var(--good-text)' : t === 'bad' ? 'var(--bad-text)' : undefined);
@@ -134,12 +135,15 @@ export default function DashboardPage() {
   return (
     <Page>
       <motion.header className="greet" variants={riseVariants}>
-        <p className="t-eyebrow greet__date">{formatDate.header(today)}</p>
-        <h1 className="greet__name">
-          {greeting()},<br />
-          <span>{profile.name}</span>
-        </h1>
-        <p className="greet__msg">{model.message}</p>
+        <div className="greet__text">
+          <p className="t-eyebrow greet__date">{formatDate.header(today)}</p>
+          <h1 className="greet__name">
+            {greeting()},<br />
+            <span>{profile.name}</span>
+          </h1>
+          <p className="greet__msg">{model.message}</p>
+        </div>
+        <RumboRibbon />
       </motion.header>
 
       <div className="dash">

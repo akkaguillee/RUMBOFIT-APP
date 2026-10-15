@@ -1,7 +1,7 @@
 import { Activity, ChevronDown, Flame, Info, ShieldAlert, UserRound } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useId, useMemo, useState } from 'react';
-import { energyEstimate, keepUnitsTogether, type EnergyEstimate } from '@/domain/body';
+import { energyEstimate, keepUnitsTogether, macroSplit, type EnergyEstimate } from '@/domain/body';
 import { formatDate } from '@/domain/dates';
 import { calculateMacros } from '@/domain/health';
 import type { Profile, WeightEntry } from '@/domain/types';
@@ -25,9 +25,6 @@ interface Props {
 }
 
 const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
-
-/** Default split for the secondary macro view (editable in "Ajustar el cálculo"). */
-const DEFAULT_MACROS = { proteinPerKg: 1.6, fatPct: 30 } as const;
 
 /**
  * Personalised calorie estimate from the profile and the latest weight:
@@ -68,7 +65,9 @@ function CalorieDetails({ est, profile, showMacros }: { est: OkEstimate; profile
   const GoalIcon = goal?.icon;
   const hasTarget = est.target !== null && est.target.id !== 'maintain';
   const main = hasTarget ? est.target!.kcal : est.maintenance;
-  const macros = calculateMacros(main, est.kg, DEFAULT_MACROS.proteinPerKg, DEFAULT_MACROS.fatPct);
+  // Split saved in «Ajustar el cálculo» (1,6 g/kg and 30 % by default).
+  const split = macroSplit(profile);
+  const macros = calculateMacros(main, est.kg, split.proteinPerKg, split.fatPct);
   const equation =
     `Metabolismo basal ${formatInt(est.bmr)} kilocalorías por factor de actividad ${formatNumber(est.activity.factor, 3)}, ` +
     `unas ${formatInt(est.maintenance)} kilocalorías de mantenimiento`;
@@ -189,8 +188,8 @@ function CalorieDetails({ est, profile, showMacros }: { est: OkEstimate; profile
                 <h3 className="kcal-how__title">Reparto orientativo</h3>
                 <MacroSplitView macros={macros} />
                 <p className="field__hint">
-                  Con {formatNumber(DEFAULT_MACROS.proteinPerKg, 1)} g de proteína por kg y un {DEFAULT_MACROS.fatPct} % de grasas. Es opcional y no
-                  hace falta contarlo al detalle.
+                  Con {formatNumber(split.proteinPerKg, 1)} g de proteína por kg y un {split.fatPct} % de grasas. Es opcional y no hace falta
+                  contarlo al detalle.
                 </p>
               </div>
             )}

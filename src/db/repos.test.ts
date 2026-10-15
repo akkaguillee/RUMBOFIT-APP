@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { todayKey, addDays } from '@/domain/dates';
 import { db } from './db';
 import { createProfile, updateProfile } from './repos/profile';
-import { addWater, addWeight, deleteWeight, saveBmi, setNote, setSteps, addSteps } from './repos/tracking';
+import { addWater, addWeight, applyCalculation, deleteWeight, saveBmi, setNote, setSteps, addSteps } from './repos/tracking';
 import { exerciseEntry, finishWorkout, mutateExercises, startWorkout, getActiveWorkout } from './repos/training';
 import { deleteAllData, exportAll, importAll, parseExport } from './repos/data';
 import { syncAchievements } from './sync';
@@ -95,6 +95,25 @@ describe('repositories', () => {
     const goals = await db.goals.toArray();
     expect(goals).toHaveLength(2);
     expect(goals.filter((g) => !g.endDate)).toHaveLength(1);
+  });
+
+  it('saves «Ajustar el cálculo» to the profile, today\'s weight and the history', async () => {
+    await seedProfile();
+    const input = { kg: 84, heightCm: 182, age: 29, sex: 'male' as const, activityLevel: 'active' as const, goal: 'lose' as const, targetId: 'lose', proteinPerKg: 2, fatPct: 25 };
+    await applyCalculation(input);
+    const p = await db.profile.get('me');
+    expect(p).toMatchObject({ heightCm: 182, age: 29, activityLevel: 'active', goal: 'lose', energyPlan: { targetId: 'lose', targetGoal: 'lose', proteinPerKg: 2, fatPct: 25 } });
+    // Today already had a record (85 kg from the profile): it is corrected, not duplicated.
+    let todays = await db.weights.where('date').equals(today).toArray();
+    expect(todays.map((w) => w.kg)).toEqual([84]);
+    expect(await db.energy.count()).toBe(1);
+    // Same weight again: no new weight record.
+    await applyCalculation({ ...input, activityLevel: 'moderate' });
+    todays = await db.weights.where('date').equals(today).toArray();
+    expect(todays).toHaveLength(1);
+    expect(await db.energy.count()).toBe(2);
+    await expect(applyCalculation({ ...input, heightCm: -5 })).rejects.toThrow(/altura/i);
+    await expect(applyCalculation({ ...input, kg: Number.NaN })).rejects.toThrow(/peso/i);
   });
 
   it('exports and imports a full backup', async () => {

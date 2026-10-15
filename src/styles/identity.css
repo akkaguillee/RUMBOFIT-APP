@@ -1,0 +1,236 @@
+/* ──────────────────────────────────────────────────────────────────────
+   RUMBO identity: deep black and charcoal, white type, fluorescent lime used
+   strategically (primary actions, active indicators, key figures, charts and
+   progress), yellow for halfway, red for unfavourable. Restrained glass and
+   shadows, generous radii and negative space. Loaded after the base layers
+   so it refines them without touching component structure.
+   ────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --radius-xl: 26px;
+  --radius-2xl: 32px;
+  --weight-bold: 760;
+  --tracking-display: -0.04em;
+}
+
+/* Neutral liquid-glass tints (the old ones leaned red in the light theme). */
+:root[data-theme='light'] {
+  --lg-fill: rgba(255, 255, 255, 0.8);
+  --lg-fill-hover: #fff;
+  --lg-hi: #fff;
+  --lg-lo: rgba(16, 18, 12, 0.04);
+  --lg-rim: rgba(16, 18, 12, 0.09);
+  --lg-drop: 0 8px 18px -12px rgba(16, 18, 12, 0.22);
+  --lg-lens: linear-gradient(180deg, #fff, #fbfbf8);
+  --lg-lens-shadow:
+    inset 0 0 0 1px rgba(16, 18, 12, 0.06),
+    0 1px 2px rgba(16, 18, 12, 0.1),
+    0 6px 14px -6px rgba(16, 18, 12, 0.2);
+}
+
+:root,
+:root[data-theme='dark'] {
+  --lg-fill: rgba(255, 255, 255, 0.05);
+  --lg-fill-hover: rgba(255, 255, 255, 0.085);
+  --lg-hi: rgba(255, 255, 255, 0.1);
+  --lg-lo: rgba(255, 255, 255, 0.03);
+  --lg-rim: rgba(255, 255, 255, 0.07);
+  --lg-lens: linear-gradient(180deg, #2a2b29, #222321);
+  --lg-lens-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 6px 16px -6px rgba(0, 0, 0, 0.7);
+}
+
+/* ── Type ───────────────────────────────────────────────────────────── */
+
+/* Krophed: capitals-only display face. Only applied to texts it can set in
+   full (see Display / fitsKrophed); never synthesised bold or italic. */
+.display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-synthesis: none;
+  letter-spacing: 0.01em;
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+
+/* Text Krophed cannot set (accents, ñ…): the sans-serif in heavy capitals. */
+.display-fallback {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+/* 212 Baby Girl: short handwritten notes only. */
+.hand {
+  font-family: var(--font-hand);
+  font-weight: 400;
+  font-synthesis: none;
+  letter-spacing: 0;
+  line-height: 1.05;
+  color: var(--accent-text);
+}
+
+.t-title {
+  font-weight: 780;
+  letter-spacing: -0.035em;
+}
+
+.t-eyebrow {
+  letter-spacing: 0.16em;
+}
+
+/* Key figures in lime (dark) / ink (light): the eye lands on the number. */
+:root[data-theme='dark'] .t-hero,
+:root[data-theme='dark'] .kcal-hero__num {
+  color: var(--accent-text);
+}
+
+/* ── Surfaces ───────────────────────────────────────────────────────── */
+
+.glass::after {
+  opacity: 0.35;
+}
+
+.glass--glow {
+  background:
+    radial-gradient(90% 70% at 100% 0%, color-mix(in srgb, var(--acc) 9%, transparent), transparent 62%),
+    var(--glass-fill);
+  box-shadow:
+    var(--glass-inner),
+    var(--glass-shadow);
+}
+
+:root[data-theme='light'] .glass--glow {
+  background:
+    radial-gradient(90% 70% at 100% 0%, color-mix(in srgb, var(--acc) 16%, transparent), transparent 62%),
+    var(--glass-fill);
+}
+
+/* The periodic sheen sweep reads as a gimmick on matte charcoal. */
+.glass__sheen::before {
+  opacity: 0.25;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────── */
+
+.btn--primary {
+  color: var(--on-accent);
+  background: var(--accent);
+  font-weight: 700;
+  box-shadow: 0 10px 24px -14px var(--accent-glow);
+}
+
+.btn--primary::after {
+  opacity: 0.25;
+}
+
+.tab__pill,
+.icon-btn--accent,
+.btn--primary {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 10px 24px -14px var(--accent-glow);
+}
+
+@media (hover: hover) {
+  .btn--primary:hover:not(:disabled) {
+    background: var(--accent-strong);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      0 14px 30px -14px var(--accent-glow);
+  }
+}
+
+.btn--secondary {
+  box-shadow: inset 0 0 0 1px var(--field-border);
+}
+
+/* Avatar: a dark disc with a lime ring instead of a solid accent blob. */
+.avatar-btn {
+  color: var(--text);
+  background: var(--surface-2);
+  box-shadow:
+    inset 0 0 0 1.5px var(--accent),
+    0 6px 16px -10px var(--accent-glow);
+}
+
+/* ── Navigation ─────────────────────────────────────────────────────── */
+
+:root[data-theme='dark'] .tabbar__panel {
+  background: rgba(12, 13, 12, 0.82);
+}
+
+.tab__pill::after,
+.icon-btn--accent::after {
+  opacity: 0.5;
+}
+
+/* Tabs inside pages: the active one is a lime pill (navigation = lime). */
+.segmented__item[aria-selected='true'] {
+  color: var(--on-accent);
+}
+
+.segmented__item[aria-selected='true'] .segmented__thumb {
+  background: var(--accent);
+  box-shadow: 0 6px 16px -10px var(--accent-glow);
+}
+
+.segmented__item[aria-selected='true'] .segmented__thumb::after {
+  display: none;
+}
+
+.side-link__active {
+  background: var(--glass-fill-strong);
+}
+
+/* ── Status and progress ────────────────────────────────────────────── */
+
+.progress__fill::after {
+  opacity: 0.4;
+}
+
+.choice[aria-checked='true'] {
+  background-color: color-mix(in srgb, var(--accent) 10%, var(--lg-fill));
+}
+
+/* ── Page head: Krophed word, title, note ───────────────────────────── */
+
+.page-head__display {
+  display: block;
+  font-size: 2.6rem;
+  /* Fills the column: the font size is derived from the word's width in em. */
+  font-size: min(var(--display-max, 3.4rem), calc(100cqi / var(--display-em, 6)));
+  color: var(--text);
+  margin: 0 0 10px;
+  white-space: nowrap;
+}
+
+.page-head__text {
+  container-type: inline-size;
+  flex: 1;
+}
+
+@supports not (width: 1cqi) {
+  .page-head__display {
+    font-size: min(var(--display-max, 3.4rem), calc((100vw - 2 * var(--gutter)) / var(--display-em, 6)));
+  }
+}
+
+.page-head__display .display-dot {
+  color: var(--accent);
+}
+
+:root[data-theme='light'] .page-head__display .display-dot {
+  color: var(--acc-text-l);
+}
+
+.page-head__note {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 1.3rem;
+  transform: rotate(-3deg);
+  transform-origin: left center;
+}

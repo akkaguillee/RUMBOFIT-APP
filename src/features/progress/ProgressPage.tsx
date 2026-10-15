@@ -31,7 +31,7 @@ export default function ProgressPage() {
 
   return (
     <Page>
-      <PageHead eyebrow="Progresos" title="Tu evolución" subtitle="Peso, tendencia y calculadoras con tus datos reales." />
+      <PageHead eyebrow="Progresos" display="Progreso" title="Tu evolución" subtitle="Peso, tendencia y calculadoras con tus datos reales." />
       <motion.div className="tabs-row" variants={riseVariants}>
         <Segmented
           mode="tabs"

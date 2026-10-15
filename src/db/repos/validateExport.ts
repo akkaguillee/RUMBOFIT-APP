@@ -46,6 +46,8 @@ const goalList = oneOf('lose', 'recomp', 'maintain', 'gain', 'fitness', 'strengt
 const optObj = (v: unknown) => v === undefined || obj(v);
 const activityProfile = (v: unknown) =>
   v === undefined || (obj(v) && str(v.posture) && str(v.job) && num(v.trainingDays) && arrOf(v.activityTypes, str));
+const energyPlan = (v: unknown) =>
+  v === undefined || (obj(v) && num(v.proteinPerKg) && num(v.fatPct) && optStr(v.targetId) && (v.targetGoal === undefined || goal(v.targetGoal)));
 const workoutExercise = (e: unknown) => obj(e) && str(e.uid) && str(e.exerciseId) && num(e.restSec) && arrOf(e.sets, set);
 const templateExercise = (e: unknown) => obj(e) && str(e.exerciseId) && num(e.sets) && num(e.restSec);
 
@@ -73,6 +75,7 @@ const ROW_CHECKS: Record<TableName, (r: Row) => boolean> = {
     optObj(r.food) &&
     optObj(r.motivation) &&
     optObj(r.wellbeing) &&
+    energyPlan(r.energyPlan) &&
     optNum(r.consentAt) &&
     num(r.createdAt) &&
     num(r.updatedAt),

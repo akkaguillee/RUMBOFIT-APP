@@ -7,6 +7,7 @@ import {
   bmiSnapshot,
   describeActivity,
   energyEstimate,
+  macroSplit,
   guardDeficit,
   keepUnitsTogether,
   latestWeightUpTo,
@@ -205,6 +206,19 @@ describe('energyEstimate', () => {
     expect(e.target?.kcal).toBe(2760);
     expect(e.restricted).toBe(false);
     expect(e.guidance).toMatch(/estimación inicial/);
+  });
+
+  it('uses the target saved in «Ajustar el cálculo» only for the goal it was picked for', () => {
+    const plan = { targetId: 'lose', targetGoal: 'lose' as const, proteinPerKg: 2, fatPct: 25 };
+    const picked = energyEstimate(profile({ goal: 'lose', energyPlan: plan }), weights, TODAY);
+    if (picked.status !== 'ok') throw new Error('expected ok');
+    expect(picked.target?.id).toBe('lose');
+    // Goal changed afterwards: back to the recommended target of the new goal.
+    const other = energyEstimate(profile({ goal: 'gain', energyPlan: plan }), weights, TODAY);
+    if (other.status !== 'ok') throw new Error('expected ok');
+    expect(other.target?.id).toBe('gain_mild');
+    expect(macroSplit(profile({ energyPlan: plan }))).toEqual({ proteinPerKg: 2, fatPct: 25 });
+    expect(macroSplit(profile())).toEqual({ proteinPerKg: 1.6, fatPct: 30 });
   });
 
   it('recommends a gentle deficit or surplus depending on the goal', () => {

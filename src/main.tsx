@@ -1,4 +1,5 @@
 import '@fontsource-variable/inter';
+import './styles/fonts.css';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/glass.css';
@@ -6,6 +7,7 @@ import './styles/components.css';
 import './styles/layout.css';
 import './styles/liquid.css';
 import './styles/interaction.css';
+import './styles/identity.css';
 import './styles/splash.css';
 import './styles/milestones.css';
 import { StrictMode } from 'react';

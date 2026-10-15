@@ -8,11 +8,14 @@
   --rumbo-red: #e53945;
   --rumbo-red-deep: #8f182b;
   --rumbo-white: #ffffff;
-  --rumbo-black: #08090d;
+  --rumbo-black: #070807;
   --rumbo-green: #30c77a;
   --rumbo-yellow: #f2c94c;
 
-  /* Typography */
+  /* Typography: the interface is set in a clean sans-serif; Krophed and
+     212 Baby Girl (fonts.css) are used selectively. No serif faces. */
+  --font-display: 'Krophed', var(--font-sans);
+  --font-hand: '212 Baby Girl', var(--font-sans);
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Inter Variable', 'Inter',
     system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --text-2xs: 0.6875rem; /* 11 */
@@ -111,7 +114,6 @@
      --acc-fill-l accent fill in the light theme
      --acc-on     text/icons on top of an accent fill
    ────────────────────────────────────────────────────────────────────── */
-:root,
 :root[data-accent='rojo'] {
   --acc: #e53945;
   --acc-hi: #f04a56;
@@ -136,16 +138,17 @@
   --acc-on: #160800;
 }
 
+:root,
 :root[data-accent='volt'] {
-  --acc: #c6f135;
-  --acc-hi: #d9ff5c;
-  --acc-lo: #aedc12;
-  --acc-deep: #4a6b00;
-  --acc-text-d: #d2f55e;
-  --acc-text-l: #4d6a00;
-  --acc-fill-l: #b8e61f;
-  --acc-title-l: #3a5400;
-  --acc-on: #0d1200;
+  --acc: #c8f53a;
+  --acc-hi: #d6ff5c;
+  --acc-lo: #b6e420;
+  --acc-deep: #3d5700;
+  --acc-text-d: #cdf65a;
+  --acc-text-l: #3f5c00;
+  --acc-fill-l: #c3f032;
+  --acc-title-l: #10120c;
+  --acc-on: #0a0d00;
 }
 
 :root[data-accent='cian'] {
@@ -184,147 +187,154 @@
   --acc-on: #ffffff;
 }
 
-/* ── Dark (default) ─────────────────────────────────────────────────── */
+/* ── Dark (default) ─────────────────────────────────────────────────
+   Deep black and charcoal; the accent is used sparingly (primary actions,
+   active states, key figures, charts and progress). */
 :root,
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #08090d;
-  --bg-raised: #0f1016;
-  --surface-solid: #13141b;
-  --text: #ffffff;
-  --text-2: rgba(236, 237, 245, 0.7);
-  --text-3: rgba(236, 237, 245, 0.54);
-  --title: #ffffff;
-  --brand-ink: #ffffff;
-  --divider: rgba(255, 255, 255, 0.08);
-  --hairline: rgba(255, 255, 255, 0.07);
+  --bg: #070807;
+  --bg-raised: #0d0e0d;
+  --surface-solid: #131413;
+  --surface-2: #1a1b1a;
+  --text: #f5f6f2;
+  --text-2: rgba(237, 239, 232, 0.7);
+  --text-3: rgba(237, 239, 232, 0.52);
+  --title: #f5f6f2;
+  --brand-ink: #f5f6f2;
+  --divider: rgba(255, 255, 255, 0.07);
+  --hairline: rgba(255, 255, 255, 0.06);
 
   --accent: var(--acc);
   --accent-strong: var(--acc-hi);
   --accent-text: var(--acc-text-d);
-  --accent-soft: color-mix(in srgb, var(--acc) 15%, transparent);
-  --accent-glow: color-mix(in srgb, var(--acc) 42%, transparent);
-  --accent-grad: linear-gradient(180deg, var(--acc-hi) 0%, var(--acc-lo) 100%);
+  --accent-soft: color-mix(in srgb, var(--acc) 14%, transparent);
+  --accent-glow: color-mix(in srgb, var(--acc) 30%, transparent);
+  --accent-grad: linear-gradient(180deg, var(--acc-hi) 0%, var(--acc) 100%);
   --on-accent: var(--acc-on);
 
-  --good: #30c77a;
-  --good-text: #4fd893;
-  --good-soft: rgba(48, 199, 122, 0.14);
-  --warn: #f2c94c;
-  --warn-text: #f5d36e;
-  --warn-soft: rgba(242, 201, 76, 0.14);
-  --bad: #e53945;
-  --bad-text: #ff6b75;
-  --bad-soft: rgba(229, 57, 69, 0.14);
-  --neutral-soft: rgba(255, 255, 255, 0.08);
+  /* Status: lime = on track, yellow = halfway / attention, red = unfavourable */
+  --good: #a3e635;
+  --good-text: #b8f055;
+  --good-soft: rgba(163, 230, 53, 0.14);
+  --warn: #f6c544;
+  --warn-text: #f8d36c;
+  --warn-soft: rgba(246, 197, 68, 0.14);
+  --bad: #ff5a4f;
+  --bad-text: #ff7d73;
+  --bad-soft: rgba(255, 90, 79, 0.14);
+  --neutral-soft: rgba(255, 255, 255, 0.07);
 
   /* Data series (validated: see README) */
-  --series-weight: #f2f3f7;
-  --series-water: #3987e5;
-  --series-steps: #c98500;
-  --series-trend: rgba(236, 237, 245, 0.42);
+  --series-weight: #f2f3ef;
+  --series-water: #3f8fea;
+  --series-steps: #d29a14;
+  --series-trend: rgba(237, 239, 232, 0.42);
   --chart-grid: rgba(255, 255, 255, 0.07);
 
-  /* Glass material */
-  --glass-fill: rgba(255, 255, 255, 0.055);
-  --glass-fill-strong: rgba(255, 255, 255, 0.085);
-  --glass-fill-nav: rgba(18, 19, 26, 0.62);
-  --glass-fill-sheet: rgba(18, 19, 26, 0.78);
-  --glass-edge-top: rgba(255, 255, 255, 0.28);
-  --glass-edge-mid: rgba(255, 255, 255, 0.05);
-  --glass-edge-bottom: rgba(255, 255, 255, 0.14);
-  --glass-inner: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(255, 255, 255, 0.03);
-  --glass-shadow: 0 1px 1px rgba(0, 0, 0, 0.25), 0 18px 40px -18px rgba(0, 0, 0, 0.85);
-  --glass-shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.3), 0 28px 60px -22px rgba(0, 0, 0, 0.9);
-  --glass-specular: rgba(255, 255, 255, 0.16);
-  --glass-sheen: rgba(255, 255, 255, 0.1);
+  /* Surfaces: charcoal panels with a restrained glass edge */
+  --glass-fill: rgba(21, 22, 21, 0.78);
+  --glass-fill-strong: rgba(27, 28, 27, 0.86);
+  --glass-fill-nav: rgba(13, 14, 13, 0.8);
+  --glass-fill-sheet: rgba(17, 18, 17, 0.94);
+  --glass-edge-top: rgba(255, 255, 255, 0.13);
+  --glass-edge-mid: rgba(255, 255, 255, 0.04);
+  --glass-edge-bottom: rgba(255, 255, 255, 0.07);
+  --glass-inner: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --glass-shadow: 0 1px 1px rgba(0, 0, 0, 0.3), 0 16px 34px -20px rgba(0, 0, 0, 0.9);
+  --glass-shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.32), 0 26px 52px -24px rgba(0, 0, 0, 0.95);
+  --glass-specular: rgba(255, 255, 255, 0.07);
+  --glass-sheen: rgba(255, 255, 255, 0.035);
 
-  --field-fill: rgba(255, 255, 255, 0.06);
-  --field-fill-hover: rgba(255, 255, 255, 0.09);
+  --field-fill: rgba(255, 255, 255, 0.05);
+  --field-fill-hover: rgba(255, 255, 255, 0.08);
   --field-border: rgba(255, 255, 255, 0.1);
-  --control-fill: rgba(255, 255, 255, 0.08);
-  --control-fill-hover: rgba(255, 255, 255, 0.13);
-  --scrim: rgba(3, 3, 6, 0.6);
+  --control-fill: rgba(255, 255, 255, 0.07);
+  --control-fill-hover: rgba(255, 255, 255, 0.11);
+  --scrim: rgba(2, 3, 2, 0.66);
 
-  --orb-1: color-mix(in srgb, var(--acc) 34%, transparent);
-  --orb-2: color-mix(in srgb, var(--acc-deep) 48%, transparent);
-  --orb-3: color-mix(in srgb, var(--acc) 16%, transparent);
-  --noise-opacity: 0.05;
-  --flame-off: #4a4d57;
-  --flame-off-deep: #34363e;
-  --flame-off-light: #5d606b;
+  --orb-1: color-mix(in srgb, var(--acc) 11%, transparent);
+  --orb-2: rgba(255, 255, 255, 0.025);
+  --orb-3: color-mix(in srgb, var(--acc) 5%, transparent);
+  --noise-opacity: 0.04;
+  --flame-off: #4a4c49;
+  --flame-off-deep: #343633;
+  --flame-off-light: #5d605b;
   --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px color-mix(in srgb, var(--acc-text-d) 85%, transparent);
   --focus-color: color-mix(in srgb, var(--acc-text-d) 90%, transparent);
 }
 
-/* ── Light ──────────────────────────────────────────────────────────── */
+/* ── Light ──────────────────────────────────────────────────────────
+   Not an inversion: warm paper background, white panels, black type; the
+   accent stays a fill (with dark text on it) and darkens for text. */
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #f8f5f3;
-  --bg-raised: #fffdfc;
+  --bg: #f1f2ec;
+  --bg-raised: #f8f9f4;
   --surface-solid: #ffffff;
-  --text: #0b0b10;
-  --text-2: rgba(22, 20, 28, 0.72);
-  --text-3: rgba(22, 20, 28, 0.6);
-  --title: var(--acc-title-l);
-  --brand-ink: var(--acc-title-l);
-  --divider: rgba(70, 20, 30, 0.09);
-  --hairline: rgba(70, 20, 30, 0.08);
+  --surface-2: #f4f5f0;
+  --text: #0d0e0b;
+  --text-2: rgba(16, 18, 12, 0.72);
+  --text-3: rgba(16, 18, 12, 0.58);
+  --title: #0d0e0b;
+  --brand-ink: #0d0e0b;
+  --divider: rgba(16, 18, 12, 0.08);
+  --hairline: rgba(16, 18, 12, 0.07);
 
   --accent: var(--acc-fill-l);
   --accent-strong: var(--acc);
   --accent-text: var(--acc-text-l);
-  --accent-soft: color-mix(in srgb, var(--acc-fill-l) 11%, transparent);
-  --accent-glow: color-mix(in srgb, var(--acc) 30%, transparent);
-  --accent-grad: linear-gradient(180deg, var(--acc-hi) 0%, var(--acc-lo) 100%);
+  --accent-soft: color-mix(in srgb, var(--acc-fill-l) 18%, transparent);
+  --accent-glow: color-mix(in srgb, var(--acc) 34%, transparent);
+  --accent-grad: linear-gradient(180deg, var(--acc-hi) 0%, var(--acc-fill-l) 100%);
   --on-accent: var(--acc-on);
 
-  --good: #30c77a;
-  --good-text: #137a48;
-  --good-soft: rgba(48, 199, 122, 0.13);
-  --warn: #f2c94c;
-  --warn-text: #8a6200;
-  --warn-soft: rgba(242, 201, 76, 0.2);
-  --bad: #e53945;
-  --bad-text: #b4202e;
-  --bad-soft: rgba(229, 57, 69, 0.1);
-  --neutral-soft: rgba(70, 20, 30, 0.06);
+  --good: #65a30d;
+  --good-text: #3d6610;
+  --good-soft: rgba(101, 163, 13, 0.13);
+  --warn: #e3a900;
+  --warn-text: #7a5800;
+  --warn-soft: rgba(227, 169, 0, 0.16);
+  --bad: #e5483d;
+  --bad-text: #b42318;
+  --bad-soft: rgba(229, 72, 61, 0.1);
+  --neutral-soft: rgba(16, 18, 12, 0.06);
 
-  --series-weight: #1a1a22;
+  --series-weight: #14150f;
   --series-water: #2a78d6;
-  --series-steps: #d08c00;
-  --series-trend: rgba(22, 20, 28, 0.36);
-  --chart-grid: rgba(70, 20, 30, 0.08);
+  --series-steps: #b97a00;
+  --series-trend: rgba(16, 18, 12, 0.36);
+  --chart-grid: rgba(16, 18, 12, 0.08);
 
-  --glass-fill: rgba(255, 255, 255, 0.58);
-  --glass-fill-strong: rgba(255, 255, 255, 0.74);
-  --glass-fill-nav: rgba(255, 255, 255, 0.66);
-  --glass-fill-sheet: rgba(255, 253, 252, 0.88);
+  --glass-fill: rgba(255, 255, 255, 0.84);
+  --glass-fill-strong: rgba(255, 255, 255, 0.94);
+  --glass-fill-nav: rgba(255, 255, 255, 0.82);
+  --glass-fill-sheet: rgba(250, 251, 247, 0.97);
   --glass-edge-top: rgba(255, 255, 255, 1);
-  --glass-edge-mid: rgba(255, 255, 255, 0.35);
-  --glass-edge-bottom: color-mix(in srgb, var(--acc-deep) 10%, transparent);
-  --glass-inner: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(143, 24, 43, 0.04);
-  --glass-shadow: 0 1px 2px rgba(80, 22, 34, 0.06), 0 18px 36px -20px rgba(80, 22, 34, 0.28);
-  --glass-shadow-lift: 0 2px 6px rgba(80, 22, 34, 0.08), 0 30px 60px -24px rgba(80, 22, 34, 0.34);
-  --glass-specular: rgba(255, 255, 255, 0.85);
-  --glass-sheen: rgba(255, 255, 255, 0.7);
+  --glass-edge-mid: rgba(16, 18, 12, 0.035);
+  --glass-edge-bottom: rgba(16, 18, 12, 0.08);
+  --glass-inner: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  --glass-shadow: 0 1px 2px rgba(16, 18, 12, 0.06), 0 14px 30px -20px rgba(16, 18, 12, 0.26);
+  --glass-shadow-lift: 0 2px 6px rgba(16, 18, 12, 0.08), 0 26px 50px -24px rgba(16, 18, 12, 0.3);
+  --glass-specular: rgba(255, 255, 255, 0.7);
+  --glass-sheen: rgba(255, 255, 255, 0.5);
 
-  --field-fill: rgba(255, 255, 255, 0.7);
-  --field-fill-hover: rgba(255, 255, 255, 0.92);
-  --field-border: rgba(70, 20, 30, 0.12);
-  --control-fill: rgba(70, 20, 30, 0.05);
-  --control-fill-hover: rgba(70, 20, 30, 0.09);
-  --scrim: rgba(40, 14, 20, 0.28);
+  --field-fill: rgba(255, 255, 255, 0.9);
+  --field-fill-hover: #ffffff;
+  --field-border: rgba(16, 18, 12, 0.13);
+  --control-fill: rgba(16, 18, 12, 0.05);
+  --control-fill-hover: rgba(16, 18, 12, 0.09);
+  --scrim: rgba(10, 12, 8, 0.34);
 
   --orb-1: color-mix(in srgb, var(--acc) 22%, transparent);
-  --orb-2: color-mix(in srgb, var(--acc-hi) 26%, transparent);
-  --orb-3: color-mix(in srgb, var(--acc-deep) 10%, transparent);
-  --noise-opacity: 0.035;
-  --flame-off: #c9c3c6;
-  --flame-off-deep: #b5aeb2;
-  --flame-off-light: #ddd8da;
-  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px color-mix(in srgb, var(--acc-text-l) 75%, transparent);
-  --focus-color: color-mix(in srgb, var(--acc-text-l) 85%, transparent);
+  --orb-2: color-mix(in srgb, var(--acc-hi) 12%, transparent);
+  --orb-3: rgba(16, 18, 12, 0.03);
+  --noise-opacity: 0.03;
+  --flame-off: #c8c9c3;
+  --flame-off-deep: #b3b5ae;
+  --flame-off-light: #dcddd8;
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px color-mix(in srgb, var(--acc-text-l) 80%, transparent);
+  --focus-color: color-mix(in srgb, var(--acc-text-l) 88%, transparent);
 }
 
 @media (prefers-reduced-transparency: reduce) {

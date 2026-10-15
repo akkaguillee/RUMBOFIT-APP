@@ -59,15 +59,16 @@ test.describe('RUMBO', () => {
 
   test('accent colour can be changed from the top bar and persists', async ({ page }) => {
     await onboard(page);
-    await expect(page.locator('html')).toHaveAttribute('data-accent', 'rojo');
-    await page.getByRole('button', { name: 'Cambiar el color de la interfaz' }).first().click();
-    await page.getByRole('radio', { name: /volt/i }).click();
+    // Lime is the brand default; another choice is kept across reloads.
     await expect(page.locator('html')).toHaveAttribute('data-accent', 'volt');
-    await expect(page.getByRole('radio', { name: /volt/i })).toHaveAttribute('aria-checked', 'true');
+    await page.getByRole('button', { name: 'Cambiar el color de la interfaz' }).first().click();
+    await page.getByRole('radio', { name: /rojo/i }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-accent', 'rojo');
+    await expect(page.getByRole('radio', { name: /rojo/i })).toHaveAttribute('aria-checked', 'true');
     await page.keyboard.press('Escape');
     await page.reload();
     await dismissCelebration(page);
-    await expect(page.locator('html')).toHaveAttribute('data-accent', 'volt');
+    await expect(page.locator('html')).toHaveAttribute('data-accent', 'rojo');
   });
 
   test('switching tabs always reveals the panel content', async ({ page }) => {

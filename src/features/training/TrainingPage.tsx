@@ -30,7 +30,7 @@ export default function TrainingPage() {
   if (!profile) return <Loader />;
   return (
     <Page>
-      <PageHead eyebrow="Entrenamiento" title="Tu entrenamiento" subtitle="Planifica, registra cada serie y mira cómo progresas." />
+      <PageHead eyebrow="Entrenamiento" display="Entreno" title="Tu entrenamiento" subtitle="Planifica, registra cada serie y mira cómo progresas." />
       <motion.div variants={riseVariants} style={{ marginBottom: 20 }}>
         <Segmented
           mode="tabs"

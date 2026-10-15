@@ -685,6 +685,9 @@
   min-width: 0;
 }
 
+/* Hidden until it receives keyboard focus. Moving it up by its own height was
+   not enough on notched iPhones: it sat under the status bar, where iOS blurs
+   the page, and showed as a coloured smudge next to the clock. */
 .skip-link {
   position: fixed;
   top: calc(var(--safe-top) + 8px);
@@ -695,11 +698,17 @@
   background: var(--accent);
   color: var(--on-accent);
   font-weight: var(--weight-semibold);
-  transform: translateY(-160%);
-  transition: transform var(--dur-fast) var(--ease-out);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(calc(-100% - var(--safe-top) - 24px));
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
 }
 
 .skip-link:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
   transform: none;
 }
 
