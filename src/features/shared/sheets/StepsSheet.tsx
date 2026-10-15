@@ -6,6 +6,7 @@ import { formatDate, todayKey } from '@/domain/dates';
 import { formatInt } from '@/domain/units';
 import { checkRange, LIMITS } from '@/domain/validation';
 import { Button } from '@/ui/Button';
+import { cheer } from '@/ui/cheer';
 import { NumberField, TextField } from '@/ui/Field';
 import { Segmented } from '@/ui/Segmented';
 import { Sheet } from '@/ui/Sheet';
@@ -54,6 +55,7 @@ export function StepsSheet({ open, onClose, date: dateProp }: Props) {
       if (mode === 'add' && km === undefined) await addSteps(date, n);
       else await setSteps(date, total, km ?? existing?.distanceKm);
       toast(`${formatInt(total)} pasos ${date === today ? 'hoy' : `el ${formatDate.dayMonth(date)}`}`);
+      cheer();
       onClose();
     } catch (e) {
       toastError(e);

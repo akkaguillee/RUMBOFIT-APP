@@ -24,18 +24,18 @@
 }
 
 :root[data-theme='light'] {
-  --lg-fill: rgba(255, 255, 255, 0.55);
-  --lg-fill-hover: rgba(255, 255, 255, 0.82);
-  --lg-hi: rgba(255, 255, 255, 1);
-  --lg-lo: rgba(70, 20, 30, 0.04);
-  --lg-rim: rgba(70, 20, 30, 0.09);
-  --lg-drop: 0 8px 18px -12px rgba(80, 22, 34, 0.28);
+  --lg-fill: rgba(20, 18, 27, 0.04);
+  --lg-fill-hover: rgba(20, 18, 27, 0.07);
+  --lg-hi: rgba(255, 255, 255, 0.9);
+  --lg-lo: rgba(20, 18, 27, 0.03);
+  --lg-rim: rgba(20, 18, 27, 0.08);
+  --lg-drop: 0 8px 18px -14px rgba(28, 20, 60, 0.3);
   --lg-lens: linear-gradient(180deg, #fff, rgba(255, 255, 255, 0.88));
   --lg-lens-shadow:
     inset 0 1px 0 #fff,
-    inset 0 0 0 1px rgba(70, 20, 30, 0.06),
-    0 1px 2px rgba(80, 22, 34, 0.12),
-    0 6px 14px -6px rgba(80, 22, 34, 0.25);
+    inset 0 0 0 1px rgba(20, 18, 27, 0.06),
+    0 1px 2px rgba(28, 20, 60, 0.1),
+    0 6px 14px -6px rgba(28, 20, 60, 0.22);
 }
 
 /* Shared lens surface */

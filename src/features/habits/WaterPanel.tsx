@@ -8,6 +8,7 @@ import { lastNDays, percent, WATER_PRESETS_ML } from '@/domain/habits';
 import type { Profile, WaterEntry } from '@/domain/types';
 import { checkRange, LIMITS } from '@/domain/validation';
 import { Button, IconButton } from '@/ui/Button';
+import { cheer } from '@/ui/cheer';
 import { GlassCard } from '@/ui/GlassCard';
 import { NumberField } from '@/ui/Field';
 import { Sheet } from '@/ui/Sheet';
@@ -50,6 +51,7 @@ export function WaterPanel({ profile }: { profile: Profile }) {
     try {
       await addWater(date, ml);
       toast(`+${u.volume(ml)} de agua`);
+      cheer();
     } catch (e) {
       toastError(e);
     } finally {

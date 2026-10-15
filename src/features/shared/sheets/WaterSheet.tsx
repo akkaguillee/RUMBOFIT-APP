@@ -6,6 +6,7 @@ import { WATER_PRESETS_ML } from '@/domain/habits';
 import type { Units } from '@/domain/types';
 import { checkRange, LIMITS } from '@/domain/validation';
 import { Button } from '@/ui/Button';
+import { cheer } from '@/ui/cheer';
 import { NumberField, TextField } from '@/ui/Field';
 import { Sheet } from '@/ui/Sheet';
 import { toast, toastError } from '@/ui/toast';
@@ -46,6 +47,7 @@ export function WaterSheet({ open, onClose, units, date: dateProp }: Props) {
     try {
       await addWater(date, ml, time);
       toast(`+${u.volume(ml)} de agua${date !== today ? ` · ${formatDate.dayMonth(date)}` : ''}`);
+      cheer();
       onClose();
     } catch (e) {
       toastError(e);

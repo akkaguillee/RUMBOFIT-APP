@@ -1,11 +1,19 @@
 import { useReducedMotion } from 'motion/react';
-import { useEffect, useId, useRef, useState, type CSSProperties, type RefObject } from 'react';
+import { useEffect, useId, useImperativeHandle, useRef, useState, type CSSProperties, type Ref, type RefObject } from 'react';
 import { cx } from '@/ui/cx';
 import type { MascotExpression } from './expression';
 import { MascotRig, type RigFrame, type RigRenderer, type TapReaction } from './rig';
 import './mascot.css';
 
 export const MASCOT_NAME = 'Rumbi, tu compañero de RUMBO';
+
+/** Lets a parent that owns the pointer (the floating assistant) play Rumbi's reactions. */
+export interface MascotHandle {
+  press: () => void;
+  cancelPress: () => void;
+  tap: () => TapReaction | undefined;
+  lookAt: (nx: number, ny: number) => void;
+}
 
 interface Props {
   expression: MascotExpression;
@@ -14,9 +22,14 @@ interface Props {
   className?: string;
   /** Tap reactions and a gaze that follows the pointer or finger. Renders a button. */
   interactive?: boolean;
+  /** Gaze follows the pointer or finger (defaults to `interactive`). */
+  follow?: boolean;
+  /** Holds the current frame (no breathing, blinks or glances) until unpaused. */
+  paused?: boolean;
   /** Accessible name. */
   label?: string;
   onTap?: (reaction: TapReaction) => void;
+  handle?: Ref<MascotHandle>;
 }
 
 type Part = 'body' | 'shadow' | 'face' | 'left' | 'right' | 'glow' | 'rim' | 'warm' | 'cool' | 'badge' | 'd0' | 'd1' | 'd2';
@@ -74,11 +87,23 @@ function seedOf(id: string): number {
  * runs while Rumbi is on screen; with reduced motion it holds a still face.
  * The rim light and glow follow the user's accent colour.
  */
-export function Mascot({ expression, size = 72, className, interactive = false, label = MASCOT_NAME, onTap }: Props) {
+export function Mascot({ expression, size = 72, className, interactive = false, follow = interactive, paused = false, label = MASCOT_NAME, onTap, handle }: Props) {
   const uid = useId().replace(/:/g, '');
   const reduce = !!useReducedMotion();
   const root = useRef<HTMLElement>(null);
   const rig = useRef<MascotRig | null>(null);
+  const onScreen = useRef(false);
+  const pausedRef = useRef(paused);
+  useImperativeHandle(
+    handle,
+    () => ({
+      press: () => rig.current?.press(),
+      cancelPress: () => rig.current?.cancelPress(),
+      tap: () => rig.current?.tap(),
+      lookAt: (nx, ny) => rig.current?.lookAt(nx, ny),
+    }),
+    [],
+  );
   // First paint: the frame the rig starts from (eyes still off until Rumbi is seen).
   const [first] = useState(() => new MascotRig(expression, { reduced: reduce, wake: !reduce }).frame());
   const seed = seedOf(uid);
@@ -98,9 +123,13 @@ export function Mascot({ expression, size = 72, className, interactive = false, 
     const onVisibility = () => r.setPageVisible(!document.hidden);
     document.addEventListener('visibilitychange', onVisibility);
     let io: IntersectionObserver | null = null;
-    if (typeof IntersectionObserver === 'undefined') r.setVisible(true);
+    const show = (visible: boolean) => {
+      onScreen.current = visible;
+      r.setVisible(visible && !pausedRef.current);
+    };
+    if (typeof IntersectionObserver === 'undefined') show(true);
     else {
-      io = new IntersectionObserver(([entry]) => r.setVisible(!!entry?.isIntersecting), { rootMargin: '24px' });
+      io = new IntersectionObserver(([entry]) => show(!!entry?.isIntersecting), { rootMargin: '24px' });
       io.observe(el);
     }
     return () => {
@@ -113,10 +142,14 @@ export function Mascot({ expression, size = 72, className, interactive = false, 
 
   useEffect(() => rig.current?.setExpression(expression), [expression]);
   useEffect(() => rig.current?.setReduced(reduce), [reduce]);
+  useEffect(() => {
+    pausedRef.current = paused;
+    rig.current?.setVisible(onScreen.current && !paused);
+  }, [paused]);
 
   // The gaze follows the pointer (or a finger on the screen) while Rumbi is running.
   useEffect(() => {
-    if (!interactive || reduce) return;
+    if (!follow || reduce) return;
     const onMove = (e: PointerEvent) => {
       const r = rig.current;
       const el = root.current;
@@ -132,7 +165,7 @@ export function Mascot({ expression, size = 72, className, interactive = false, 
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerdown', onMove);
     };
-  }, [interactive, reduce]);
+  }, [follow, reduce]);
 
   const svg = (
     <svg className="mascot__svg" viewBox="0 0 100 100" width={size} height={size} aria-hidden="true" focusable="false">

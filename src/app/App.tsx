@@ -28,6 +28,7 @@ const Milestones = lazy(() => import('@/features/milestones/MilestonesPage'));
 const ProfilePage = lazy(() => import('@/features/profile/ProfilePage'));
 const About = lazy(() => import('@/features/about/AboutPage'));
 const Onboarding = lazy(() => import('@/features/onboarding/OnboardingPage'));
+const RumbiAssistant = lazy(() => import('@/features/assistant/RumbiAssistant'));
 
 /** Warm up the other sections once the app is idle so navigation never waits on a chunk. */
 function prefetchSections() {
@@ -77,6 +78,9 @@ function Shell({ profile }: { profile: Profile }) {
         </main>
       </div>
       <TabBar />
+      <Suspense fallback={null}>
+        <RumbiAssistant profile={profile} />
+      </Suspense>
     </div>
   );
 }

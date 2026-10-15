@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="es" data-theme="dark">
+<html lang="es" data-theme="dark" data-accent="violeta">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#070807" />
+    <meta name="theme-color" content="#0d0c14" />
     <meta name="color-scheme" content="dark light" />
     <meta name="description" content="RUMBO · Hábitos, evolución física y entrenamiento. Cada pequeño paso cuenta." />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -20,14 +20,16 @@
           var t = localStorage.getItem('rumbo.theme');
           if (t !== 'light' && t !== 'dark') t = 'dark';
           document.documentElement.dataset.theme = t;
-          // Lime identity: older installs switch to it once (see ThemeProvider).
-          if (localStorage.getItem('rumbo.identity') !== '2') {
-            localStorage.setItem('rumbo.identity', '2');
-            localStorage.setItem('rumbo.accent', 'volt');
+          // Violet identity: installs still on the previous default (lime) switch once (see ThemeProvider).
+          var ok = /^(rojo|naranja|volt|cian|violeta|fucsia)$/;
+          if (localStorage.getItem('rumbo.identity') !== '3') {
+            localStorage.setItem('rumbo.identity', '3');
+            var prev = localStorage.getItem('rumbo.accent');
+            if (!ok.test(prev) || prev === 'volt') localStorage.setItem('rumbo.accent', 'violeta');
           }
           var a = localStorage.getItem('rumbo.accent');
-          document.documentElement.dataset.accent = /^(rojo|naranja|volt|cian|violeta|fucsia)$/.test(a) ? a : 'volt';
-          var bg = t === 'dark' ? '#070807' : '#f1f2ec';
+          document.documentElement.dataset.accent = ok.test(a) ? a : 'violeta';
+          var bg = t === 'dark' ? '#0d0c14' : '#f2f0f9';
           document.documentElement.style.background = bg;
           document.querySelector('meta[name="theme-color"]').setAttribute('content', bg);
         } catch (e) {}

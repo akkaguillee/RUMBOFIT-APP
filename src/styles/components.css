@@ -457,8 +457,8 @@ select.input option {
 :root[data-theme='light'] .segmented__thumb {
   background: #fff;
   box-shadow:
-    0 1px 2px rgba(80, 22, 34, 0.12),
-    0 6px 14px -6px rgba(80, 22, 34, 0.25);
+    0 1px 2px rgba(28, 20, 60, 0.1),
+    0 6px 14px -6px rgba(28, 20, 60, 0.22);
 }
 
 /* ── Chips ──────────────────────────────────────────────────────────── */
@@ -594,7 +594,7 @@ select.input option {
 }
 
 .progress__fill--good {
-  background: linear-gradient(90deg, #1e9e5e, var(--good));
+  background: linear-gradient(90deg, var(--good-deep), var(--good));
   box-shadow: none;
 }
 
@@ -1039,7 +1039,7 @@ select.input option {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: conic-gradient(from 200deg, #e53945, #ff6a1a, #c6f135, #22d3ee, #8b5cf6, #f0287a, #e53945);
+  background: conic-gradient(from 200deg, #8b5cf6, #f0287a, #e53945, #ff6a1a, #c6f135, #22d3ee, #8b5cf6);
   transition: transform var(--dur-base) var(--ease-out);
 }
 
@@ -1282,15 +1282,25 @@ select.input option {
 }
 
 .stat-tile {
-  padding: var(--space-4);
+  padding: 14px var(--space-4);
   border-radius: var(--radius-lg);
 }
 
 .stat-tile .stat__value {
-  font-size: var(--text-2xl);
+  font-size: var(--text-xl);
 }
 
 .stat-tile__foot {
-  margin-top: 6px;
+  margin-top: 4px;
+}
+
+@media (min-width: 640px) {
+  .stat-tile {
+    padding: var(--space-4);
+  }
+
+  .stat-tile .stat__value {
+    font-size: var(--text-2xl);
+  }
 }
 

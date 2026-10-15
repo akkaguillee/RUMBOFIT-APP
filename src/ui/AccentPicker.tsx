@@ -49,7 +49,7 @@ export function AccentPicker() {
             onClick={() => choose(i)}
             onKeyDown={(e) => onKey(e, i)}
           >
-            <span className="accent-opt__chip" style={{ background: a.swatch[0] }} aria-hidden="true">
+            <span className="accent-opt__chip" style={{ background: `linear-gradient(135deg, ${a.swatch[0]}, ${a.swatch[1]})` }} aria-hidden="true">
               {selected && (
                 <motion.span className="accent-opt__check" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.18 }}>
                   <Check strokeWidth={3} />
@@ -57,7 +57,7 @@ export function AccentPicker() {
               )}
             </span>
             <span className="accent-opt__name">{a.name}</span>
-            {selected && <motion.span layoutId={ring} className="accent-opt__ring" style={{ borderColor: a.swatch[0] }} transition={spring.snappy} aria-hidden="true" />}
+            {selected && <motion.span layoutId={ring} className="accent-opt__ring" style={{ borderColor: a.swatch[1] }} transition={spring.snappy} aria-hidden="true" />}
           </button>
         );
       })}
@@ -86,7 +86,7 @@ export function AccentButton() {
         open={open}
         onClose={() => setOpen(false)}
         title="Color de la interfaz"
-        description="Elige el color que acompaña a botones, anillos y destacados. Los colores de estado (verde, amarillo y rojo) no cambian."
+        description="El violeta es el color de RUMBO. Puedes cambiar el que acompaña a botones, anillos y destacados; los colores de estado (verde, ámbar y rojo) no cambian."
       >
         <AccentPicker />
       </Sheet>

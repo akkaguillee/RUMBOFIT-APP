@@ -93,58 +93,6 @@ export function EvolutionPanel({ profile, weights }: { profile: Profile; weights
 
   return (
     <div className="vstack">
-      <motion.div className="stat-tiles rise-group" variants={liftVariants}>
-        <div className="glass stat-tile">
-          <div className="stat">
-            <span className="stat__label">Peso actual</span>
-            <span className="stat__value">
-              {current ? u.weightValue(current.kg) : '—'}
-              <small>{u.w}</small>
-            </span>
-          </div>
-          <p className="t-small stat-tile__foot">{current ? formatDate.relative(current.date, today) : ''}</p>
-        </div>
-        <div className="glass stat-tile">
-          <div className="stat">
-            <span className="stat__label">Peso inicial</span>
-            <span className="stat__value">
-              {start !== undefined ? u.weightValue(start) : '—'}
-              <small>{u.w}</small>
-            </span>
-          </div>
-          <p className="t-small stat-tile__foot">Desde {formatDate.dayMonth(profile.startDate)}</p>
-        </div>
-        <div className="glass stat-tile">
-          <div className="stat">
-            <span className="stat__label">{totalDelta !== null && totalDelta <= 0 ? 'Peso perdido' : 'Cambio total'}</span>
-            <span className="stat__value">
-              {totalDelta === null ? '—' : totalDelta <= 0 ? u.weightValue(-totalDelta) : formatSigned(kgToDisplay(totalDelta, profile.units), 1)}
-              <small>{u.w}</small>
-            </span>
-          </div>
-          <p className="t-small stat-tile__foot">Respecto al inicio</p>
-        </div>
-        <div className="glass stat-tile">
-          <div className="stat">
-            <span className="stat__label">Objetivo</span>
-            <span className="stat__value">
-              {goal !== undefined ? u.weightValue(goal) : '—'}
-              {goal !== undefined && <small>{u.w}</small>}
-            </span>
-          </div>
-          {progress !== null ? (
-            <div className="stat-tile__foot">
-              <ProgressBar value={progress} label="Avance hacia el objetivo" />
-              <p className="t-small t-num" style={{ marginTop: 6 }}>
-                {Math.round(progress * 100)} % del camino
-              </p>
-            </div>
-          ) : (
-            <p className="t-small stat-tile__foot">{usesWeightGoal(profile.goal) ? 'Defínelo en tu perfil' : 'Tu objetivo no depende del peso'}</p>
-          )}
-        </div>
-      </motion.div>
-
       <GlassCard variant="strong" aria-labelledby="evo-title">
         <div className="chart-head">
           <h2 id="evo-title" className="card__title">
@@ -267,6 +215,58 @@ export function EvolutionPanel({ profile, weights }: { profile: Profile; weights
           </div>
         )}
       </GlassCard>
+
+      <motion.div className="stat-tiles rise-group" variants={liftVariants}>
+        <div className="glass stat-tile">
+          <div className="stat">
+            <span className="stat__label">Peso actual</span>
+            <span className="stat__value">
+              {current ? u.weightValue(current.kg) : '—'}
+              <small>{u.w}</small>
+            </span>
+          </div>
+          <p className="t-small stat-tile__foot">{current ? formatDate.relative(current.date, today) : ''}</p>
+        </div>
+        <div className="glass stat-tile">
+          <div className="stat">
+            <span className="stat__label">Peso inicial</span>
+            <span className="stat__value">
+              {start !== undefined ? u.weightValue(start) : '—'}
+              <small>{u.w}</small>
+            </span>
+          </div>
+          <p className="t-small stat-tile__foot">Desde {formatDate.dayMonth(profile.startDate)}</p>
+        </div>
+        <div className="glass stat-tile">
+          <div className="stat">
+            <span className="stat__label">{totalDelta !== null && totalDelta <= 0 ? 'Peso perdido' : 'Cambio total'}</span>
+            <span className="stat__value">
+              {totalDelta === null ? '—' : totalDelta <= 0 ? u.weightValue(-totalDelta) : formatSigned(kgToDisplay(totalDelta, profile.units), 1)}
+              <small>{u.w}</small>
+            </span>
+          </div>
+          <p className="t-small stat-tile__foot">Respecto al inicio</p>
+        </div>
+        <div className="glass stat-tile">
+          <div className="stat">
+            <span className="stat__label">Objetivo</span>
+            <span className="stat__value">
+              {goal !== undefined ? u.weightValue(goal) : '—'}
+              {goal !== undefined && <small>{u.w}</small>}
+            </span>
+          </div>
+          {progress !== null ? (
+            <div className="stat-tile__foot">
+              <ProgressBar value={progress} label="Avance hacia el objetivo" />
+              <p className="t-small t-num" style={{ marginTop: 6 }}>
+                {Math.round(progress * 100)} % del camino
+              </p>
+            </div>
+          ) : (
+            <p className="t-small stat-tile__foot">{usesWeightGoal(profile.goal) ? 'Defínelo en tu perfil' : 'Tu objetivo no depende del peso'}</p>
+          )}
+        </div>
+      </motion.div>
 
       <WeightSheet open={sheet} onClose={() => setSheet(false)} units={profile.units} lastKg={current?.kg} />
     </div>

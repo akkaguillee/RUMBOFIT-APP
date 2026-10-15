@@ -1,14 +1,19 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 
-import { isAccent, ThemeContext, type Accent, type Effects, type Theme, type ThemeCtx } from './theme';
+import { DEFAULT_ACCENT, isAccent, ThemeContext, type Accent, type Effects, type Theme, type ThemeCtx } from './theme';
 
 const THEME_KEY = 'rumbo.theme';
 const EFFECTS_KEY = 'rumbo.effects';
 const ACCENT_KEY = 'rumbo.accent';
-/** Visual identity version: installs from before the lime identity switch to it once. */
+/**
+ * Visual identity version. Moving to the violet identity, installs that were
+ * still on the previous default (lime) switch to violet once; an accent the
+ * user picked themselves is kept.
+ */
 const IDENTITY_KEY = 'rumbo.identity';
-const IDENTITY = '2';
+const IDENTITY = '3';
+const PREVIOUS_DEFAULT = 'volt';
 
 function read(key: string): string | null {
   try {
@@ -36,11 +41,19 @@ function initialAccent(): Accent {
   // The pre-paint script in index.html applies the same rule before first paint.
   if (read(IDENTITY_KEY) !== IDENTITY) {
     write(IDENTITY_KEY, IDENTITY);
-    write(ACCENT_KEY, 'volt');
-    return 'volt';
+    const stored = read(ACCENT_KEY);
+    if (!isAccent(stored) || stored === PREVIOUS_DEFAULT) write(ACCENT_KEY, DEFAULT_ACCENT);
   }
   const stored = read(ACCENT_KEY);
-  return isAccent(stored) ? stored : 'volt';
+  return isAccent(stored) ? stored : DEFAULT_ACCENT;
+}
+
+/** Overscroll areas and the browser bar follow the real page background (it depends on theme and accent). */
+function syncChrome() {
+  const bg = getComputedStyle(document.body).backgroundColor;
+  if (!bg) return;
+  document.documentElement.style.background = bg;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', bg);
 }
 
 type Origin = { x: number; y: number };
@@ -90,9 +103,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    // The pre-paint script set an inline background; keep it in sync for overscroll areas.
-    document.documentElement.style.background = theme === 'dark' ? '#070807' : '#f1f2ec';
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#070807' : '#f1f2ec');
   }, [theme]);
 
   useEffect(() => applyEffects(effects), [effects]);
@@ -109,6 +119,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.dataset.accent = accent;
   }, [accent]);
+
+  // The pre-paint script set an inline background; keep it in sync for overscroll areas.
+  useEffect(() => {
+    const id = requestAnimationFrame(syncChrome);
+    return () => cancelAnimationFrame(id);
+  }, [theme, accent]);
 
   const setAccent = useCallback((next: Accent, origin?: Origin) => {
     reveal(() => {

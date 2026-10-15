@@ -1,5 +1,5 @@
-import { motion, useReducedMotion } from 'motion/react';
-import { useId, type ReactNode } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { useId, useState, type ReactNode } from 'react';
 
 interface Props {
   value: number; // 0..1 (values above 1 are shown full)
@@ -12,10 +12,10 @@ interface Props {
 }
 
 const gradients: Record<NonNullable<Props['tone']>, [string, string]> = {
-  accent: ['var(--acc-deep)', 'var(--acc-hi)'],
+  accent: ['var(--acc-lo)', 'var(--acc-lav)'],
   water: ['color-mix(in srgb, var(--series-water) 55%, #001)', 'var(--series-water)'],
   steps: ['color-mix(in srgb, var(--series-steps) 55%, #100)', 'var(--series-steps)'],
-  good: ['#1e9e5e', '#30c77a'],
+  good: ['var(--good-deep)', 'var(--good)'],
 };
 
 export function ProgressRing({ value, size = 120, stroke = 10, tone = 'accent', label, children, className }: Props) {
@@ -24,6 +24,15 @@ export function ProgressRing({ value, size = 120, stroke = 10, tone = 'accent', 
   const r = (size - stroke) / 2;
   const clamped = Math.max(0, Math.min(1, value));
   const [from, to] = gradients[tone];
+
+  // Reaching the goal while on screen (not on arrival) sends a soft ripple out of the ring.
+  const [seen, setSeen] = useState(value);
+  const [burst, setBurst] = useState(0);
+  if (value !== seen) {
+    setSeen(value);
+    if (seen < 1 && value >= 1) setBurst((b) => b + 1);
+  }
+
   return (
     <div
       className={className}
@@ -31,6 +40,18 @@ export function ProgressRing({ value, size = 120, stroke = 10, tone = 'accent', 
       role="img"
       aria-label={`${label}: ${Math.round(value * 100)} %`}
     >
+      <AnimatePresence>
+        {burst > 0 && !reduce && (
+          <motion.span
+            key={burst}
+            aria-hidden="true"
+            style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: `${Math.max(2, stroke / 3)}px solid ${to}`, pointerEvents: 'none' }}
+            initial={{ scale: 0.92, opacity: 0.7 }}
+            animate={{ scale: 1.32, opacity: 0, transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.75 } }}
+            onAnimationComplete={() => setBurst(0)}
+          />
+        )}
+      </AnimatePresence>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }} aria-hidden="true">
         <defs>
           <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">

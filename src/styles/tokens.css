@@ -1,19 +1,24 @@
 /* ──────────────────────────────────────────────────────────────────────
    RUMBO design tokens
    Brand constants live on :root; each theme maps them to semantic roles.
+   Identity: deep, slightly cool blacks (dark) or soft lavender-white paper
+   (light), white/ink type, violet → lavender gradients as the main accent,
+   and green, amber and red reserved for status and progress.
    ────────────────────────────────────────────────────────────────────── */
 
 :root {
   /* Brand */
+  --rumbo-violet: #8b5cf6;
+  --rumbo-lavender: #c4b5fd;
+  --rumbo-violet-deep: #4c1d95;
   --rumbo-red: #e53945;
-  --rumbo-red-deep: #8f182b;
   --rumbo-white: #ffffff;
-  --rumbo-black: #070807;
-  --rumbo-green: #30c77a;
-  --rumbo-yellow: #f2c94c;
+  --rumbo-black: #0a0a0f;
 
-  /* Typography: the interface is set in a clean sans-serif; Krophed and
-     212 Baby Girl (fonts.css) are used selectively. No serif faces. */
+  /* Typography — three voices with clear jobs:
+       · sans (SF Pro on Apple devices, Inter elsewhere): everything you read or use;
+       · Krophed (--font-display): the RUMBO logotype face, for page titles and a few brand headings;
+       · 212 Baby Girl (--font-hand): short handwritten notes, used sparingly. */
   --font-display: 'Krophed', var(--font-sans);
   --font-hand: '212 Baby Girl', var(--font-sans);
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Inter Variable', 'Inter',
@@ -23,11 +28,16 @@
   --text-sm: 0.8125rem; /* 13 */
   --text-md: 0.9375rem; /* 15 */
   --text-base: 1rem; /* 16 */
-  --text-lg: 1.125rem; /* 18 */
-  --text-xl: 1.375rem; /* 22 */
-  --text-2xl: 1.75rem; /* 28 */
-  --text-3xl: 2.25rem; /* 36 */
-  --text-hero: clamp(3rem, 2.4rem + 3vw, 4.25rem);
+  --text-lg: 1.0625rem; /* 17 */
+  --text-xl: 1.25rem; /* 20 */
+  --text-2xl: 1.5rem; /* 24 */
+  --text-3xl: 2rem; /* 32 */
+  /* Responsive roles (390 px phone → desktop) */
+  --fs-brand: clamp(1.5rem, 1.18rem + 1.35vw, 2.125rem); /* Krophed page title: 24 → 34 */
+  --fs-title: clamp(1.1875rem, 1.05rem + 0.6vw, 1.5rem); /* page h1 under the brand word: 19 → 24 */
+  --fs-greet: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); /* Inicio greeting: 28 → 40 */
+  --fs-section: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem); /* section headings: 17 → 20 */
+  --text-hero: clamp(2.75rem, 2.25rem + 2.2vw, 3.75rem); /* key figure: 44 → 60 */
   --weight-regular: 450;
   --weight-medium: 560;
   --weight-semibold: 640;
@@ -47,23 +57,24 @@
   --space-8: 40px;
   --space-9: 48px;
   --space-10: 64px;
-  --gutter: 16px;
+  --gutter: 18px;
   --page-max: 1180px;
+  --section-gap: 28px;
 
   /* Radii */
   --radius-xs: 8px;
   --radius-sm: 12px;
   --radius-md: 16px;
-  --radius-lg: 22px;
-  --radius-xl: 28px;
-  --radius-2xl: 34px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 30px;
   --radius-pill: 999px;
 
   /* Glass */
   --blur-sm: 12px;
   --blur-md: 22px;
   --blur-lg: 36px;
-  --saturate: 170%;
+  --saturate: 160%;
 
   /* Motion */
   --dur-instant: 90ms;
@@ -76,15 +87,16 @@
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* Layout */
-  --tabbar-h: 68px;
-  --header-h: 64px;
-  --sidebar-w: 268px;
+  --tabbar-h: 64px;
+  --header-h: 60px;
+  --sidebar-w: 264px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 
   /* Elevation (z-index) */
   --z-nav: 40;
   --z-header: 30;
+  --z-assistant: 60;
   --z-overlay: 80;
   --z-toast: 90;
   --z-splash: 100;
@@ -93,6 +105,7 @@
 @media (min-width: 640px) {
   :root {
     --gutter: 24px;
+    --section-gap: 32px;
   }
 }
 
@@ -104,22 +117,38 @@
 
 /* ── Accent palettes ───────────────────────────────────────────────────
    The interface accent can be switched (Perfil → Apariencia or the palette
-   button). Each palette defines a small ramp; both themes derive their
-   accent roles from it. Status colours (good / warn / bad) never change.
-     --acc        main accent (dark theme fill)
-     --acc-hi/lo  gradient stops for filled controls
-     --acc-deep   deep shade (gradients, light-theme titles & logo)
+   button). Violet is RUMBO's own; each palette defines a small ramp and both
+   themes derive their accent roles from it. Status colours never change.
+     --acc        main accent
+     --acc-hi/lo  gradient stops for filled controls (hi = light end)
+     --acc-lav    pale tint: brand gradients, glows, highlights
+     --acc-deep   deep shade (gradients, light-theme titles)
      --acc-text-d text on dark surfaces   (≥ 4.5:1 on --bg)
      --acc-text-l text on light surfaces  (≥ 4.5:1 on --bg)
      --acc-fill-l accent fill in the light theme
      --acc-on     text/icons on top of an accent fill
    ────────────────────────────────────────────────────────────────────── */
+:root,
+:root[data-accent='violeta'] {
+  --acc: #8b5cf6;
+  --acc-hi: #9f7aff;
+  --acc-lo: #6c3be8;
+  --acc-lav: #c9b8ff;
+  --acc-deep: #3d1a8f;
+  --acc-text-d: #c4b5fd;
+  --acc-text-l: #6a2ad6;
+  --acc-fill-l: #7c3aed;
+  --acc-title-l: #3b1678;
+  --acc-on: #ffffff;
+}
+
 :root[data-accent='rojo'] {
   --acc: #e53945;
   --acc-hi: #f04a56;
   --acc-lo: #c92a37;
+  --acc-lav: #ffb3b9;
   --acc-deep: #8f182b;
-  --acc-text-d: #ff6b75;
+  --acc-text-d: #ff7c85;
   --acc-text-l: #b4202e;
   --acc-fill-l: #d42f3c;
   --acc-title-l: #8f182b;
@@ -130,19 +159,20 @@
   --acc: #ff6a1a;
   --acc-hi: #ff8a3d;
   --acc-lo: #f2520a;
+  --acc-lav: #ffc49e;
   --acc-deep: #9a3412;
-  --acc-text-d: #ff8f4f;
+  --acc-text-d: #ff9a5c;
   --acc-text-l: #b23c00;
   --acc-fill-l: #f45d0c;
   --acc-title-l: #8f2f0c;
   --acc-on: #160800;
 }
 
-:root,
 :root[data-accent='volt'] {
   --acc: #c8f53a;
   --acc-hi: #d6ff5c;
   --acc-lo: #b6e420;
+  --acc-lav: #ecffb0;
   --acc-deep: #3d5700;
   --acc-text-d: #cdf65a;
   --acc-text-l: #3f5c00;
@@ -155,32 +185,22 @@
   --acc: #22d3ee;
   --acc-hi: #5ce3fb;
   --acc-lo: #0fb8d6;
+  --acc-lav: #b5f3fd;
   --acc-deep: #0e5a73;
-  --acc-text-d: #52dcf4;
+  --acc-text-d: #67e2f7;
   --acc-text-l: #0a6b85;
   --acc-fill-l: #12bfdd;
   --acc-title-l: #0b4f63;
   --acc-on: #03161b;
 }
 
-:root[data-accent='violeta'] {
-  --acc: #8b5cf6;
-  --acc-hi: #9d74ff;
-  --acc-lo: #7442ea;
-  --acc-deep: #4c1d95;
-  --acc-text-d: #b49cff;
-  --acc-text-l: #6d28d9;
-  --acc-fill-l: #7c3aed;
-  --acc-title-l: #4c1d95;
-  --acc-on: #ffffff;
-}
-
 :root[data-accent='fucsia'] {
   --acc: #f0287a;
   --acc-hi: #ff4b90;
   --acc-lo: #d81566;
+  --acc-lav: #ffb5d2;
   --acc-deep: #8a1048;
-  --acc-text-d: #ff6fa6;
+  --acc-text-d: #ff7fb0;
   --acc-text-l: #b8125a;
   --acc-fill-l: #e11d74;
   --acc-title-l: #8a1048;
@@ -188,151 +208,161 @@
 }
 
 /* ── Dark (default) ─────────────────────────────────────────────────
-   Deep black and charcoal; the accent is used sparingly (primary actions,
-   active states, key figures, charts and progress). */
+   Near-black with a whisper of the accent; three surface levels (card,
+   inner tile, raised) separated by light, not by heavy borders. The
+   accent is used sparingly: primary actions, active states, key figures,
+   charts and progress. */
 :root,
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #070807;
-  --bg-raised: #0d0e0d;
-  --surface-solid: #131413;
-  --surface-2: #1a1b1a;
-  --text: #f5f6f2;
-  --text-2: rgba(237, 239, 232, 0.7);
-  --text-3: rgba(237, 239, 232, 0.52);
-  --title: #f5f6f2;
-  --brand-ink: #f5f6f2;
+  --bg: color-mix(in srgb, var(--acc) 3%, #09090d);
+  --bg-raised: color-mix(in srgb, var(--acc) 3%, #0f0f14);
+  --surface-solid: color-mix(in srgb, var(--acc) 3%, #14141a);
+  --surface-2: color-mix(in srgb, var(--acc) 4%, #1b1b23);
+  --surface-3: color-mix(in srgb, var(--acc) 5%, #23232d);
+  --text: #f5f4fa;
+  --text-2: rgba(236, 233, 247, 0.72);
+  --text-3: rgba(236, 233, 247, 0.52);
+  --title: #ffffff;
+  --brand-ink: #f5f4fa;
   --divider: rgba(255, 255, 255, 0.07);
   --hairline: rgba(255, 255, 255, 0.06);
 
   --accent: var(--acc);
   --accent-strong: var(--acc-hi);
   --accent-text: var(--acc-text-d);
-  --accent-soft: color-mix(in srgb, var(--acc) 14%, transparent);
-  --accent-glow: color-mix(in srgb, var(--acc) 30%, transparent);
-  --accent-grad: linear-gradient(180deg, var(--acc-hi) 0%, var(--acc) 100%);
+  --accent-soft: color-mix(in srgb, var(--acc) 16%, transparent);
+  --accent-glow: color-mix(in srgb, var(--acc) 38%, transparent);
+  --accent-grad: linear-gradient(135deg, var(--acc-hi) 0%, var(--acc) 48%, var(--acc-lo) 100%);
+  /* Brand moments (ribbon, hero meter, rings): pale lavender into the accent. */
+  --brand-grad: linear-gradient(120deg, var(--acc-lav) 0%, var(--acc-hi) 45%, var(--acc) 100%);
   --on-accent: var(--acc-on);
 
-  /* Status: lime = on track, yellow = halfway / attention, red = unfavourable */
-  --good: #a3e635;
-  --good-text: #b8f055;
-  --good-soft: rgba(163, 230, 53, 0.14);
-  --warn: #f6c544;
-  --warn-text: #f8d36c;
-  --warn-soft: rgba(246, 197, 68, 0.14);
-  --bad: #ff5a4f;
-  --bad-text: #ff7d73;
-  --bad-soft: rgba(255, 90, 79, 0.14);
+  /* Status: green = on track / done, amber = halfway / attention, red = unfavourable */
+  --good: #4ade80;
+  --good-text: #7ce6a2;
+  --good-soft: rgba(74, 222, 128, 0.13);
+  --good-deep: #15803d;
+  --warn: #fbbf24;
+  --warn-text: #fcd062;
+  --warn-soft: rgba(251, 191, 36, 0.13);
+  --bad: #f87171;
+  --bad-text: #fd9a9a;
+  --bad-soft: rgba(248, 113, 113, 0.13);
   --neutral-soft: rgba(255, 255, 255, 0.07);
 
   /* Data series (validated: see README) */
-  --series-weight: #f2f3ef;
+  --series-weight: #f5f4fa;
   --series-water: #3f8fea;
   --series-steps: #d29a14;
-  --series-trend: rgba(237, 239, 232, 0.42);
+  --series-trend: rgba(236, 233, 247, 0.42);
   --chart-grid: rgba(255, 255, 255, 0.07);
 
-  /* Surfaces: charcoal panels with a restrained glass edge */
-  --glass-fill: rgba(21, 22, 21, 0.78);
-  --glass-fill-strong: rgba(27, 28, 27, 0.86);
-  --glass-fill-nav: rgba(13, 14, 13, 0.8);
-  --glass-fill-sheet: rgba(17, 18, 17, 0.94);
-  --glass-edge-top: rgba(255, 255, 255, 0.13);
+  /* Surfaces: matte panels with a fine light edge */
+  --glass-fill: color-mix(in srgb, var(--surface-solid) 90%, transparent);
+  --glass-fill-strong: color-mix(in srgb, var(--surface-2) 94%, transparent);
+  --glass-fill-nav: color-mix(in srgb, var(--bg-raised) 80%, transparent);
+  --glass-fill-sheet: color-mix(in srgb, var(--surface-solid) 97%, transparent);
+  --glass-edge-top: rgba(255, 255, 255, 0.1);
   --glass-edge-mid: rgba(255, 255, 255, 0.04);
-  --glass-edge-bottom: rgba(255, 255, 255, 0.07);
-  --glass-inner: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  --glass-shadow: 0 1px 1px rgba(0, 0, 0, 0.3), 0 16px 34px -20px rgba(0, 0, 0, 0.9);
-  --glass-shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.32), 0 26px 52px -24px rgba(0, 0, 0, 0.95);
-  --glass-specular: rgba(255, 255, 255, 0.07);
-  --glass-sheen: rgba(255, 255, 255, 0.035);
+  --glass-edge-bottom: rgba(255, 255, 255, 0.055);
+  --glass-inner: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  --glass-shadow: 0 1px 1px rgba(0, 0, 0, 0.28), 0 18px 38px -24px rgba(0, 0, 0, 0.9);
+  --glass-shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.3), 0 28px 56px -26px rgba(0, 0, 0, 0.95);
+  --glass-specular: rgba(255, 255, 255, 0.05);
+  --glass-sheen: rgba(255, 255, 255, 0.025);
 
-  --field-fill: rgba(255, 255, 255, 0.05);
-  --field-fill-hover: rgba(255, 255, 255, 0.08);
+  --field-fill: rgba(255, 255, 255, 0.045);
+  --field-fill-hover: rgba(255, 255, 255, 0.075);
   --field-border: rgba(255, 255, 255, 0.1);
-  --control-fill: rgba(255, 255, 255, 0.07);
-  --control-fill-hover: rgba(255, 255, 255, 0.11);
-  --scrim: rgba(2, 3, 2, 0.66);
+  --control-fill: rgba(255, 255, 255, 0.065);
+  --control-fill-hover: rgba(255, 255, 255, 0.1);
+  --scrim: rgba(4, 3, 10, 0.62);
 
-  --orb-1: color-mix(in srgb, var(--acc) 11%, transparent);
-  --orb-2: rgba(255, 255, 255, 0.025);
-  --orb-3: color-mix(in srgb, var(--acc) 5%, transparent);
-  --noise-opacity: 0.04;
-  --flame-off: #4a4c49;
-  --flame-off-deep: #343633;
-  --flame-off-light: #5d605b;
+  --orb-1: color-mix(in srgb, var(--acc) 13%, transparent);
+  --orb-2: color-mix(in srgb, var(--acc-lav) 4%, transparent);
+  --orb-3: color-mix(in srgb, var(--acc) 6%, transparent);
+  --noise-opacity: 0.035;
+  --flame-off: #45444f;
+  --flame-off-deep: #312f3a;
+  --flame-off-light: #5a5866;
   --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px color-mix(in srgb, var(--acc-text-d) 85%, transparent);
   --focus-color: color-mix(in srgb, var(--acc-text-d) 90%, transparent);
 }
 
 /* ── Light ──────────────────────────────────────────────────────────
-   Not an inversion: warm paper background, white panels, black type; the
-   accent stays a fill (with dark text on it) and darkens for text. */
+   Not an inversion: soft lavender-white paper, white panels lifted by
+   soft shadows, near-black type; the accent stays a fill (white text on
+   it) and darkens for text. */
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #f1f2ec;
-  --bg-raised: #f8f9f4;
+  --bg: color-mix(in srgb, var(--acc) 4%, #f6f6f9);
+  --bg-raised: color-mix(in srgb, var(--acc) 2%, #fbfbfd);
   --surface-solid: #ffffff;
-  --surface-2: #f4f5f0;
-  --text: #0d0e0b;
-  --text-2: rgba(16, 18, 12, 0.72);
-  --text-3: rgba(16, 18, 12, 0.58);
-  --title: #0d0e0b;
-  --brand-ink: #0d0e0b;
-  --divider: rgba(16, 18, 12, 0.08);
-  --hairline: rgba(16, 18, 12, 0.07);
+  --surface-2: color-mix(in srgb, var(--acc) 4%, #f3f3f7);
+  --surface-3: color-mix(in srgb, var(--acc) 6%, #ebebf1);
+  --text: #14121b;
+  --text-2: rgba(20, 18, 27, 0.7);
+  --text-3: rgba(20, 18, 27, 0.56);
+  --title: #0e0c14;
+  --brand-ink: #14121b;
+  --divider: rgba(20, 18, 27, 0.08);
+  --hairline: rgba(20, 18, 27, 0.07);
 
   --accent: var(--acc-fill-l);
   --accent-strong: var(--acc);
   --accent-text: var(--acc-text-l);
-  --accent-soft: color-mix(in srgb, var(--acc-fill-l) 18%, transparent);
+  --accent-soft: color-mix(in srgb, var(--acc-fill-l) 13%, transparent);
   --accent-glow: color-mix(in srgb, var(--acc) 34%, transparent);
-  --accent-grad: linear-gradient(180deg, var(--acc-hi) 0%, var(--acc-fill-l) 100%);
+  --accent-grad: linear-gradient(135deg, var(--acc-hi) 0%, var(--acc-fill-l) 52%, var(--acc-lo) 100%);
+  --brand-grad: linear-gradient(120deg, var(--acc-hi) 0%, var(--acc-fill-l) 55%, var(--acc-lo) 100%);
   --on-accent: var(--acc-on);
 
-  --good: #65a30d;
-  --good-text: #3d6610;
-  --good-soft: rgba(101, 163, 13, 0.13);
-  --warn: #e3a900;
-  --warn-text: #7a5800;
-  --warn-soft: rgba(227, 169, 0, 0.16);
-  --bad: #e5483d;
-  --bad-text: #b42318;
-  --bad-soft: rgba(229, 72, 61, 0.1);
-  --neutral-soft: rgba(16, 18, 12, 0.06);
+  --good: #16a34a;
+  --good-text: #15803d;
+  --good-soft: rgba(22, 163, 74, 0.12);
+  --good-deep: #166534;
+  --warn: #d97706;
+  --warn-text: #8a4b06;
+  --warn-soft: rgba(217, 119, 6, 0.13);
+  --bad: #dc2626;
+  --bad-text: #b91c1c;
+  --bad-soft: rgba(220, 38, 38, 0.1);
+  --neutral-soft: rgba(20, 18, 27, 0.055);
 
-  --series-weight: #14150f;
+  --series-weight: #14121b;
   --series-water: #2a78d6;
   --series-steps: #b97a00;
-  --series-trend: rgba(16, 18, 12, 0.36);
-  --chart-grid: rgba(16, 18, 12, 0.08);
+  --series-trend: rgba(20, 18, 27, 0.36);
+  --chart-grid: rgba(20, 18, 27, 0.08);
 
-  --glass-fill: rgba(255, 255, 255, 0.84);
-  --glass-fill-strong: rgba(255, 255, 255, 0.94);
+  --glass-fill: rgba(255, 255, 255, 0.9);
+  --glass-fill-strong: rgba(255, 255, 255, 0.97);
   --glass-fill-nav: rgba(255, 255, 255, 0.82);
-  --glass-fill-sheet: rgba(250, 251, 247, 0.97);
+  --glass-fill-sheet: rgba(252, 252, 254, 0.98);
   --glass-edge-top: rgba(255, 255, 255, 1);
-  --glass-edge-mid: rgba(16, 18, 12, 0.035);
-  --glass-edge-bottom: rgba(16, 18, 12, 0.08);
+  --glass-edge-mid: rgba(20, 18, 27, 0.04);
+  --glass-edge-bottom: rgba(20, 18, 27, 0.08);
   --glass-inner: inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  --glass-shadow: 0 1px 2px rgba(16, 18, 12, 0.06), 0 14px 30px -20px rgba(16, 18, 12, 0.26);
-  --glass-shadow-lift: 0 2px 6px rgba(16, 18, 12, 0.08), 0 26px 50px -24px rgba(16, 18, 12, 0.3);
+  --glass-shadow: 0 1px 2px rgba(28, 20, 60, 0.05), 0 14px 32px -20px rgba(28, 20, 60, 0.24);
+  --glass-shadow-lift: 0 2px 6px rgba(28, 20, 60, 0.07), 0 26px 52px -24px rgba(28, 20, 60, 0.3);
   --glass-specular: rgba(255, 255, 255, 0.7);
   --glass-sheen: rgba(255, 255, 255, 0.5);
 
-  --field-fill: rgba(255, 255, 255, 0.9);
+  --field-fill: rgba(255, 255, 255, 0.92);
   --field-fill-hover: #ffffff;
-  --field-border: rgba(16, 18, 12, 0.13);
-  --control-fill: rgba(16, 18, 12, 0.05);
-  --control-fill-hover: rgba(16, 18, 12, 0.09);
-  --scrim: rgba(10, 12, 8, 0.34);
+  --field-border: rgba(20, 18, 27, 0.12);
+  --control-fill: rgba(20, 18, 27, 0.05);
+  --control-fill-hover: rgba(20, 18, 27, 0.085);
+  --scrim: rgba(16, 12, 30, 0.32);
 
-  --orb-1: color-mix(in srgb, var(--acc) 22%, transparent);
-  --orb-2: color-mix(in srgb, var(--acc-hi) 12%, transparent);
-  --orb-3: rgba(16, 18, 12, 0.03);
-  --noise-opacity: 0.03;
-  --flame-off: #c8c9c3;
-  --flame-off-deep: #b3b5ae;
-  --flame-off-light: #dcddd8;
+  --orb-1: color-mix(in srgb, var(--acc) 16%, transparent);
+  --orb-2: color-mix(in srgb, var(--acc-lav) 22%, transparent);
+  --orb-3: color-mix(in srgb, var(--acc) 5%, transparent);
+  --noise-opacity: 0.025;
+  --flame-off: #c9c7d2;
+  --flame-off-deep: #b5b3c0;
+  --flame-off-light: #dddbe4;
   --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px color-mix(in srgb, var(--acc-text-l) 80%, transparent);
   --focus-color: color-mix(in srgb, var(--acc-text-l) 88%, transparent);
 }

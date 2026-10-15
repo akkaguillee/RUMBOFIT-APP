@@ -1,29 +1,30 @@
-/* Layout */
+/* Layout: the day first (log, today's goals), then the indicators (weight,
+   streak), Rumbi's tip and the wider view (week, body, next milestone). */
 .dash {
   display: grid;
   gap: var(--space-4);
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    'hero'
-    'streak'
     'actions'
     'today'
+    'hero'
+    'streak'
     'tip'
-    'body'
     'week'
+    'body'
     'next';
 }
 
 @media (min-width: 960px) {
   .dash {
     gap: var(--space-5);
-    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
     grid-template-areas:
+      'actions actions'
+      'hero today'
       'hero streak'
-      'hero actions'
-      'hero tip'
-      'today body'
-      'week next';
+      'tip week'
+      'body next';
     align-items: start;
   }
 }
@@ -54,40 +55,36 @@
 }
 
 .greet {
-  margin: var(--space-2) 0 var(--space-5);
+  margin: var(--space-1) 0 var(--space-4);
 }
 
 .greet__date {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .greet__name {
-  font-size: clamp(2.25rem, 1.7rem + 2.4vw, 3rem);
+  font-size: var(--fs-greet);
   font-weight: 800;
-  letter-spacing: -0.045em;
-  line-height: 1;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+  text-wrap: balance;
 }
 
 .greet__name span {
   color: var(--accent-text);
 }
 
-:root[data-theme='light'] .greet__name span {
-  color: var(--title);
-  /* A lime highlighter stroke under the name instead of coloured text. */
-  background: linear-gradient(transparent 62%, color-mix(in srgb, var(--acc) 70%, transparent) 62% 92%, transparent 92%);
-}
-
 .greet__msg {
-  margin-top: var(--space-3);
+  margin-top: var(--space-2);
   max-width: 46ch;
+  font-size: var(--text-md);
   color: var(--text-2);
 }
 
 /* Signature ribbon (RumboRibbon): bleeds to the screen edges on phones. */
 .ribbon {
   position: relative;
-  margin: var(--space-3) calc(-1 * var(--gutter)) 0;
+  margin: var(--space-2) calc(-1 * var(--gutter)) 0;
   pointer-events: none;
   -webkit-user-select: none;
   user-select: none;
@@ -102,8 +99,7 @@
 
 .ribbon__band {
   fill: none;
-  stroke: var(--accent);
-  stroke-width: 28;
+  stroke-width: 24;
   stroke-linecap: round;
   stroke-dasharray: 1;
   stroke-dashoffset: 0;
@@ -127,10 +123,10 @@
 
 .ribbon__note {
   position: absolute;
-  top: 0;
+  top: -2px;
   left: calc(var(--gutter) + 2px);
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   transform: rotate(-5deg);
   transform-origin: left top;
   animation: ribbon-fade 0.6s var(--ease-out) 1.2s both;
@@ -193,8 +189,10 @@
   gap: var(--space-2) var(--space-3);
 }
 
+/* The title keeps one line; on narrow cards the status badge drops below it. */
 .hero__top .card__title {
-  flex: 1 1 14ch;
+  flex: 1 1 auto;
+  min-width: max-content;
 }
 
 .hero__stats {
@@ -308,7 +306,7 @@
   color: var(--text-2);
 }
 
-/* Quick actions */
+/* Quick actions: a light toolbar on the page background (no extra card). */
 .quick {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -319,31 +317,64 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: var(--space-3) 4px;
+  gap: 7px;
+  padding: 4px 2px;
   border-radius: var(--radius-lg);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   color: var(--text-2);
-  transition: transform var(--dur-fast) var(--ease-out);
+  transition: transform var(--release, 340ms ease);
 }
 
 .quick__btn:active {
-  transform: scale(0.94);
+  transform: scale(0.93);
+  transition-duration: var(--dur-instant);
 }
 
 .quick__icon {
   position: relative;
   display: grid;
   place-items: center;
-  width: 54px;
-  height: 54px;
-  border-radius: 19px;
+  width: 56px;
+  height: 56px;
+  border-radius: 20px;
+  background: var(--glass-fill);
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge-top),
+    inset 0 0 0 1px var(--hairline),
+    var(--glass-shadow);
+  transition: transform var(--dur-base) var(--ease-spring);
 }
 
 .quick__icon svg {
   width: 23px;
   height: 23px;
+}
+
+.quick__icon.icon-tile--accent {
+  color: var(--on-accent);
+  background: var(--accent-grad);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 12px 24px -14px var(--accent-glow);
+}
+
+.quick__icon.icon-tile--water {
+  color: var(--series-water);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--series-water) 16%, transparent), transparent),
+    var(--glass-fill);
+}
+
+.quick__icon.icon-tile--steps {
+  color: var(--series-steps);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--series-steps) 18%, transparent), transparent),
+    var(--glass-fill);
+}
+
+.quick__icon--train {
+  color: var(--text);
 }
 
 @media (hover: hover) {
@@ -355,8 +386,35 @@
   }
 }
 
-.quick__icon {
-  transition: transform var(--dur-base) var(--ease-spring);
+@media (min-width: 960px) {
+  .quick {
+    display: flex;
+    gap: var(--space-3);
+  }
+
+  .quick__btn {
+    flex-direction: row;
+    gap: 10px;
+    padding: 6px 18px 6px 6px;
+    border-radius: var(--radius-pill);
+    font-size: var(--text-sm);
+    background: var(--glass-fill);
+    box-shadow:
+      inset 0 0 0 1px var(--hairline),
+      var(--glass-shadow);
+  }
+
+  .quick__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    box-shadow: none;
+  }
+
+  .quick__icon svg {
+    width: 19px;
+    height: 19px;
+  }
 }
 
 /* Today */

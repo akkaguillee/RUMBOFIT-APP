@@ -59,8 +59,8 @@ test.describe('RUMBO', () => {
 
   test('accent colour can be changed from the top bar and persists', async ({ page }) => {
     await onboard(page);
-    // Lime is the brand default; another choice is kept across reloads.
-    await expect(page.locator('html')).toHaveAttribute('data-accent', 'volt');
+    // Violet is the brand default; another choice is kept across reloads.
+    await expect(page.locator('html')).toHaveAttribute('data-accent', 'violeta');
     await page.getByRole('button', { name: 'Cambiar el color de la interfaz' }).first().click();
     await page.getByRole('radio', { name: /rojo/i }).click();
     await expect(page.locator('html')).toHaveAttribute('data-accent', 'rojo');

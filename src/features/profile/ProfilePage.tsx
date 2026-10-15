@@ -22,6 +22,7 @@ import { Segmented } from '@/ui/Segmented';
 import { Sheet } from '@/ui/Sheet';
 import { Switch } from '@/ui/Switch';
 import { toast, toastError } from '@/ui/toast';
+import { resetRumbiPosition, setRumbiPrefs, useRumbiPrefs } from '../assistant/prefs';
 import { DayPicker } from '../onboarding/PrefControls';
 import { activityWithDays, inputOrStored, mainGoalLabel, TARGET_NEEDS_HEIGHT, targetWeightError } from '../onboarding/preferences';
 import { SEX_OPTIONS, usesWeightGoal } from '../shared/labels';
@@ -376,6 +377,7 @@ function HabitsForm({ profile }: { profile: Profile }) {
 function AppearanceSection() {
   const { theme, setTheme, effects, setEffects } = useTheme();
   const [intro, setIntro] = useState(introEnabled);
+  const rumbi = useRumbiPrefs();
   const [, setDismissed] = useSetting<string[]>('dismissedTips', []);
   return (
     <Section icon={<Palette aria-hidden="true" />} title="Apariencia" id="appearance">
@@ -413,6 +415,35 @@ function AppearanceSection() {
           />
           <span className="field__hint">«Ligeros» reduce el desenfoque y las animaciones de fondo en dispositivos con poca potencia.</span>
         </div>
+        <div className="setting-row">
+          <span className="grow">
+            <span className="list-row__title" style={{ display: 'block' }} id="rumbi-float-label">
+              Rumbi flotante
+            </span>
+            <span className="list-row__sub">Tu asistente en todas las pantallas, con consejos y atajos. Arrástralo al borde que prefieras.</span>
+          </span>
+          <Switch checked={rumbi.enabled} label="Rumbi flotante" onChange={(v) => setRumbiPrefs({ enabled: v })} />
+        </div>
+        {rumbi.enabled && (
+          <div className="setting-row">
+            <span className="grow">
+              <span className="list-row__title" style={{ display: 'block' }}>
+                Posición de Rumbi
+              </span>
+              <span className="list-row__sub">Vuelve a la esquina inferior derecha</span>
+            </span>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                resetRumbiPosition();
+                toast('Rumbi ha vuelto a su sitio');
+              }}
+            >
+              Recolocar
+            </Button>
+          </div>
+        )}
         <div className="setting-row">
           <span className="grow">
             <span className="list-row__title" style={{ display: 'block' }}>

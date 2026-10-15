@@ -6,6 +6,7 @@ import type { Units, WeightEntry } from '@/domain/types';
 import { feedbackMessage } from '@/domain/messages';
 import { checkRange, LIMITS } from '@/domain/validation';
 import { Button } from '@/ui/Button';
+import { cheer } from '@/ui/cheer';
 import { ConfirmDialog } from '@/ui/ConfirmDialog';
 import { NumberField, TextAreaField, TextField } from '@/ui/Field';
 import { Sheet } from '@/ui/Sheet';
@@ -70,6 +71,7 @@ export function WeightSheet({ open, onClose, units, entry, defaultDate, lastKg }
       } else {
         await addWeight({ date, time, kg: kg!, note });
         toast(feedbackMessage(Math.round(kg! * 10)));
+        cheer();
       }
       onClose();
     } catch (e) {

@@ -1,5 +1,5 @@
 import { CalendarDays, Check, ChevronRight, Dumbbell, Droplets, Footprints, Plus, Scale } from 'lucide-react';
-import { motion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAchievements } from '@/db/hooks';
@@ -14,9 +14,10 @@ import { formatFixed, formatInt, kgToDisplay } from '@/domain/units';
 import { assessTrend, changeOverDays, deltaTone, goalDirection, goalProgress, latestWeight } from '@/domain/weight';
 import { AnimatedNumber } from '@/ui/AnimatedNumber';
 import { Button } from '@/ui/Button';
+import { cheer } from '@/ui/cheer';
 import { GlassCard, GlassLinkCard } from '@/ui/GlassCard';
 import { Loader } from '@/ui/Loader';
-import { liftVariants, riseVariants } from '@/ui/motion';
+import { liftVariants, riseVariants, spring } from '@/ui/motion';
 import { Page } from '@/ui/Page';
 import { ProgressBar } from '@/ui/ProgressBar';
 import { ProgressRing } from '@/ui/ProgressRing';
@@ -37,6 +38,19 @@ import { RumboRibbon } from './RumboRibbon';
 import './dashboard.css';
 
 const toneColor = (t: string) => (t === 'good' ? 'var(--good-text)' : t === 'bad' ? 'var(--bad-text)' : undefined);
+
+/** "Hecho" pops in when a daily goal is completed while the screen is open (already done on arrival: it is just there). */
+function DoneBadge({ show }: { show: boolean }) {
+  return (
+    <AnimatePresence initial={false}>
+      {show && (
+        <motion.span key="done" style={{ display: 'inline-flex' }} initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }} transition={{ ...spring.bouncy, delay: 0.6 }}>
+          <StatusBadge tone="good" label="Hecho" />
+        </motion.span>
+      )}
+    </AnimatePresence>
+  );
+}
 
 export default function DashboardPage() {
   const ach = useAchievements();
@@ -124,6 +138,7 @@ export default function DashboardPage() {
     try {
       await addWater(today, 250);
       toast(`+${u.volume(250)} de agua`, { tone: 'success' });
+      cheer();
     } catch (e) {
       toastError(e);
     }
@@ -138,8 +153,7 @@ export default function DashboardPage() {
         <div className="greet__text">
           <p className="t-eyebrow greet__date">{formatDate.header(today)}</p>
           <h1 className="greet__name">
-            {greeting()},<br />
-            <span>{profile.name}</span>
+            {greeting()}, <span>{profile.name}</span>
           </h1>
           <p className="greet__msg">{model.message}</p>
         </div>
@@ -147,6 +161,128 @@ export default function DashboardPage() {
       </motion.header>
 
       <div className="dash">
+        {/* ── Quick actions ─────────────────────────────────────── */}
+        <motion.nav className="dash__actions" variants={riseVariants} aria-label="Registro rápido">
+          <div className="quick">
+            <button type="button" className="quick__btn" onClick={() => setSheet('weight')}>
+              <span className="quick__icon icon-tile--accent">
+                <Scale aria-hidden="true" />
+              </span>
+              Peso
+            </button>
+            <button type="button" className="quick__btn" onClick={() => setSheet('water')}>
+              <span className="quick__icon icon-tile--water">
+                <Droplets aria-hidden="true" />
+              </span>
+              Agua
+            </button>
+            <button type="button" className="quick__btn" onClick={() => setSheet('steps')}>
+              <span className="quick__icon icon-tile--steps">
+                <Footprints aria-hidden="true" />
+              </span>
+              Pasos
+            </button>
+            <button type="button" className="quick__btn" onClick={() => navigate(model.active ? '/entreno/sesion' : '/entreno')}>
+              <span className="quick__icon quick__icon--train">
+                <Dumbbell aria-hidden="true" />
+              </span>
+              {model.active ? 'Continuar' : 'Entrenar'}
+            </button>
+          </div>
+        </motion.nav>
+
+        {/* ── Today ─────────────────────────────────────────────── */}
+        <motion.section className="dash__today rise-group" variants={liftVariants} aria-labelledby="today-title">
+          <div className="section-head">
+            <h2 id="today-title">Hoy</h2>
+            <span className={`badge ${model.goalsMet >= model.goalsTotal ? 'badge--good' : ''}`}>
+              {model.goalsMet >= model.goalsTotal && <Check aria-hidden="true" />}
+              {model.goalsMet}/{model.goalsTotal} objetivos
+            </span>
+          </div>
+          <div className="today-grid">
+            <div className="glass habit-card">
+              <div className="habit-card__head">
+                <Link to="/habitos?tab=agua" className="habit-card__name">
+                  Agua
+                </Link>
+                <DoneBadge show={model.waterToday >= profile.waterGoalMl} />
+              </div>
+              <div className="habit-card__ring">
+                <ProgressRing value={model.waterToday / profile.waterGoalMl} size={96} stroke={9} tone="water" label="Agua de hoy">
+                  <span className="t-num" style={{ fontWeight: 700, fontSize: 18 }}>
+                    {percent(model.waterToday, profile.waterGoalMl)}%
+                  </span>
+                </ProgressRing>
+              </div>
+              <div className="habit-card__foot">
+                <div>
+                  <div className="habit-card__value">{u.volume(model.waterToday)}</div>
+                  <div className="habit-card__goal">de {u.volume(profile.waterGoalMl)}</div>
+                </div>
+                <button type="button" className="mini-add" onClick={quickWater} aria-label={`Añadir ${u.volume(250)} de agua`}>
+                  <Plus aria-hidden="true" />
+                  {u.units === 'metric' ? '250' : '8,5'}
+                </button>
+              </div>
+            </div>
+
+            <div className="glass habit-card">
+              <div className="habit-card__head">
+                <Link to="/habitos?tab=pasos" className="habit-card__name">
+                  Pasos
+                </Link>
+                <DoneBadge show={model.stepsToday >= profile.stepsGoal} />
+              </div>
+              <div className="habit-card__ring">
+                <ProgressRing value={model.stepsToday / profile.stepsGoal} size={96} stroke={9} tone="steps" label="Pasos de hoy">
+                  <span className="t-num" style={{ fontWeight: 700, fontSize: 18 }}>
+                    {percent(model.stepsToday, profile.stepsGoal)}%
+                  </span>
+                </ProgressRing>
+              </div>
+              <div className="habit-card__foot">
+                <div>
+                  <div className="habit-card__value">
+                    <AnimatedNumber value={model.stepsToday} format={(n) => formatInt(n)} />
+                  </div>
+                  <div className="habit-card__goal">de {formatInt(profile.stepsGoal)}</div>
+                </div>
+                <button type="button" className="mini-add" onClick={() => setSheet('steps')} aria-label="Registrar pasos">
+                  <Plus aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+
+            <GlassLinkCard to={model.active ? '/entreno/sesion' : '/entreno'} padded={false} rise={false} className="train-card">
+              <span className={`icon-tile ${model.completedToday.length ? 'icon-tile--good' : 'icon-tile--accent'}`}>
+                {model.completedToday.length ? <Check aria-hidden="true" /> : <Dumbbell aria-hidden="true" />}
+              </span>
+              <span className="grow">
+                <span className="list-row__title" style={{ display: 'block' }}>
+                  {model.active
+                    ? 'Entrenamiento en curso'
+                    : model.completedToday.length
+                      ? `Entrenamiento completado`
+                      : model.plannedToday
+                        ? `Toca entrenar${model.plannedLabel ? `: ${model.plannedLabel}` : ''}`
+                        : 'Día libre de entrenamiento'}
+                </span>
+                <span className="list-row__sub">
+                  {model.active
+                    ? 'Toca para continuar donde lo dejaste'
+                    : model.completedToday.length
+                      ? model.completedToday.map((w) => w.name).join(' · ')
+                      : model.plannedToday
+                        ? 'Cuando estés listo, empieza la sesión'
+                        : 'Descansar también es progresar'}
+                </span>
+              </span>
+              <ChevronRight aria-hidden="true" style={{ width: 18, color: 'var(--text-3)', flex: 'none' }} />
+            </GlassLinkCard>
+          </div>
+        </motion.section>
+
         {/* ── Hero: weight progress ─────────────────────────────── */}
         <GlassCard variant="glow" sheen className="dash__hero" aria-labelledby="hero-title">
           <div className="hero__top">
@@ -220,126 +356,8 @@ export default function DashboardPage() {
         {/* ── Streak ────────────────────────────────────────────── */}
         <StreakCard className="dash__streak" />
 
-        {/* ── Quick actions ─────────────────────────────────────── */}
-        <motion.nav className="dash__actions glass card card--tight" variants={riseVariants} aria-label="Registro rápido">
-          <div className="quick">
-            <button type="button" className="quick__btn" onClick={() => setSheet('weight')}>
-              <span className="quick__icon icon-tile--accent">
-                <Scale aria-hidden="true" />
-              </span>
-              Peso
-            </button>
-            <button type="button" className="quick__btn" onClick={() => setSheet('water')}>
-              <span className="quick__icon icon-tile--water">
-                <Droplets aria-hidden="true" />
-              </span>
-              Agua
-            </button>
-            <button type="button" className="quick__btn" onClick={() => setSheet('steps')}>
-              <span className="quick__icon icon-tile--steps">
-                <Footprints aria-hidden="true" />
-              </span>
-              Pasos
-            </button>
-            <button type="button" className="quick__btn" onClick={() => navigate(model.active ? '/entreno/sesion' : '/entreno')}>
-              <span className="quick__icon icon-tile--accent" style={{ background: 'var(--control-fill-hover)', color: 'var(--text)' }}>
-                <Dumbbell aria-hidden="true" />
-              </span>
-              {model.active ? 'Continuar' : 'Entrenar'}
-            </button>
-          </div>
-        </motion.nav>
-
-        {/* ── Today ─────────────────────────────────────────────── */}
-        <motion.section className="dash__today rise-group" variants={liftVariants} aria-labelledby="today-title">
-          <div className="section-head">
-            <h2 id="today-title">Hoy</h2>
-            <span className="t-small">
-              {model.goalsMet}/{model.goalsTotal} objetivos
-            </span>
-          </div>
-          <div className="today-grid">
-            <div className="glass habit-card">
-              <div className="habit-card__head">
-                <Link to="/habitos?tab=agua" className="habit-card__name">
-                  Agua
-                </Link>
-                {model.waterToday >= profile.waterGoalMl && <StatusBadge tone="good" label="Hecho" />}
-              </div>
-              <div className="habit-card__ring">
-                <ProgressRing value={model.waterToday / profile.waterGoalMl} size={96} stroke={9} tone="water" label="Agua de hoy">
-                  <span className="t-num" style={{ fontWeight: 700, fontSize: 18 }}>
-                    {percent(model.waterToday, profile.waterGoalMl)}%
-                  </span>
-                </ProgressRing>
-              </div>
-              <div className="habit-card__foot">
-                <div>
-                  <div className="habit-card__value">{u.volume(model.waterToday)}</div>
-                  <div className="habit-card__goal">de {u.volume(profile.waterGoalMl)}</div>
-                </div>
-                <button type="button" className="mini-add" onClick={quickWater} aria-label={`Añadir ${u.volume(250)} de agua`}>
-                  <Plus aria-hidden="true" />
-                  {u.units === 'metric' ? '250' : '8,5'}
-                </button>
-              </div>
-            </div>
-
-            <div className="glass habit-card">
-              <div className="habit-card__head">
-                <Link to="/habitos?tab=pasos" className="habit-card__name">
-                  Pasos
-                </Link>
-                {model.stepsToday >= profile.stepsGoal && <StatusBadge tone="good" label="Hecho" />}
-              </div>
-              <div className="habit-card__ring">
-                <ProgressRing value={model.stepsToday / profile.stepsGoal} size={96} stroke={9} tone="steps" label="Pasos de hoy">
-                  <span className="t-num" style={{ fontWeight: 700, fontSize: 18 }}>
-                    {percent(model.stepsToday, profile.stepsGoal)}%
-                  </span>
-                </ProgressRing>
-              </div>
-              <div className="habit-card__foot">
-                <div>
-                  <div className="habit-card__value">
-                    <AnimatedNumber value={model.stepsToday} format={(n) => formatInt(n)} />
-                  </div>
-                  <div className="habit-card__goal">de {formatInt(profile.stepsGoal)}</div>
-                </div>
-                <button type="button" className="mini-add" onClick={() => setSheet('steps')} aria-label="Registrar pasos">
-                  <Plus aria-hidden="true" />
-                </button>
-              </div>
-            </div>
-
-            <GlassLinkCard to={model.active ? '/entreno/sesion' : '/entreno'} padded={false} rise={false} className="train-card">
-              <span className={`icon-tile ${model.completedToday.length ? 'icon-tile--good' : 'icon-tile--accent'}`}>
-                {model.completedToday.length ? <Check aria-hidden="true" /> : <Dumbbell aria-hidden="true" />}
-              </span>
-              <span className="grow">
-                <span className="list-row__title" style={{ display: 'block' }}>
-                  {model.active
-                    ? 'Entrenamiento en curso'
-                    : model.completedToday.length
-                      ? `Entrenamiento completado`
-                      : model.plannedToday
-                        ? `Toca entrenar${model.plannedLabel ? `: ${model.plannedLabel}` : ''}`
-                        : 'Día libre de entrenamiento'}
-                </span>
-                <span className="list-row__sub">
-                  {model.active
-                    ? 'Toca para continuar donde lo dejaste'
-                    : model.completedToday.length
-                      ? model.completedToday.map((w) => w.name).join(' · ')
-                      : model.plannedToday
-                        ? 'Cuando estés listo, empieza la sesión'
-                        : 'Descansar también es progresar'}
-                </span>
-              </span>
-              <ChevronRight aria-hidden="true" style={{ width: 18, color: 'var(--text-3)', flex: 'none' }} />
-            </GlassLinkCard>
-          </div>
-        </motion.section>
+        {/* ── Today's tip ───────────────────────────────────────── */}
+        <TipCard className="dash__tip" />
 
         {/* ── Week ──────────────────────────────────────────────── */}
         <GlassLinkCard to="/calendario" className="dash__week" aria-label="Abrir calendario">
@@ -377,6 +395,8 @@ export default function DashboardPage() {
           </div>
         </GlassLinkCard>
 
+        {/* ── Body estimates ────────────────────────────────────── */}
+        <BodySnapshotCard className="dash__body" />
         {/* ── Next milestone ────────────────────────────────────── */}
         {model.next && (
           <GlassLinkCard to="/hitos" className="dash__next" aria-label={`Próximo hito: ${model.next.def.name}`}>
@@ -399,11 +419,6 @@ export default function DashboardPage() {
           </GlassLinkCard>
         )}
 
-        {/* ── Today's tip ───────────────────────────────────────── */}
-        <TipCard className="dash__tip" />
-
-        {/* ── Body estimates ────────────────────────────────────── */}
-        <BodySnapshotCard className="dash__body" />
       </div>
 
       <WeightSheet open={sheet === 'weight'} onClose={() => setSheet(null)} units={profile.units} lastKg={current?.kg} />

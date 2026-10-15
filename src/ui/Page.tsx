@@ -17,7 +17,7 @@ interface PageHeadProps {
   eyebrow?: ReactNode;
   subtitle?: ReactNode;
   actions?: ReactNode;
-  /** Short word set large in the display face (decorative; replaces the eyebrow). */
+  /** Short word set in the brand face above the title (decorative; replaces the eyebrow). */
   display?: string;
   /** Small handwritten note under the title. */
   note?: string;
@@ -36,11 +36,9 @@ export function PageHead({ title, eyebrow, subtitle, actions, display, note }: P
             </p>
           )
         )}
-        <h1 className="t-title">{title}</h1>
+        <h1 className="page-head__title">{title}</h1>
         {subtitle && <p className="page-head__sub">{subtitle}</p>}
-        {note && (
-          <p className="hand page-head__note">{note}</p>
-        )}
+        {note && <p className="hand page-head__note">{note}</p>}
       </div>
       {actions && <div className="hstack">{actions}</div>}
     </motion.header>

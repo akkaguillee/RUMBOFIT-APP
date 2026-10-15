@@ -37,17 +37,17 @@
 }
 
 :root[data-theme='light'] .mascot {
-  --mascot-mid: #ebe8ec;
-  --mascot-lo: #c4bec7;
-  --mascot-edge: #a29aa6;
+  --mascot-mid: #e9e7f0;
+  --mascot-lo: #c3bfd0;
+  --mascot-edge: #a19bb3;
   --mascot-ink: #15121a;
   --mascot-rim-mid: 0.3;
   --mascot-rim-edge: 0.85;
   --mascot-glow-a: 0.34;
   --mascot-glow-b: 0.14;
-  --mascot-shadow: #50162a;
+  --mascot-shadow: #2a1d52;
   --mascot-shadow-a: 0.32;
-  --mascot-edge-line: rgba(80, 22, 42, 0.1);
+  --mascot-edge-line: rgba(42, 29, 82, 0.1);
 }
 
 .mascot__svg {

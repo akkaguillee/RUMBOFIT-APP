@@ -54,7 +54,7 @@ function useInteractiveField(canvasRef: RefObject<HTMLCanvasElement | null>) {
     let ox = 0;
     let oy = 0;
 
-    let accent: RGB = [229, 57, 69];
+    let accent: RGB = [139, 92, 246];
     let dark = true;
     let enabled = true;
 
@@ -132,8 +132,9 @@ function useInteractiveField(canvasRef: RefObject<HTMLCanvasElement | null>) {
         if (now - ripples[i]!.start > RIPPLE_LIFE) ripples.splice(i, 1);
       }
 
-      const baseAlpha = dark ? 0.075 : 0.11;
-      const base = dark ? '255,255,255' : '40,24,32';
+      // At rest the field is a faint texture (it sits behind text); it only shows up around the finger or pointer.
+      const baseAlpha = dark ? 0.032 : 0.05;
+      const base = dark ? '255,255,255' : '20,18,27';
       ctx.fillStyle = `rgba(${base},${baseAlpha})`;
       ctx.beginPath();
       const lit: [number, number, number, number][] = [];
@@ -184,10 +185,10 @@ function useInteractiveField(canvasRef: RefObject<HTMLCanvasElement | null>) {
       for (const [x, y, e] of lit) {
         const r = 0.9 + e * 1.7;
         const mix = Math.min(1, e * 1.3);
-        const cr = Math.round((dark ? 255 : 40) * (1 - mix) + ar * mix);
-        const cg = Math.round((dark ? 255 : 24) * (1 - mix) + ag * mix);
-        const cb = Math.round((dark ? 255 : 32) * (1 - mix) + ab * mix);
-        ctx.fillStyle = `rgba(${cr},${cg},${cb},${baseAlpha + e * 0.8})`;
+        const cr = Math.round((dark ? 255 : 20) * (1 - mix) + ar * mix);
+        const cg = Math.round((dark ? 255 : 18) * (1 - mix) + ag * mix);
+        const cb = Math.round((dark ? 255 : 27) * (1 - mix) + ab * mix);
+        ctx.fillStyle = `rgba(${cr},${cg},${cb},${baseAlpha + e * 0.7})`;
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
         ctx.fill();

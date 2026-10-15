@@ -7,6 +7,7 @@ import { formatDate, formatMinutes, todayKey, weekdayIndex, WEEKDAY_LABELS } fro
 import { MUSCLE_GROUPS, muscleShort } from '@/domain/training/catalog';
 import type { MuscleGroup, PlanDay, Profile, WorkoutExercise } from '@/domain/types';
 import { Button } from '@/ui/Button';
+import { cheer } from '@/ui/cheer';
 import { GlassCard } from '@/ui/GlassCard';
 import { SelectField, TextField } from '@/ui/Field';
 import { Sheet } from '@/ui/Sheet';
@@ -358,6 +359,7 @@ function PastWorkoutSheet({ open, onClose }: { open: boolean; onClose: () => voi
     try {
       await logPastWorkout({ name, date, durationSec: sec, exercises: cleaned });
       toast('Sesión registrada');
+      cheer();
       reset();
       onClose();
     } catch (e) {

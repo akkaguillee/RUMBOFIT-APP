@@ -1,65 +1,65 @@
 /* ──────────────────────────────────────────────────────────────────────
-   RUMBO identity: deep black and charcoal, white type, fluorescent lime used
-   strategically (primary actions, active indicators, key figures, charts and
-   progress), yellow for halfway, red for unfavourable. Restrained glass and
-   shadows, generous radii and negative space. Loaded after the base layers
-   so it refines them without touching component structure.
+   RUMBO identity: deep blacks with three clear surface levels, white type,
+   violet → lavender gradients for the brand and primary actions, green /
+   amber / red only for status and progress. Matte cards with a fine light
+   edge, discreet shadows, generous radii and negative space; blur is kept
+   for the navigation and sheets that float over content. Loaded after the
+   base layers so it refines them without touching component structure.
    ────────────────────────────────────────────────────────────────────── */
 
 :root {
-  --radius-xl: 26px;
-  --radius-2xl: 32px;
   --weight-bold: 760;
   --tracking-display: -0.04em;
 }
 
-/* Neutral liquid-glass tints (the old ones leaned red in the light theme). */
-:root[data-theme='light'] {
-  --lg-fill: rgba(255, 255, 255, 0.8);
-  --lg-fill-hover: #fff;
-  --lg-hi: #fff;
-  --lg-lo: rgba(16, 18, 12, 0.04);
-  --lg-rim: rgba(16, 18, 12, 0.09);
-  --lg-drop: 0 8px 18px -12px rgba(16, 18, 12, 0.22);
-  --lg-lens: linear-gradient(180deg, #fff, #fbfbf8);
-  --lg-lens-shadow:
-    inset 0 0 0 1px rgba(16, 18, 12, 0.06),
-    0 1px 2px rgba(16, 18, 12, 0.1),
-    0 6px 14px -6px rgba(16, 18, 12, 0.2);
-}
-
+/* Neutral control tints (lenses, fields, chips) per theme. */
 :root,
 :root[data-theme='dark'] {
   --lg-fill: rgba(255, 255, 255, 0.05);
   --lg-fill-hover: rgba(255, 255, 255, 0.085);
-  --lg-hi: rgba(255, 255, 255, 0.1);
-  --lg-lo: rgba(255, 255, 255, 0.03);
+  --lg-hi: rgba(255, 255, 255, 0.08);
+  --lg-lo: rgba(255, 255, 255, 0.02);
   --lg-rim: rgba(255, 255, 255, 0.07);
-  --lg-lens: linear-gradient(180deg, #2a2b29, #222321);
+  --lg-drop: 0 8px 20px -14px rgba(0, 0, 0, 0.8);
+  --lg-lens: linear-gradient(180deg, #ffffff, #ecebf2);
+  --lg-lens-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 6px 16px -8px rgba(0, 0, 0, 0.7);
+  --lens-ink: #14121b;
+}
+
+:root[data-theme='light'] {
+  --lg-fill: rgba(20, 18, 27, 0.04);
+  --lg-fill-hover: rgba(20, 18, 27, 0.07);
+  --lg-hi: rgba(255, 255, 255, 0.9);
+  --lg-lo: rgba(20, 18, 27, 0.03);
+  --lg-rim: rgba(20, 18, 27, 0.08);
+  --lg-drop: 0 8px 18px -14px rgba(28, 20, 60, 0.3);
+  --lg-lens: linear-gradient(180deg, #1d1a28, #14121b);
   --lg-lens-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
-    0 6px 16px -6px rgba(0, 0, 0, 0.7);
+    0 6px 14px -8px rgba(28, 20, 60, 0.45);
+  --lens-ink: #ffffff;
 }
 
 /* ── Type ───────────────────────────────────────────────────────────── */
 
-/* Krophed: capitals-only display face. Only applied to texts it can set in
-   full (see Display / fitsKrophed); never synthesised bold or italic. */
+/* Krophed: the RUMBO logotype face, capitals only. Only applied to texts it
+   can set in full (see Display / fitsKrophed); never synthesised. */
 .display {
   font-family: var(--font-display);
   font-weight: 500;
   font-synthesis: none;
-  letter-spacing: 0.01em;
-  line-height: 0.92;
+  letter-spacing: 0.02em;
+  line-height: 1;
   text-transform: uppercase;
 }
 
 /* Text Krophed cannot set (accents, ñ…): the sans-serif in heavy capitals. */
 .display-fallback {
   font-weight: 800;
-  letter-spacing: 0.02em;
-  line-height: 0.95;
+  letter-spacing: 0.03em;
+  line-height: 1;
   text-transform: uppercase;
 }
 
@@ -74,81 +74,156 @@
 }
 
 .t-title {
-  font-weight: 780;
-  letter-spacing: -0.035em;
+  font-weight: 760;
+  letter-spacing: -0.03em;
 }
 
 .t-eyebrow {
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
 }
 
-/* Key figures in lime (dark) / ink (light): the eye lands on the number. */
-:root[data-theme='dark'] .t-hero,
-:root[data-theme='dark'] .kcal-hero__num {
-  color: var(--accent-text);
+/* Key figures: the eye lands on the number. */
+.t-hero {
+  font-weight: 780;
+  letter-spacing: -0.05em;
+}
+
+/* Brand gradient text (one moment per screen at most). */
+.brand-text {
+  background: var(--brand-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .brand-text {
+    color: var(--accent-text);
+  }
 }
 
 /* ── Surfaces ───────────────────────────────────────────────────────── */
 
-.glass::after {
-  opacity: 0.35;
+/* Cards are matte: an almost opaque panel with a fine top light. Blur stays
+   on what floats over content (navigation, sheets), where it reads. */
+.glass {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.022), transparent 42%),
+    var(--glass-fill);
 }
 
+:root[data-theme='light'] .glass {
+  background: var(--glass-fill);
+}
+
+.glass::after {
+  opacity: 0.3;
+}
+
+.glass--strong {
+  background: var(--glass-fill-strong);
+}
+
+.glass--nav,
+.glass--sheet {
+  -webkit-backdrop-filter: blur(var(--blur-lg)) saturate(180%);
+  backdrop-filter: blur(var(--blur-lg)) saturate(180%);
+}
+
+.glass--nav {
+  background: var(--glass-fill-nav);
+}
+
+.glass--sheet {
+  background: var(--glass-fill-sheet);
+}
+
+/* Hero surfaces: a violet light leak from the top corner. */
 .glass--glow {
   background:
-    radial-gradient(90% 70% at 100% 0%, color-mix(in srgb, var(--acc) 9%, transparent), transparent 62%),
+    radial-gradient(110% 80% at 100% 0%, color-mix(in srgb, var(--acc) 20%, transparent), transparent 60%),
+    radial-gradient(70% 60% at 0% 100%, color-mix(in srgb, var(--acc-lav) 6%, transparent), transparent 70%),
     var(--glass-fill);
   box-shadow:
     var(--glass-inner),
-    var(--glass-shadow);
+    var(--glass-shadow),
+    0 30px 70px -44px var(--accent-glow);
 }
 
 :root[data-theme='light'] .glass--glow {
   background:
-    radial-gradient(90% 70% at 100% 0%, color-mix(in srgb, var(--acc) 16%, transparent), transparent 62%),
+    radial-gradient(110% 80% at 100% 0%, color-mix(in srgb, var(--acc) 12%, transparent), transparent 60%),
+    radial-gradient(70% 60% at 0% 100%, color-mix(in srgb, var(--acc-lav) 18%, transparent), transparent 70%),
     var(--glass-fill);
 }
 
-/* The periodic sheen sweep reads as a gimmick on matte charcoal. */
+/* The periodic sheen sweep stays subtle on matte panels. */
 .glass__sheen::before {
-  opacity: 0.25;
+  opacity: 0.22;
+}
+
+/* Inner tiles (stats, rows inside a card) sit one level up. */
+.tile {
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+/* Featured surface: lavender-filled card with dark ink, one per screen. */
+.card--feature {
+  color: #17112b;
+  background:
+    radial-gradient(120% 120% at 100% 0%, rgba(255, 255, 255, 0.35), transparent 55%),
+    linear-gradient(140deg, var(--acc-lav) 0%, color-mix(in srgb, var(--acc-hi) 70%, var(--acc-lav)) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 22px 44px -26px var(--accent-glow);
+}
+
+.card--feature::before,
+.card--feature::after {
+  display: none;
 }
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
 
 .btn--primary {
   color: var(--on-accent);
-  background: var(--accent);
+  background: var(--accent-grad);
   font-weight: 700;
-  box-shadow: 0 10px 24px -14px var(--accent-glow);
 }
 
 .btn--primary::after {
-  opacity: 0.25;
+  opacity: 0.35;
 }
 
 .tab__pill,
 .icon-btn--accent,
 .btn--primary {
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    0 10px 24px -14px var(--accent-glow);
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12),
+    0 12px 26px -14px var(--accent-glow);
 }
 
 @media (hover: hover) {
   .btn--primary:hover:not(:disabled) {
-    background: var(--accent-strong);
+    filter: brightness(1.06);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      0 14px 30px -14px var(--accent-glow);
+      inset 0 1px 0 rgba(255, 255, 255, 0.34),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.12),
+      0 16px 32px -14px var(--accent-glow);
   }
 }
 
 .btn--secondary {
+  background: var(--control-fill);
   box-shadow: inset 0 0 0 1px var(--field-border);
 }
 
-/* Avatar: a dark disc with a lime ring instead of a solid accent blob. */
+/* Avatar: a dark disc with an accent ring instead of a solid blob. */
 .avatar-btn {
   color: var(--text);
   background: var(--surface-2);
@@ -157,80 +232,134 @@
     0 6px 16px -10px var(--accent-glow);
 }
 
+/* Top-bar buttons: quiet, round, hairline. */
+.topbar .icon-btn,
+.topbar .avatar-btn {
+  width: 42px;
+  height: 42px;
+}
+
 /* ── Navigation ─────────────────────────────────────────────────────── */
 
-:root[data-theme='dark'] .tabbar__panel {
-  background: rgba(12, 13, 12, 0.82);
+.tab__pill {
+  background: var(--accent-grad);
 }
 
 .tab__pill::after,
 .icon-btn--accent::after {
-  opacity: 0.5;
-}
-
-/* Tabs inside pages: the active one is a lime pill (navigation = lime). */
-.segmented__item[aria-selected='true'] {
-  color: var(--on-accent);
-}
-
-.segmented__item[aria-selected='true'] .segmented__thumb {
-  background: var(--accent);
-  box-shadow: 0 6px 16px -10px var(--accent-glow);
-}
-
-.segmented__item[aria-selected='true'] .segmented__thumb::after {
-  display: none;
+  opacity: 0.45;
 }
 
 .side-link__active {
-  background: var(--glass-fill-strong);
+  background:
+    radial-gradient(120% 140% at 0% 50%, var(--accent-soft), transparent 70%),
+    var(--glass-fill-strong);
+}
+
+/* Tabs and segmented controls inside pages: a high-contrast lens slides
+   between options (white on dark, ink on light), so violet stays for the
+   main navigation and primary actions. */
+.segmented__item[aria-selected='true'],
+.segmented__item[aria-pressed='true'],
+.segmented__item[aria-checked='true'] {
+  color: var(--lens-ink);
+}
+
+.segmented__thumb,
+:root[data-theme='light'] .segmented__thumb {
+  background: var(--lg-lens);
+  box-shadow: var(--lg-lens-shadow);
+}
+
+.segmented__thumb::after {
+  display: none;
 }
 
 /* ── Status and progress ────────────────────────────────────────────── */
 
+.progress__fill {
+  background: linear-gradient(90deg, var(--acc-lo), var(--acc-hi));
+}
+
+.progress__fill--good {
+  background: linear-gradient(90deg, var(--good-deep), var(--good));
+}
+
 .progress__fill::after {
-  opacity: 0.4;
+  opacity: 0.35;
 }
 
 .choice[aria-checked='true'] {
   background-color: color-mix(in srgb, var(--accent) 10%, var(--lg-fill));
 }
 
-/* ── Page head: Krophed word, title, note ───────────────────────────── */
+.switch[aria-checked='true'] {
+  background: var(--accent-grad);
+}
+
+/* ── Page head: brand word, title, note ─────────────────────────────── */
+
+.page-head {
+  margin: var(--space-1) 0 var(--space-5);
+}
 
 .page-head__display {
   display: block;
-  font-size: 2.6rem;
-  /* Fills the column: the font size is derived from the word's width in em. */
-  font-size: min(var(--display-max, 3.4rem), calc(100cqi / var(--display-em, 6)));
-  color: var(--text);
-  margin: 0 0 10px;
+  margin: 0 0 8px;
+  font-size: var(--fs-brand);
   white-space: nowrap;
 }
 
-.page-head__text {
-  container-type: inline-size;
-  flex: 1;
+.page-head__display.display {
+  background: var(--brand-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-@supports not (width: 1cqi) {
-  .page-head__display {
-    font-size: min(var(--display-max, 3.4rem), calc((100vw - 2 * var(--gutter)) / var(--display-em, 6)));
-  }
+:root[data-theme='light'] .page-head__display.display {
+  background: linear-gradient(120deg, var(--acc-deep), var(--acc-fill-l) 70%, var(--acc-hi));
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
-.page-head__display .display-dot {
-  color: var(--accent);
+.page-head__title {
+  font-size: var(--fs-title);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--title);
 }
 
-:root[data-theme='light'] .page-head__display .display-dot {
-  color: var(--acc-text-l);
+/* Without the brand word the title leads (sheets of sub-pages, sessions). */
+.page-head:not(:has(.page-head__display)) .page-head__title {
+  font-size: var(--text-2xl);
+}
+
+.page-head__sub {
+  margin-top: 4px;
+  font-size: var(--text-md);
+  line-height: 1.4;
+  color: var(--text-2);
+  max-width: 52ch;
 }
 
 .page-head__note {
   display: inline-block;
   margin-top: 8px;
-  font-size: 1.3rem;
-  transform: rotate(-3deg);
+  font-size: 1.15rem;
+  transform: rotate(-2deg);
   transform-origin: left center;
+}
+
+/* Section headings inside a page: sans, compact, one line. */
+.section-head h2 {
+  font-size: var(--fs-section);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.015em;
+}
+
+.card__title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
 }

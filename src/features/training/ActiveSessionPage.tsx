@@ -20,6 +20,7 @@ import { completedSets, personalBestsIn, totalSets, workoutElapsedSec, workoutVo
 import type { Workout } from '@/domain/types';
 import { formatInt, formatNumber } from '@/domain/units';
 import { Button, ButtonLink, IconButton } from '@/ui/Button';
+import { cheer } from '@/ui/cheer';
 import { ConfirmDialog } from '@/ui/ConfirmDialog';
 import { EmptyState } from '@/ui/EmptyState';
 import { TextAreaField, TextField } from '@/ui/Field';
@@ -253,6 +254,7 @@ function FinishSheet({ open, onClose, workout, elapsed, stats, onFinished }: Fin
     try {
       const w = await finishWorkout(workout.id!, { rpe, notes });
       onFinished(w);
+      cheer();
     } catch (e) {
       toastError(e);
     } finally {
