@@ -3,7 +3,7 @@
   "id": "v1",
   "at": 18,
   "text": "Empezar es fácil. Lo difícil es mantenerlo.",
-  "dur": 3.2,
+  "dur": 2.68,
   "words": [
    {
     "w": "Empezar",
@@ -11,35 +11,36 @@
    },
    {
     "w": "es",
-    "f": 35
+    "f": 33
    },
    {
     "w": "fácil.",
-    "f": 40
+    "f": 39
    },
    {
     "w": "Lo",
-    "f": 65
+    "f": 57
    },
    {
     "w": "difícil",
-    "f": 69
+    "f": 62
    },
    {
     "w": "es",
-    "f": 84
+    "f": 76
    },
    {
     "w": "mantenerlo.",
-    "f": 88
+    "f": 81
    }
-  ]
+  ],
+  "voice": "elevenlabs"
  },
  {
   "id": "v2",
   "at": 158,
   "text": "Por eso existe rumbo.",
-  "dur": 1.4,
+  "dur": 1.3,
   "words": [
    {
     "w": "Por",
@@ -47,23 +48,24 @@
    },
    {
     "w": "eso",
-    "f": 165
+    "f": 164
    },
    {
     "w": "existe",
-    "f": 172
+    "f": 173
    },
    {
     "w": "rumbo.",
-    "f": 185
+    "f": 187
    }
-  ]
+  ],
+  "voice": "elevenlabs"
  },
  {
   "id": "v3",
   "at": 252,
   "text": "Tu peso, tu tendencia y tu objetivo, claros de un vistazo.",
-  "dur": 3.39,
+  "dur": 3.28,
   "words": [
    {
     "w": "Tu",
@@ -71,35 +73,35 @@
    },
    {
     "w": "peso,",
-    "f": 256
+    "f": 258
    },
    {
     "w": "tu",
-    "f": 266
+    "f": 267
    },
    {
     "w": "tendencia",
-    "f": 270
+    "f": 273
    },
    {
     "w": "y",
-    "f": 289
+    "f": 287
    },
    {
     "w": "tu",
-    "f": 291
+    "f": 292
    },
    {
     "w": "objetivo,",
-    "f": 295
+    "f": 298
    },
    {
     "w": "claros",
-    "f": 314
+    "f": 316
    },
    {
     "w": "de",
-    "f": 327
+    "f": 326
    },
    {
     "w": "un",
@@ -107,15 +109,16 @@
    },
    {
     "w": "vistazo.",
-    "f": 335
+    "f": 337
    }
-  ]
+  ],
+  "voice": "elevenlabs"
  },
  {
   "id": "v4",
   "at": 429,
   "text": "Agua y pasos, día a día, sin complicaciones.",
-  "dur": 2.56,
+  "dur": 2.83,
   "words": [
    {
     "w": "Agua",
@@ -123,44 +126,44 @@
    },
    {
     "w": "y",
-    "f": 437
+    "f": 440
    },
    {
     "w": "pasos,",
-    "f": 439
+    "f": 447
    },
    {
     "w": "día",
-    "f": 452
+    "f": 463
    },
    {
     "w": "a",
-    "f": 458
-   },
-   {
-    "w": "día,",
-    "f": 460
-   },
-   {
-    "w": "sin",
     "f": 469
    },
    {
+    "w": "día,",
+    "f": 476
+   },
+   {
+    "w": "sin",
+    "f": 482
+   },
+   {
     "w": "complicaciones.",
-    "f": 474
+    "f": 488
    }
   ],
-  "speak": "Agua, y pasos, día a día, sin complicaciones."
+  "voice": "elevenlabs"
  },
  {
   "id": "v5",
   "at": 597,
   "text": "Registra cada serie y supera tus marcas.",
-  "dur": 2.51,
+  "dur": 2.53,
   "words": [
    {
     "w": "Registra",
-    "f": 597
+    "f": 598
    },
    {
     "w": "cada",
@@ -168,75 +171,77 @@
    },
    {
     "w": "serie",
-    "f": 622
+    "f": 624
    },
    {
     "w": "y",
-    "f": 633
-   },
-   {
-    "w": "supera",
     "f": 635
    },
    {
+    "w": "supera",
+    "f": 641
+   },
+   {
     "w": "tus",
-    "f": 648
+    "f": 656
    },
    {
     "w": "marcas.",
-    "f": 654
+    "f": 662
    }
-  ]
+  ],
+  "voice": "elevenlabs"
  },
  {
   "id": "v6",
   "at": 747,
   "text": "Cada día suma. Enciende tu racha y desbloquea hitos.",
-  "dur": 3.51,
+  "dur": 3.35,
   "words": [
    {
     "w": "Cada",
-    "f": 747
+    "f": 748
    },
    {
     "w": "día",
-    "f": 757
+    "f": 759
    },
    {
     "w": "suma.",
-    "f": 765
+    "f": 766
    },
    {
     "w": "Enciende",
-    "f": 784
+    "f": 783
    },
    {
     "w": "tu",
-    "f": 800
+    "f": 799
    },
    {
     "w": "racha",
-    "f": 804
+    "f": 805
    },
    {
     "w": "y",
-    "f": 814
+    "f": 815
    },
    {
     "w": "desbloquea",
-    "f": 816
+    "f": 822
    },
    {
     "w": "hitos.",
-    "f": 836
+    "f": 837
    }
-  ]
+  ],
+  "voice": "elevenlabs"
  },
  {
   "id": "v7",
   "at": 897,
   "text": "Y Rumbi, tu compañero, te da un consejo pensado para ti cada día.",
-  "dur": 3.88,
+  "dur": 3.99,
   "words": [
    {
     "w": "Y",
@@ -244,98 +249,98 @@
    },
    {
     "w": "Rumbi,",
-    "f": 899
-   },
-   {
-    "w": "tu",
     "f": 911
    },
    {
+    "w": "tu",
+    "f": 946
+   },
+   {
     "w": "compañero,",
-    "f": 915
+    "f": 950
    },
    {
     "w": "te",
-    "f": 935
+    "f": 963
    },
    {
     "w": "da",
-    "f": 939
+    "f": 967
    },
    {
     "w": "un",
-    "f": 944
+    "f": 971
    },
    {
     "w": "consejo",
-    "f": 948
+    "f": 975
    },
    {
     "w": "pensado",
-    "f": 964
+    "f": 985
    },
    {
     "w": "para",
-    "f": 979
+    "f": 995
    },
    {
     "w": "ti",
-    "f": 988
+    "f": 1002
    },
    {
     "w": "cada",
-    "f": 992
+    "f": 1006
    },
    {
     "w": "día.",
-    "f": 1001
+    "f": 1013
    }
-  ]
+  ],
+  "voice": "elevenlabs"
  },
  {
   "id": "v8",
   "at": 1062,
   "text": "Rumbo. Ahora es el momento de encontrar el tuyo.",
-  "dur": 2.92,
+  "dur": 2.98,
   "words": [
    {
     "w": "Rumbo.",
-    "f": 1062
+    "f": 1063
    },
    {
     "w": "Ahora",
-    "f": 1083
+    "f": 1088
    },
    {
     "w": "es",
-    "f": 1092
-   },
-   {
-    "w": "el",
-    "f": 1096
-   },
-   {
-    "w": "momento",
     "f": 1100
    },
    {
+    "w": "el",
+    "f": 1105
+   },
+   {
+    "w": "momento",
+    "f": 1109
+   },
+   {
     "w": "de",
-    "f": 1113
+    "f": 1121
    },
    {
     "w": "encontrar",
-    "f": 1117
+    "f": 1126
    },
    {
     "w": "el",
-    "f": 1135
+    "f": 1138
    },
    {
     "w": "tuyo.",
-    "f": 1138
+    "f": 1143
    }
   ],
-  "speak": "Ahora es el momento de encontrar el tuyo.",
-  "speakAt": 1083
+  "voice": "elevenlabs"
  }
 ]

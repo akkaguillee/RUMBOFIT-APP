@@ -1,10 +1,11 @@
 """
 RUMBO promo audio (40 s): original music, sound design and the Spanish voice-over.
 
-Everything is generated here, so every sound is ours to use:
-- music and effects are synthesised with numpy/scipy (120 BPM, A minor / C major);
-- the voice is Kokoro-82M (Apache-2.0), Spanish male voice "em_alex", run locally
-  with sherpa-onnx — dry, no reverb, only EQ here and gentle compression in the mix.
+- music and effects are synthesised here with numpy/scipy (120 BPM, A minor / C major);
+- the voice is the ElevenLabs take of each line in audio/voice/<id>.wav (see
+  audio/align_voice.py); a line without a take falls back to Kokoro-82M
+  (Apache-2.0, voice "em_alex") run locally with sherpa-onnx. Dry, no reverb:
+  only EQ here and gentle compression in the mix.
 Timings come from src/timeline.json (scenes, sound cues) and src/voice.json (lines).
 Outputs 48 kHz stereo stems in audio/stems/; audio/mux.sh mixes them with FFmpeg.
 """

@@ -126,9 +126,31 @@ export function Glass({ children, style, radius = 48 }: { children: ReactNode; s
 }
 
 /** iPhone-like frame holding real screenshots of the app. */
-export function Phone({ width, screens, style }: { width: number; screens: { src: string; opacity: number; y?: number }[]; style?: CSSProperties }) {
-  const h = width * 2.06;
+/**
+ * Phone mockup. By default the screens cover the display; with `fitWidth` they
+ * keep their full width (real 390-pt-wide captures, 1170 × 1992 px) and sit
+ * under a status bar, the space above filled with the capture's own top edge.
+ */
+export function Phone({
+  width,
+  screens,
+  style,
+  ratio = 2.06,
+  fitWidth = false,
+  shotAspect = 1992 / 1170,
+}: {
+  width: number;
+  screens: { src: string; opacity: number; y?: number }[];
+  style?: CSSProperties;
+  ratio?: number;
+  fitWidth?: boolean;
+  shotAspect?: number;
+}) {
+  const h = width * ratio;
   const bezel = width * 0.035;
+  const innerW = width - 2 * bezel;
+  const innerH = h - 2 * bezel;
+  const gap = fitWidth ? Math.max(0, innerH - innerW * shotAspect) : 0;
   return (
     <div
       style={{
@@ -143,13 +165,36 @@ export function Phone({ width, screens, style }: { width: number; screens: { src
       }}
     >
       <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: width * 0.13, overflow: 'hidden', background: '#08090d' }}>
-        {screens.map((s, i) => (
-          <Img
-            key={i}
-            src={staticFile(`ui/${s.src}.png`)}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', opacity: s.opacity, transform: `translateY(${s.y ?? 0}%)` }}
-          />
-        ))}
+        {screens.map((s, i) =>
+          fitWidth ? (
+            <div key={i} style={{ position: 'absolute', inset: 0, opacity: s.opacity }}>
+              {/* status-bar area: the capture's first rows stretched (plain background there) */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  height: gap + 2,
+                  backgroundImage: `url(${staticFile(`ui/${s.src}.png`)})`,
+                  backgroundSize: '100% 30000%',
+                  backgroundPosition: 'top',
+                }}
+              />
+              <Img
+                src={staticFile(`ui/${s.src}.png`)}
+                style={{ position: 'absolute', left: 0, top: gap, width: '100%', height: 'auto', transform: `translateY(${s.y ?? 0}%)` }}
+              />
+            </div>
+          ) : (
+            <Img
+              key={i}
+              src={staticFile(`ui/${s.src}.png`)}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', opacity: s.opacity, transform: `translateY(${s.y ?? 0}%)` }}
+            />
+          ),
+        )}
+        {fitWidth && gap > 0 && <StatusBar width={innerW} height={gap} />}
         <div
           style={{
             position: 'absolute',
@@ -166,6 +211,31 @@ export function Phone({ width, screens, style }: { width: number; screens: { src
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(115deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 32%, rgba(255,255,255,0) 70%, rgba(255,255,255,0.05) 100%)' }} />
       </div>
     </div>
+  );
+}
+
+/** Generic iOS-style status bar for the mockup (time, signal, Wi-Fi, battery). */
+function StatusBar({ width, height }: { width: number; height: number }) {
+  const u = width / 390; // points → px
+  const cy = Math.min(height / 2 + 4 * u, 26 * u);
+  return (
+    <svg style={{ position: 'absolute', left: 0, top: 0 }} width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+      <text x={34 * u} y={cy + 6 * u} fill="#fff" fontSize={16 * u} fontWeight={600} fontFamily="Inter, system-ui, sans-serif">
+        9:41
+      </text>
+      <g fill="#fff" transform={`translate(${width - 92 * u} ${cy - 6 * u})`}>
+        {[0, 1, 2, 3].map((k) => (
+          <rect key={k} x={k * 5 * u} y={(9 - 3 * k) * u} width={3.4 * u} height={(3 + 3 * k) * u} rx={0.8 * u} />
+        ))}
+        <path
+          transform={`translate(${26 * u} ${-0.5 * u}) scale(${u})`}
+          d="M7.7 9.6a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6Zm0-3.4c1.5 0 2.8.6 3.8 1.5l-1.1 1.1a3.9 3.9 0 0 0-5.4 0L3.9 7.7a5.4 5.4 0 0 1 3.8-1.5Zm0-3.4c2.4 0 4.6.9 6.2 2.5l-1.1 1.1a7.3 7.3 0 0 0-10.2 0L1.5 5.3a8.8 8.8 0 0 1 6.2-2.5Z"
+        />
+        <rect x={50 * u} y={0} width={24 * u} height={12 * u} rx={3.5 * u} fill="none" stroke="#fff" strokeOpacity={0.45} strokeWidth={1 * u} />
+        <rect x={52 * u} y={2 * u} width={17 * u} height={8 * u} rx={2 * u} />
+        <rect x={75 * u} y={4 * u} width={1.6 * u} height={4 * u} rx={0.8 * u} fillOpacity={0.45} />
+      </g>
+    </svg>
   );
 }
 

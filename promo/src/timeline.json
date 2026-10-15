@@ -73,17 +73,17 @@
     },
     {
       "type": "click",
-      "at": 32,
+      "at": 30,
       "gain": 0.6
     },
     {
       "type": "click",
-      "at": 62,
+      "at": 54,
       "gain": 0.6
     },
     {
       "type": "click",
-      "at": 81,
+      "at": 73,
       "gain": 0.6
     },
     {
@@ -116,11 +116,11 @@
     },
     {
       "type": "impact",
-      "at": 185
+      "at": 187
     },
     {
       "type": "chime",
-      "at": 186,
+      "at": 188,
       "count": 1
     },
     {
@@ -152,11 +152,11 @@
     },
     {
       "type": "pop",
-      "at": 270
+      "at": 273
     },
     {
       "type": "pop",
-      "at": 295
+      "at": 298
     },
     {
       "type": "check",
@@ -164,7 +164,7 @@
     },
     {
       "type": "shimmer",
-      "at": 335,
+      "at": 337,
       "gain": 0.6
     },
     {
@@ -180,14 +180,14 @@
     },
     {
       "type": "tick",
-      "at": 440,
+      "at": 448,
       "count": 12,
       "every": 3,
       "gain": 0.6
     },
     {
       "type": "chime",
-      "at": 470,
+      "at": 483,
       "count": 2,
       "every": 10
     },
@@ -217,15 +217,15 @@
     },
     {
       "type": "boop",
-      "at": 648
+      "at": 656
     },
     {
       "type": "shimmer",
-      "at": 654
+      "at": 662
     },
     {
       "type": "pop",
-      "at": 655,
+      "at": 663,
       "gain": 1.2
     },
     {
@@ -235,7 +235,7 @@
     },
     {
       "type": "ignite",
-      "at": 784
+      "at": 783
     },
     {
       "type": "tick",
@@ -251,15 +251,15 @@
     },
     {
       "type": "boop",
-      "at": 806
+      "at": 807
     },
     {
       "type": "pop",
-      "at": 816
+      "at": 822
     },
     {
       "type": "shimmer",
-      "at": 818,
+      "at": 824,
       "gain": 0.8
     },
     {
@@ -272,19 +272,19 @@
     },
     {
       "type": "pop",
-      "at": 933
+      "at": 961
     },
     {
       "type": "click",
-      "at": 948
+      "at": 975
     },
     {
       "type": "boop",
-      "at": 988
+      "at": 1002
     },
     {
       "type": "shimmer",
-      "at": 1001,
+      "at": 1013,
       "gain": 0.8
     },
     {
@@ -333,15 +333,15 @@
     },
     {
       "type": "boop",
-      "at": 648
+      "at": 656
     },
     {
       "type": "shimmer",
-      "at": 654
+      "at": 662
     },
     {
       "type": "pop",
-      "at": 655,
+      "at": 663,
       "gain": 1.2
     },
     {
@@ -351,7 +351,7 @@
     },
     {
       "type": "ignite",
-      "at": 784
+      "at": 783
     },
     {
       "type": "tick",
@@ -367,15 +367,15 @@
     },
     {
       "type": "boop",
-      "at": 806
+      "at": 807
     },
     {
       "type": "pop",
-      "at": 816
+      "at": 822
     },
     {
       "type": "shimmer",
-      "at": 818,
+      "at": 824,
       "gain": 0.8
     },
     {
@@ -388,19 +388,19 @@
     },
     {
       "type": "pop",
-      "at": 933
+      "at": 961
     },
     {
       "type": "click",
-      "at": 948
+      "at": 975
     },
     {
       "type": "boop",
-      "at": 988
+      "at": 1002
     },
     {
       "type": "shimmer",
-      "at": 1001,
+      "at": 1013,
       "gain": 0.8
     },
     {

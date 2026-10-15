@@ -1,7 +1,7 @@
 import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
 import { sceneLength, wordAt } from '../design';
 import { Rumbi, type RumbiEvent } from '../Rumbi';
-import { Backdrop, clamp, LogoLockup, prog, useSpring, Words } from '../ui';
+import { Backdrop, clamp, LogoLockup, Phone, prog, useSpring, Words } from '../ui';
 
 const LEN = sceneLength('end');
 const W = (i: number) => wordAt('v8', i, 'end'); // (Rumbo.) Ahora es el momento de encontrar el tuyo.
@@ -16,8 +16,9 @@ const RUMBI: RumbiEvent[] = [
 
 /**
  * End card: a compact, centred brand lockup — Rumbi, the glass medallion with
- * the runner and a short wordmark, then the tagline. Stack centred in SAFE,
- * spacing from the 8-pt scale. The last frames hold still (loop-friendly).
+ * the runner and a short wordmark, the tagline — and the real app on a phone
+ * rising from the bottom edge. Spacing from the 8-pt scale. The last frames
+ * hold still (loop-friendly).
  */
 export function End() {
   const frame = useCurrentFrame();
@@ -25,6 +26,9 @@ export function End() {
   const ring = prog(frame, 4, 34);
   const glowIn = 1 - prog(frame, 0, 16); // light carried over from the previous scene
   const breathe = 0.85 + 0.08 * Math.sin(frame / 22);
+  // The phone rises once the lockup has landed and settles well before the last frame.
+  const phone = useSpring(26, { damping: 19, stiffness: 80 });
+  const drift = -14 * prog(frame, 40, LEN);
   return (
     <AbsoluteFill>
       <Backdrop glow={breathe} glowY={0.43} />
@@ -38,9 +42,9 @@ export function End() {
           }}
         />
       )}
-      <div style={{ position: 'absolute', left: 0, right: 0, top: 380, display: 'flex', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 262, display: 'flex', justifyContent: 'center' }}>
         <div style={{ opacity: clamp(rumbi * 1.5), transform: `translateY(${(1 - rumbi) * -80}px) scale(${0.6 + 0.4 * rumbi})` }}>
-          <Rumbi size={180} events={RUMBI} seed={105} />
+          <Rumbi size={150} events={RUMBI} seed={105} />
         </div>
       </div>
 
@@ -50,7 +54,7 @@ export function End() {
           style={{
             position: 'absolute',
             left: 540 - 110 - ring * 260,
-            top: 720 - 110 - ring * 260,
+            top: 535 - 110 - ring * 260,
             width: 220 + ring * 520,
             height: 220 + ring * 520,
             borderRadius: '50%',
@@ -58,19 +62,41 @@ export function End() {
           }}
         />
       )}
-      <div style={{ position: 'absolute', left: 0, right: 0, top: 610, display: 'flex', justifyContent: 'center' }}>
-        <LogoLockup size={210} at={0} sweepAt={98} id="end-lockup" />
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 450, display: 'flex', justifyContent: 'center' }}>
+        <LogoLockup size={170} at={0} sweepAt={98} id="end-lockup" />
       </div>
 
-      <div style={{ position: 'absolute', left: 96, right: 96, top: 1090 }}>
-        <Words text="Ahora es el momento" frames={[W(1), W(2), W(3), W(4)]} size={68} weight={700} align="center" lineHeight={1.08} />
-        <Words text="de encontrar el tuyo." frames={[W(5), W(6), W(7), W(8)]} size={68} weight={700} align="center" accent={[2, 3]} lineHeight={1.08} />
+      <div style={{ position: 'absolute', left: 96, right: 96, top: 790 }}>
+        <Words text="Ahora es el momento" frames={[W(1), W(2), W(3), W(4)]} size={62} weight={700} align="center" lineHeight={1.08} />
+        <Words text="de encontrar el tuyo." frames={[W(5), W(6), W(7), W(8)]} size={62} weight={700} align="center" accent={[2, 3]} lineHeight={1.08} />
+      </div>
+
+      {/* The real app (dark theme screenshot) on a phone, cropped by the bottom edge. */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 540 - 240,
+          top: 1040,
+          width: 480,
+          height: 893,
+          perspective: 1600,
+          opacity: clamp(phone * 1.6),
+          transform: `translateY(${(1 - phone) * 720 + drift}px)`,
+        }}
+      >
+        <Phone
+          width={480}
+          ratio={1.86}
+          fitWidth
+          screens={[{ src: 'dash-top', opacity: 1 }]}
+          style={{ left: 0, top: 0, transform: `rotateX(${(1 - phone) * 22}deg)`, transformOrigin: '50% 0%' }}
+        />
       </div>
       <div
         style={{
           position: 'absolute',
           left: 540 - 28,
-          top: 1278,
+          top: 950,
           width: 56,
           height: 3,
           borderRadius: 2,
