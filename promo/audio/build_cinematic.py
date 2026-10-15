@@ -334,7 +334,8 @@ def reverse_into(t, g, length=1.2):
 
 
 # Hook: heartbeat (frames 0/9, 38/47, 76/85), the light, Rumbi, the words, the measuring rule.
-for b in (0, 38, 76):
+# Sounded one frame late: a thump on the very first sample is distorted by AAC encoders.
+for b in (1, 39, 77):
     add(sfx, fx_heart(True), fs(b), 0.9)
     add(sfx, fx_heart(False), fs(b + 9), 0.9)
 add(sfx, fx_glow(hz('A5'), 1.8), fs(10), 0.5)

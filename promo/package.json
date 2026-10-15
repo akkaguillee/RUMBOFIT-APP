@@ -12,7 +12,7 @@
     "build": "npm run audio && npm run render:video && npm run mux",
     "audio:cine": "python3 audio/build_cinematic.py",
     "render:cine": "remotion render src/index.ts RumboCinematic out/cine-silent.mp4 --codec=h264 --crf=16 --pixel-format=yuv420p --concurrency=4",
-    "mux:cine": "STEMS=audio/stems-cine VIDEO=out/cine-silent.mp4 OUT=out/RUMBO-cinematico-9x16.mp4 LEN=84 bash audio/mux.sh",
+    "mux:cine": "STEMS=audio/stems-cine VIDEO=out/cine-silent.mp4 OUT=out/RUMBO-cinematico-9x16.mp4 LEN=84 MAXRATE=8 bash audio/mux.sh",
     "build:cine": "npm run audio:cine && npm run render:cine && npm run mux:cine"
   },
   "dependencies": {

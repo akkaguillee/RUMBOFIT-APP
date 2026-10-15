@@ -47,13 +47,22 @@ const LINES = [
  */
 export function Effort() {
   const frame = useCurrentFrame();
-  // Camera: each item centred when its word is spoken.
-  const pan = interpolate(
-    frame,
-    [0, ...ITEMS.map((it) => it.at + 6), LEN],
-    [X[0]! - 540 - 300, ...X.map((x) => x - 540), X[X.length - 1]! - 540 + 80],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: easeInOut },
-  );
+  // Camera: each item centred when its word is spoken; it drifts on that item and
+  // only travels in the last 20 frames before the next word, so the frame is never empty.
+  const keysT = [0];
+  const keysX = [X[0]! - 540 - 300];
+  ITEMS.forEach((it, i) => {
+    keysT.push(it.at + 6);
+    keysX.push(X[i]! - 540);
+    const next = ITEMS[i + 1];
+    if (next && next.at - 14 > it.at + 10) {
+      keysT.push(next.at - 14);
+      keysX.push(X[i]! - 540 + 60);
+    }
+  });
+  keysT.push(LEN);
+  keysX.push(X[X.length - 1]! - 540 + 80);
+  const pan = interpolate(frame, keysT, keysX, { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: easeInOut });
   const out = prog(frame, LEN - 14, LEN, easeInOut);
   const rumbiIn = prog(frame, 6, 30);
   const flame = prog(frame, w7(6) + 2, w7(6) + 18);
