@@ -1,8 +1,9 @@
 import { AlertTriangle, ChevronRight, Info, Pencil, Plus, Search, Trash2, Trophy } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { useCompletedWorkouts, useExerciseLibrary } from '@/db/hooks';
+import { useCompletedWorkouts, useExerciseLibrary, useProfile } from '@/db/hooks';
 import { deleteExercise } from '@/db/repos/training';
 import { formatDate, formatDuration } from '@/domain/dates';
+import { figureFor } from '@/domain/training/anatomy';
 import { EXERCISE_CATALOG, MEASURE_LABELS, MUSCLE_GROUPS, muscleLabel } from '@/domain/training/catalog';
 import { exerciseRecords } from '@/domain/training/stats';
 import type { Exercise, MuscleGroup } from '@/domain/types';
@@ -12,6 +13,7 @@ import { ConfirmDialog } from '@/ui/ConfirmDialog';
 import { GlassCard } from '@/ui/GlassCard';
 import { Sheet } from '@/ui/Sheet';
 import { toast } from '@/ui/toast';
+import { ExerciseAnatomy } from './bodymap/ExerciseAnatomy';
 import { ExerciseFormSheet } from './ExerciseFormSheet';
 
 const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -19,6 +21,7 @@ const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLo
 export function ExercisesPanel() {
   const { list } = useExerciseLibrary();
   const workouts = useCompletedWorkouts();
+  const profile = useProfile();
   const [q, setQ] = useState('');
   const [muscle, setMuscle] = useState<MuscleGroup | 'all' | 'custom'>('all');
   const [detail, setDetail] = useState<Exercise | null>(null);
@@ -120,7 +123,7 @@ export function ExercisesPanel() {
       >
         {detail && (
           <div className="vstack">
-            {detail.secondary?.length ? <p className="t-small">También trabaja: {detail.secondary.map(muscleLabel).join(', ')}.</p> : null}
+            <ExerciseAnatomy exercise={detail} figure={figureFor(profile)} />
             {detail.tip && (
               <div className="callout">
                 <Info aria-hidden="true" />

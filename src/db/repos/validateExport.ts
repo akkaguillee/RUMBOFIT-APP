@@ -1,3 +1,4 @@
+import { isProfilePhoto } from '@/domain/validation';
 import type { TableName } from '../db';
 
 /* Row-level validation for backups. A file that passes is safe to render:
@@ -22,6 +23,7 @@ const oneOf =
 
 const goal = oneOf('lose', 'recomp', 'maintain', 'gain', 'fitness', 'strength', 'habits', 'consistency');
 const sex = oneOf('male', 'female', 'unspecified');
+const bodyFigure = oneOf('male', 'female', 'neutral');
 const activity = oneOf('sedentary', 'light', 'moderate', 'active', 'very_active');
 const units = oneOf('metric', 'imperial');
 const weekday = (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 6;
@@ -77,6 +79,8 @@ const ROW_CHECKS: Record<TableName, (r: Row) => boolean> = {
     optObj(r.wellbeing) &&
     energyPlan(r.energyPlan) &&
     optNum(r.consentAt) &&
+    (r.bodyFigure === undefined || bodyFigure(r.bodyFigure)) &&
+    (r.photo === undefined || isProfilePhoto(r.photo)) &&
     num(r.createdAt) &&
     num(r.updatedAt),
   goals: (r) => autoId(r.id) && goal(r.type) && isDate(r.startDate) && optDate(r.endDate) && bool(r.reached) && optNum(r.startWeightKg) && optNum(r.goalWeightKg),
@@ -86,7 +90,7 @@ const ROW_CHECKS: Record<TableName, (r: Row) => boolean> = {
   notes: (r) => isDate(r.date) && str(r.text),
   bmi: (r) => autoId(r.id) && isDate(r.date) && num(r.kg) && num(r.heightCm) && num(r.bmi) && num(r.createdAt),
   energy: (r) => autoId(r.id) && isDate(r.date) && num(r.bmr) && num(r.tdee) && optNum(r.target) && obj(r.inputs) && num(r.inputs.kg) && num(r.createdAt),
-  exercises: (r) => str(r.id) && str(r.name) && str(r.muscle) && str(r.measure) && str(r.equipment),
+  exercises: (r) => str(r.id) && str(r.name) && str(r.muscle) && str(r.measure) && str(r.equipment) && (r.secondary === undefined || arrOf(r.secondary, str)),
   workouts: (r) =>
     autoId(r.id) &&
     str(r.name) &&

@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { todayKey, addDays } from '@/domain/dates';
 import { db } from './db';
-import { createProfile, updateProfile } from './repos/profile';
+import { createProfile, setProfilePhoto, updateProfile } from './repos/profile';
 import { addWater, addWeight, applyCalculation, deleteWeight, saveBmi, setNote, setSteps, addSteps } from './repos/tracking';
-import { exerciseEntry, finishWorkout, mutateExercises, startWorkout, getActiveWorkout } from './repos/training';
+import { createExercise, exerciseEntry, finishWorkout, mutateExercises, startWorkout, getActiveWorkout, updateExercise } from './repos/training';
 import { deleteAllData, exportAll, importAll, parseExport } from './repos/data';
 import { syncAchievements } from './sync';
 
@@ -143,6 +143,37 @@ describe('repositories', () => {
     expect(() => parseExport(mutate((t) => (t.notes = [{ text: 'sin fecha' }])))).toThrow(/notas/);
     expect(() => parseExport(mutate((t) => (t.profile = [])))).toThrow(/perfil/);
     expect(parseExport(JSON.stringify(good)).tables.steps).toHaveLength(1);
+  });
+
+  it('keeps the map figure, the profile photo and custom secondary muscles in backups', async () => {
+    await seedProfile();
+    const photo = `data:image/jpeg;base64,${'QUJD'.repeat(64)}`;
+    await updateProfile({ bodyFigure: 'female' });
+    await setProfilePhoto(photo);
+    // The main group is never repeated among the assisting ones.
+    const id = await createExercise({ name: 'Remo en máquina X', muscle: 'back', secondary: ['biceps', 'back'], measure: 'weight_reps' });
+    expect((await db.exercises.get(id))?.secondary).toEqual(['biceps']);
+    const raw = JSON.stringify(await exportAll());
+    await deleteAllData();
+    await importAll(parseExport(raw));
+    expect(await db.profile.get('me')).toMatchObject({ bodyFigure: 'female', photo });
+    expect((await db.exercises.get(id))?.secondary).toEqual(['biceps']);
+    // Clearing the assisting groups removes the field.
+    await updateExercise(id, { name: 'Remo en máquina X', muscle: 'back', secondary: [], measure: 'weight_reps' });
+    expect((await db.exercises.get(id))?.secondary).toBeUndefined();
+
+    // Anything that is not a small inline image never gets in, from the app or from a file.
+    const withProfile = (patch: Record<string, unknown>) => {
+      const copy = JSON.parse(raw);
+      Object.assign(copy.tables.profile[0], patch);
+      return JSON.stringify(copy);
+    };
+    expect(() => parseExport(withProfile({ photo: 'javascript:alert(1)' }))).toThrow(/perfil/);
+    expect(() => parseExport(withProfile({ photo: 'data:image/svg+xml;base64,PHN2Zz4=' }))).toThrow(/perfil/);
+    expect(() => parseExport(withProfile({ bodyFigure: 'robot' }))).toThrow(/perfil/);
+    await expect(setProfilePhoto('data:text/html;base64,PGI+')).rejects.toThrow(/foto/i);
+    await setProfilePhoto(undefined);
+    expect((await db.profile.get('me'))?.photo).toBeUndefined();
   });
 
   it('accepts a real backup with workouts, notes and calculators', async () => {

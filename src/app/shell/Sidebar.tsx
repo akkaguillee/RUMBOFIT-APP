@@ -4,6 +4,7 @@ import { RunnerMark, Wordmark } from '@/brand/Logo';
 import type { Profile } from '@/domain/types';
 import { spring } from '@/ui/motion';
 import { ACCOUNT_NAV, PRIMARY_NAV, sectionOf, type NavItem } from '../nav';
+import { AvatarContent } from '@/ui/Avatar';
 
 function SideLink({ item, active }: { item: NavItem; active: boolean }) {
   const Icon = item.icon;
@@ -41,8 +42,8 @@ export function Sidebar({ profile }: { profile: Profile }) {
         </nav>
         <div className="sidebar__footer">
           <NavLink to="/perfil" className="sidebar__profile">
-            <span className="avatar-btn" aria-hidden="true">
-              {profile.name.charAt(0).toUpperCase()}
+            <span className="avatar-btn" data-photo={profile.photo ? '' : undefined} aria-hidden="true">
+              <AvatarContent name={profile.name} photo={profile.photo} />
             </span>
             <span className="grow">
               <span className="truncate" style={{ display: 'block', fontWeight: 640 }}>

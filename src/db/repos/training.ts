@@ -19,10 +19,17 @@ import { makeResolver, scheduleSync } from '../sync';
 export interface ExerciseInput {
   name: string;
   muscle: MuscleGroup;
+  /** Assisting groups; the main group is never repeated here. */
+  secondary?: MuscleGroup[];
   measure: ExerciseMeasure;
   equipment?: string;
   tip?: string;
 }
+
+const secondaryOf = (input: ExerciseInput): MuscleGroup[] | undefined => {
+  const list = [...new Set(input.secondary ?? [])].filter((g) => g !== input.muscle);
+  return list.length ? list : undefined;
+};
 
 export async function createExercise(input: ExerciseInput): Promise<string> {
   const id = `custom-${uid()}`;
@@ -30,6 +37,7 @@ export async function createExercise(input: ExerciseInput): Promise<string> {
     id,
     name: assertText(input.name, 'El nombre', 60),
     muscle: input.muscle,
+    secondary: secondaryOf(input),
     measure: input.measure,
     equipment: input.equipment?.trim() || 'Personalizado',
     tip: input.tip?.trim() || undefined,
@@ -45,6 +53,7 @@ export async function updateExercise(id: string, input: ExerciseInput): Promise<
   await db.exercises.update(id, {
     name: assertText(input.name, 'El nombre', 60),
     muscle: input.muscle,
+    secondary: secondaryOf(input),
     measure: input.measure,
     equipment: input.equipment?.trim() || 'Personalizado',
     tip: input.tip?.trim() || undefined,

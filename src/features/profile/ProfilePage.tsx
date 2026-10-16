@@ -27,7 +27,9 @@ import { DayPicker } from '../onboarding/PrefControls';
 import { activityWithDays, inputOrStored, mainGoalLabel, TARGET_NEEDS_HEIGHT, targetWeightError } from '../onboarding/preferences';
 import { SEX_OPTIONS, usesWeightGoal } from '../shared/labels';
 import { unitsApi } from '../shared/units';
+import { FigurePicker } from '../training/bodymap/FigurePicker';
 import { HEIGHT_IN_PERSONAL, PreferencesCard, PreferencesSheet, type PrefGroup } from './PreferencesForm';
+import { HeroAvatar, PhotoField } from './ProfilePhoto';
 import './profile.css';
 
 /** A Perfil card. Its `id` is also the anchor other pages link to (/perfil#personal). */
@@ -67,9 +69,7 @@ function ProfileContent({ profile }: { profile: Profile }) {
     <Page>
       <PageHead eyebrow="Perfil" display="Perfil" title="Perfil y ajustes" />
       <GlassCard variant="glow" className="profile-hero">
-        <span className="profile-hero__avatar" aria-hidden="true">
-          {profile.name.charAt(0).toUpperCase()}
-        </span>
+        <HeroAvatar profile={profile} />
         <div className="grow">
           <h2 className="t-title" style={{ fontSize: 'var(--text-2xl)' }}>
             {profile.name}
@@ -95,7 +95,7 @@ function ProfileContent({ profile }: { profile: Profile }) {
         />
         <PreferencesCard profile={profile} onEdit={edit} />
         <HabitsForm key={[profile.waterGoalMl, profile.stepsGoal, profile.trainingDays.join(), profile.units].join('|')} profile={profile} />
-        <AppearanceSection />
+        <AppearanceSection profile={profile} />
         <DataSection />
         <Section icon={<HeartPulse aria-hidden="true" />} title="Uso responsable" id="about-sec">
           <div className="vstack t-small" style={{ gap: 10 }}>
@@ -189,6 +189,7 @@ function PersonalForm({ profile, age }: { profile: Profile; age?: number }) {
   return (
     <Section icon={<UserRound aria-hidden="true" />} title="Datos personales" id="personal">
       <div className="vstack">
+        <PhotoField profile={profile} />
         <TextField label="Nombre o alias" value={name} maxLength={40} onChange={(e) => setName(e.target.value)} error={errors.name} />
         <div className="grid-2">
           <NumberField label="Edad" value={ageS} decimals={false} suffix="años" onChange={(e) => setAge(e.target.value.replace(/\D/g, ''))} error={errors.age} />
@@ -197,7 +198,7 @@ function PersonalForm({ profile, age }: { profile: Profile; age?: number }) {
         <div className="field">
           <span className="field__label">Sexo biológico</span>
           <Segmented label="Sexo biológico" options={SEX_OPTIONS} value={sex} onChange={setSex} block />
-          <span className="field__hint">Solo se usa para la ecuación del metabolismo basal.</span>
+          <span className="field__hint">Se usa para la ecuación del metabolismo basal y, si no eliges otra en Apariencia, para la figura del mapa muscular.</span>
         </div>
         <div className="field">
           <span className="field__label">Unidades</span>
@@ -374,7 +375,7 @@ function HabitsForm({ profile }: { profile: Profile }) {
   );
 }
 
-function AppearanceSection() {
+function AppearanceSection({ profile }: { profile: Profile }) {
   const { theme, setTheme, effects, setEffects } = useTheme();
   const [intro, setIntro] = useState(introEnabled);
   const rumbi = useRumbiPrefs();
@@ -400,6 +401,7 @@ function AppearanceSection() {
           <AccentPicker />
           <span className="field__hint">Cambia el color de botones, anillos y destacados. Los colores de estado no cambian.</span>
         </div>
+        <FigurePicker profile={profile} />
         <div className="field">
           <span className="field__label">Efectos visuales</span>
           <Segmented

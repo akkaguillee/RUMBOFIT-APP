@@ -1,8 +1,8 @@
-import { Check, Clock, Dumbbell, Flag, Layers, Pause, Play, Plus, SkipForward, Trash2, Trophy } from 'lucide-react';
+import { Check, ChevronRight, Clock, Dumbbell, Flag, Layers, Pause, PersonStanding, Play, Plus, SkipForward, Trash2, Trophy } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useActiveWorkout, useCompletedWorkouts, useExerciseLibrary } from '@/db/hooks';
+import { useActiveWorkout, useCompletedWorkouts, useExerciseLibrary, useProfile } from '@/db/hooks';
 import {
   clearRest,
   discardWorkout,
@@ -16,6 +16,8 @@ import {
   updateWorkout,
 } from '@/db/repos/training';
 import { formatDuration, formatMinutes } from '@/domain/dates';
+import { figureFor, sessionGroups, sessionMuscles } from '@/domain/training/anatomy';
+import { muscleShort } from '@/domain/training/catalog';
 import { completedSets, personalBestsIn, totalSets, workoutElapsedSec, workoutVolume, type PersonalBest } from '@/domain/training/stats';
 import type { Workout } from '@/domain/types';
 import { formatInt, formatNumber } from '@/domain/units';
@@ -31,6 +33,7 @@ import { ProgressRing } from '@/ui/ProgressRing';
 import { Sheet } from '@/ui/Sheet';
 import { toast, toastError } from '@/ui/toast';
 import { useNow } from '@/ui/useNow';
+import { MuscleMap } from './bodymap/MuscleMap';
 import { ExercisePicker } from './ExercisePicker';
 import { WorkoutEditor } from './WorkoutEditor';
 import './training.css';
@@ -59,9 +62,11 @@ function beep() {
 export default function ActiveSessionPage() {
   const active = useActiveWorkout();
   const history = useCompletedWorkouts();
-  const { resolve } = useExerciseLibrary();
+  const { resolve, list } = useExerciseLibrary();
+  const profile = useProfile();
   const navigate = useNavigate();
   const [picker, setPicker] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
   const [finishOpen, setFinishOpen] = useState(false);
   const [discardOpen, setDiscardOpen] = useState(false);
   const [summary, setSummary] = useState<{ workout: Workout; prs: PersonalBest[] } | null>(null);
@@ -84,6 +89,8 @@ export default function ActiveSessionPage() {
     if (!active) return null;
     return { done: completedSets(active), total: totalSets(active), volume: workoutVolume(active, resolve) };
   }, [active, resolve]);
+  // Live: every set ticked or exercise added repaints the map.
+  const muscles = useMemo(() => (active ? sessionMuscles(active.exercises, resolve) : null), [active, resolve]);
 
   if (active === undefined || history === undefined) return <Loader />;
 
@@ -133,9 +140,22 @@ export default function ActiveSessionPage() {
         </Button>
       </motion.div>
 
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 12 }}>
         <ProgressBar value={stats.total ? stats.done / stats.total : 0} tone="good" label="Progreso de la sesión" />
       </div>
+
+      {muscles && active.exercises.length > 0 && (
+        <button type="button" className="session-muscles" onClick={() => setMapOpen(true)}>
+          <PersonStanding aria-hidden="true" />
+          <span className="session-muscles__text">
+            {sessionGroups(muscles).map(muscleShort).join(' · ') || 'Sin músculos en el mapa'}
+          </span>
+          <span className="session-muscles__cta">
+            Ver músculos
+            <ChevronRight aria-hidden="true" />
+          </span>
+        </button>
+      )}
 
       {active.exercises.length === 0 ? (
         <div className="glass card">
@@ -201,6 +221,9 @@ export default function ActiveSessionPage() {
         )}
       </AnimatePresence>
 
+      <Sheet open={mapOpen} onClose={() => setMapOpen(false)} wide title="Músculos de la sesión" description="Se actualiza con cada serie que completas.">
+        {muscles && profile && <MuscleMap figure={figureFor(profile)} data={{ mode: 'session', session: muscles, scope: 'esta sesión' }} library={list} />}
+      </Sheet>
       <ExercisePicker
         open={picker}
         onClose={() => setPicker(false)}

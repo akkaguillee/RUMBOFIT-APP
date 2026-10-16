@@ -50,3 +50,9 @@ export function assertText(value: string, label: string, max = 120): string {
   if (v.length > max) throw new ValidationError(`${label} no puede superar ${max} caracteres.`);
   return v;
 }
+
+/** A profile photo as the app stores it: an inline JPEG, PNG or WebP image of reasonable size. */
+const PHOTO = /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/;
+export function isProfilePhoto(value: unknown): value is string {
+  return typeof value === 'string' && value.length <= 1_500_000 && PHOTO.test(value);
+}

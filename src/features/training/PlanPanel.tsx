@@ -1,9 +1,9 @@
-import { CalendarPlus, ChevronRight, ClipboardList, Dumbbell, History, Moon, Play, Plus, Wand2 } from 'lucide-react';
+import { ChevronRight, Dumbbell, Moon, Play, Plus, Wand2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useActiveWorkout, useCompletedWorkouts, useExerciseLibrary, usePlan, useTemplates } from '@/db/hooks';
-import { exerciseEntry, logPastWorkout, savePlan, startFromTemplate, startWorkout } from '@/db/repos/training';
-import { formatDate, formatMinutes, todayKey, weekdayIndex, WEEKDAY_LABELS } from '@/domain/dates';
+import { exerciseEntry, logPastWorkout, savePlan, startFromTemplate } from '@/db/repos/training';
+import { formatMinutes, todayKey, weekdayIndex, WEEKDAY_LABELS } from '@/domain/dates';
 import { MUSCLE_GROUPS, muscleShort } from '@/domain/training/catalog';
 import type { MuscleGroup, PlanDay, Profile, WorkoutExercise } from '@/domain/types';
 import { Button } from '@/ui/Button';
@@ -16,6 +16,7 @@ import { toast, toastError } from '@/ui/toast';
 import { useToday } from '@/ui/useToday';
 import { ExercisePicker } from './ExercisePicker';
 import { parseDuration } from './format';
+import { TodaySession } from './TodaySession';
 import { WorkoutEditor } from './WorkoutEditor';
 
 /** Example split used only as an editable suggestion, never imposed. */
@@ -56,7 +57,6 @@ export function PlanPanel({ profile }: { profile: Profile }) {
   const wd = weekdayIndex(today);
   const todayPlan = shown?.find((p) => p.weekday === wd);
   const todayTemplate = todayPlan?.templateId !== undefined ? templates.find((t) => t.id === todayPlan.templateId) : undefined;
-  const lastWorkout = history?.[0];
 
   const go = async (fn: () => Promise<number>) => {
     try {
@@ -82,65 +82,18 @@ export function PlanPanel({ profile }: { profile: Profile }) {
 
   return (
     <div className="split">
-      <div className="vstack">
-        <GlassCard variant="glow" sheen aria-labelledby="today-train">
-          <div className="today-train">
-            <div>
-              <p className="t-eyebrow">Hoy · {formatDate.header(today)}</p>
-              <h2 id="today-train" className="t-title" style={{ fontSize: 'var(--text-2xl)', marginTop: 4 }}>
-                {active ? 'Tienes una sesión en curso' : todayPlan && !todayPlan.rest ? todayPlan.label || 'Día de entrenamiento' : todayPlan?.rest ? 'Día de descanso' : 'Entrena a tu ritmo'}
-              </h2>
-              {!active && todayPlan && !todayPlan.rest && todayPlan.muscleGroups.length > 0 && (
-                <p className="t-small" style={{ marginTop: 4 }}>
-                  {todayPlan.muscleGroups.map(muscleShort).join(' · ')}
-                </p>
-              )}
-              {!active && todayPlan?.rest && <p className="t-small" style={{ marginTop: 4 }}>Recuperar también forma parte del progreso. Si te apetece, una sesión suave de movilidad.</p>}
-            </div>
-            {active ? (
-              <Button size="lg" block icon={<Play />} onClick={() => navigate('/entreno/sesion')}>
-                Continuar «{active.name}»
-              </Button>
-            ) : (
-              <div className="start-grid">
-                {todayTemplate ? (
-                  <Button size="lg" icon={<Play />} onClick={() => go(() => startFromTemplate(todayTemplate))}>
-                    Empezar {todayTemplate.name}
-                  </Button>
-                ) : (
-                  <Button
-                    size="lg"
-                    icon={<Play />}
-                    onClick={() =>
-                      go(() =>
-                        startWorkout({
-                          name: todayPlan && !todayPlan.rest && todayPlan.label ? todayPlan.label : 'Entrenamiento libre',
-                          muscleGroups: todayPlan && !todayPlan.rest ? todayPlan.muscleGroups : [],
-                        }),
-                      )
-                    }
-                  >
-                    {todayPlan && !todayPlan.rest ? 'Empezar sesión' : 'Entrenamiento libre'}
-                  </Button>
-                )}
-                <Button size="lg" variant="secondary" icon={<ClipboardList />} onClick={() => setTplPicker(true)} disabled={!templates.length}>
-                  Desde plantilla
-                </Button>
-              </div>
-            )}
-            <div className="hstack wrap" style={{ gap: 8 }}>
-              {lastWorkout && !active && (
-                <Button variant="ghost" size="sm" icon={<History />} onClick={() => navigate(`/entreno?tab=historial&w=${lastWorkout.id}`)}>
-                  Último: {lastWorkout.name} · {formatDate.relative(lastWorkout.date, today)}
-                </Button>
-              )}
-              <Button variant="ghost" size="sm" icon={<CalendarPlus />} onClick={() => setPastOpen(true)}>
-                Registrar sesión pasada
-              </Button>
-            </div>
-          </div>
-        </GlassCard>
-      </div>
+      <TodaySession
+        profile={profile}
+        today={today}
+        active={active}
+        history={history}
+        todayPlan={todayPlan}
+        todayTemplate={todayTemplate}
+        hasTemplates={templates.length > 0}
+        onStart={(fn) => void go(fn)}
+        onPickTemplate={() => setTplPicker(true)}
+        onLogPast={() => setPastOpen(true)}
+      />
 
       <GlassCard aria-labelledby="plan-title">
         <div className="card__head">

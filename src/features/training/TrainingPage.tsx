@@ -44,10 +44,10 @@ export default function TrainingPage() {
       </motion.div>
       <TabPanel tab={tab} idPrefix="training">
         {tab === 'plan' && <PlanPanel profile={profile} />}
-        {tab === 'historial' && <HistoryPanel />}
+        {tab === 'historial' && <HistoryPanel profile={profile} />}
         {tab === 'ejercicios' && <ExercisesPanel />}
         {tab === 'plantillas' && <TemplatesPanel />}
-        {tab === 'stats' && <StatsPanel />}
+        {tab === 'stats' && <StatsPanel profile={profile} />}
       </TabPanel>
     </Page>
   );

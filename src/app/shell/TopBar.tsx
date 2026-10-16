@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { RunnerMark, Wordmark } from '@/brand/Logo';
 import type { Profile } from '@/domain/types';
 import { AccentButton } from '@/ui/AccentPicker';
+import { AvatarContent } from '@/ui/Avatar';
 import { ThemeToggle } from '@/ui/ThemeToggle';
 import { useIsDesktop } from '@/ui/useMediaQuery';
 import { navItemFor } from '../nav';
@@ -22,7 +23,8 @@ export function TopBar({ profile }: { profile: Profile }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const initial = profile.name.charAt(0).toUpperCase();
+  const avatar = <AvatarContent name={profile.name} photo={profile.photo} />;
+  const photo = profile.photo ? '' : undefined;
 
   return (
     <header className="topbar" data-scrolled={scrolled}>
@@ -42,12 +44,19 @@ export function TopBar({ profile }: { profile: Profile }) {
           <AccentButton />
           <ThemeToggle />
           {desktop ? (
-            <Link to="/perfil" className="avatar-btn" aria-label={`Perfil de ${profile.name}`}>
-              {initial}
+            <Link to="/perfil" className="avatar-btn" data-photo={photo} aria-label={`Perfil de ${profile.name}`}>
+              {avatar}
             </Link>
           ) : (
-            <button type="button" className="avatar-btn" aria-label="Abrir menú: calendario, perfil y más" aria-haspopup="dialog" onClick={() => setMenu(true)}>
-              {initial}
+            <button
+              type="button"
+              className="avatar-btn"
+              data-photo={photo}
+              aria-label="Abrir menú: calendario, perfil y más"
+              aria-haspopup="dialog"
+              onClick={() => setMenu(true)}
+            >
+              {avatar}
             </button>
           )}
         </div>

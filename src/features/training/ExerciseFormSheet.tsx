@@ -7,6 +7,9 @@ import { SelectField, TextAreaField, TextField } from '@/ui/Field';
 import { Sheet } from '@/ui/Sheet';
 import { toast, toastError } from '@/ui/toast';
 
+/** Groups that don't load a muscle region, so they never take assisting muscles. */
+const NO_SECONDARY: MuscleGroup[] = ['cardio', 'mobility', 'recovery'];
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -18,6 +21,7 @@ interface Props {
 export function ExerciseFormSheet({ open, onClose, exercise, defaultMuscle, onCreated }: Props) {
   const [name, setName] = useState('');
   const [muscle, setMuscle] = useState<MuscleGroup>('chest');
+  const [secondary, setSecondary] = useState<MuscleGroup[]>([]);
   const [measure, setMeasure] = useState<ExerciseMeasure>('weight_reps');
   const [equipment, setEquipment] = useState('');
   const [tip, setTip] = useState('');
@@ -28,6 +32,7 @@ export function ExerciseFormSheet({ open, onClose, exercise, defaultMuscle, onCr
     if (!open) return;
     setName(exercise?.name ?? '');
     setMuscle(exercise?.muscle ?? defaultMuscle ?? 'chest');
+    setSecondary(exercise?.secondary ?? []);
     setMeasure(exercise?.measure ?? 'weight_reps');
     setEquipment(exercise?.equipment === 'Personalizado' ? '' : (exercise?.equipment ?? ''));
     setTip(exercise?.tip ?? '');
@@ -41,7 +46,7 @@ export function ExerciseFormSheet({ open, onClose, exercise, defaultMuscle, onCr
     }
     setBusy(true);
     try {
-      const input = { name, muscle, measure, equipment, tip };
+      const input = { name, muscle, secondary: NO_SECONDARY.includes(muscle) ? [] : secondary.filter((g) => g !== muscle), measure, equipment, tip };
       if (exercise) {
         await updateExercise(exercise.id, input);
         toast('Ejercicio actualizado');
@@ -87,6 +92,30 @@ export function ExerciseFormSheet({ open, onClose, exercise, defaultMuscle, onCr
             options={(Object.keys(MEASURE_LABELS) as ExerciseMeasure[]).map((k) => ({ value: k, label: MEASURE_LABELS[k] }))}
           />
         </div>
+        {!NO_SECONDARY.includes(muscle) && (
+          <div className="field">
+            <span className="field__label" id="ex-secondary-label">
+              Músculos secundarios (opcional)
+            </span>
+            <div className="chip-row chip-row--wrap" role="group" aria-labelledby="ex-secondary-label">
+              {MUSCLE_GROUPS.filter((m) => m.id !== muscle && !NO_SECONDARY.includes(m.id)).map((m) => {
+                const on = secondary.includes(m.id);
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    className="chip"
+                    aria-pressed={on}
+                    onClick={() => setSecondary(on ? secondary.filter((x) => x !== m.id) : [...secondary, m.id])}
+                  >
+                    {m.short}
+                  </button>
+                );
+              })}
+            </div>
+            <span className="field__hint">Los que ayudan en el movimiento. El mapa muscular los marca con un tono más suave.</span>
+          </div>
+        )}
         <TextField label="Material (opcional)" value={equipment} onChange={(e) => setEquipment(e.target.value)} maxLength={40} placeholder="Mancuernas, polea, máquina…" />
         <TextAreaField label="Indicaciones técnicas (opcional)" value={tip} onChange={(e) => setTip(e.target.value)} rows={3} maxLength={280} />
         <button type="submit" hidden />

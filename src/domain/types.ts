@@ -1,6 +1,8 @@
 import type { DateKey } from './dates';
 
 export type Sex = 'male' | 'female' | 'unspecified';
+/** Figure drawn by the muscle map. */
+export type BodyFigure = 'male' | 'female' | 'neutral';
 export type Units = 'metric' | 'imperial';
 export type GoalType = 'lose' | 'recomp' | 'maintain' | 'gain' | 'fitness' | 'strength' | 'habits' | 'consistency';
 export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
@@ -37,6 +39,10 @@ export interface Profile {
   energyPlan?: EnergyPlan;
   /** When the user agreed to store this information on the device. */
   consentAt?: number;
+  /** Figure for the muscle map chosen in Perfil; when unset it follows `sex`. */
+  bodyFigure?: BodyFigure;
+  /** Profile photo picked by the user, as a small square JPEG data URL kept on the device. */
+  photo?: string;
   createdAt: number;
   updatedAt: number;
 }

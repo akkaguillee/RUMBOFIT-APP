@@ -232,6 +232,30 @@
     0 6px 16px -10px var(--accent-glow);
 }
 
+/* With the user's own photo the avatar shows it edge to edge, ringed in the accent. */
+.avatar-btn[data-photo] {
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.avatar-btn[data-photo]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+  pointer-events: none;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 /* Top-bar buttons: quiet, round, hairline. */
 .topbar .icon-btn,
 .topbar .avatar-btn {

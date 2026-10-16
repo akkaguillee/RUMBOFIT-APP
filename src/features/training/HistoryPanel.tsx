@@ -4,9 +4,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCompletedWorkouts, useExerciseLibrary } from '@/db/hooks';
 import { deleteWorkout, editCompletedWorkout, repeatWorkout, templateFromWorkout } from '@/db/repos/training';
 import { formatDate, formatMinutes, startOfWeek, todayKey } from '@/domain/dates';
+import { figureFor, sessionMuscles } from '@/domain/training/anatomy';
 import { muscleShort } from '@/domain/training/catalog';
 import { completedSets, personalBestsIn, workoutVolume } from '@/domain/training/stats';
-import type { Workout } from '@/domain/types';
+import type { BodyFigure, Profile, Workout } from '@/domain/types';
 import { formatInt } from '@/domain/units';
 import { Button } from '@/ui/Button';
 import { ConfirmDialog } from '@/ui/ConfirmDialog';
@@ -15,9 +16,10 @@ import { TextAreaField, TextField } from '@/ui/Field';
 import { GlassButtonCard } from '@/ui/GlassCard';
 import { Sheet } from '@/ui/Sheet';
 import { toast, toastError } from '@/ui/toast';
+import { MuscleMap } from './bodymap/MuscleMap';
 import { formatSet } from './format';
 
-export function HistoryPanel() {
+export function HistoryPanel({ profile }: { profile: Profile }) {
   const workouts = useCompletedWorkouts();
   const { resolve } = useExerciseLibrary();
   const [params, setParams] = useSearchParams();
@@ -97,13 +99,14 @@ export function HistoryPanel() {
           </div>
         </section>
       ))}
-      <WorkoutDetailSheet workout={selected} history={workouts} onClose={() => open(null)} />
+      <WorkoutDetailSheet workout={selected} history={workouts} figure={figureFor(profile)} onClose={() => open(null)} />
     </div>
   );
 }
 
-function WorkoutDetailSheet({ workout, history, onClose }: { workout: Workout | null; history: Workout[]; onClose: () => void }) {
-  const { resolve } = useExerciseLibrary();
+function WorkoutDetailSheet({ workout, history, figure, onClose }: { workout: Workout | null; history: Workout[]; figure: BodyFigure; onClose: () => void }) {
+  const { resolve, list } = useExerciseLibrary();
+  const muscles = useMemo(() => (workout ? sessionMuscles(workout.exercises, resolve) : null), [workout, resolve]);
   const navigate = useNavigate();
   const [confirm, setConfirm] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -205,6 +208,20 @@ function WorkoutDetailSheet({ workout, history, onClose }: { workout: Workout | 
               </div>
               {workout.rpe && <p className="t-small">Esfuerzo percibido: {workout.rpe}/10</p>}
               {workout.notes && <p className="callout">“{workout.notes}”</p>}
+              {muscles && (
+                <section className="history-map" aria-labelledby="history-map-title">
+                  <h3 id="history-map-title" className="today__label">
+                    Músculos trabajados
+                  </h3>
+                  <MuscleMap
+                    key={workout.id}
+                    figure={figure}
+                    data={{ mode: 'session', session: muscles, scope: 'esta sesión' }}
+                    library={list}
+                    empty={<p>Esta sesión no tiene ejercicios que marquen músculos (cardio, movilidad o recuperación).</p>}
+                  />
+                </section>
+              )}
               <ul className="list">
                 {workout.exercises.map((ex) => {
                   const e = resolve(ex.exerciseId);

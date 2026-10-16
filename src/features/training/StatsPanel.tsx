@@ -1,21 +1,33 @@
-import { BarChart3, Clock, Dumbbell, Layers, Trophy } from 'lucide-react';
+import { Activity, BarChart3, Clock, Dumbbell, Layers, Trophy } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useCompletedWorkouts, useExerciseLibrary } from '@/db/hooks';
-import { formatDate, formatMinutes, monthKey } from '@/domain/dates';
+import { addDays, formatDate, formatMinutes, monthKey, startOfWeek } from '@/domain/dates';
+import { figureFor, weekMuscles } from '@/domain/training/anatomy';
 import { muscleLabel } from '@/domain/training/catalog';
 import { exerciseRecords, muscleDistribution, weeklyWorkoutCounts, workoutVolume } from '@/domain/training/stats';
+import type { Profile } from '@/domain/types';
 import { formatInt, formatNumber } from '@/domain/units';
 import { EmptyState } from '@/ui/EmptyState';
 import { SelectField } from '@/ui/Field';
 import { GlassCard } from '@/ui/GlassCard';
+import { Segmented } from '@/ui/Segmented';
 import { useToday } from '@/ui/useToday';
 import { BarChart } from '../shared/BarChart';
+import { MuscleMap } from './bodymap/MuscleMap';
 
-export function StatsPanel() {
+const WEEKS = [
+  { value: 'this', label: 'Esta semana' },
+  { value: 'last', label: 'Semana pasada' },
+] as const;
+
+export function StatsPanel({ profile }: { profile: Profile }) {
   const workouts = useCompletedWorkouts();
-  const { resolve } = useExerciseLibrary();
+  const { resolve, list } = useExerciseLibrary();
   const today = useToday();
   const [exId, setExId] = useState<string>('');
+  const [weekSel, setWeekSel] = useState<(typeof WEEKS)[number]['value']>('this');
+  const weekStart = weekSel === 'this' ? startOfWeek(today) : addDays(startOfWeek(today), -7);
+  const week = useMemo(() => weekMuscles(workouts ?? [], weekStart, resolve), [workouts, weekStart, resolve]);
 
   const data = useMemo(() => {
     if (!workouts) return null;
@@ -100,6 +112,24 @@ export function StatsPanel() {
           <p className="t-small stat-tile__foot">sesiones por semana</p>
         </div>
       </div>
+
+      <GlassCard aria-labelledby="st-map" id="musculos">
+        <div className="card__head" style={{ flexWrap: 'wrap' }}>
+          <h3 id="st-map" className="card__title">
+            <Activity aria-hidden="true" /> Músculos trabajados
+          </h3>
+          <Segmented label="Semana" options={[...WEEKS]} value={weekSel} onChange={setWeekSel} />
+        </div>
+        <p className="t-small t-muted" style={{ margin: '-4px 0 16px' }}>
+          Del {formatDate.dayMonth(week.start)} al {formatDate.dayMonth(week.end)} · {week.sessions} {week.sessions === 1 ? 'sesión completada' : 'sesiones completadas'}
+        </p>
+        <MuscleMap
+          figure={figureFor(profile)}
+          data={{ mode: 'week', week, scope: weekSel === 'this' ? 'esta semana' : 'la semana pasada' }}
+          library={list}
+          empty={<p>{weekSel === 'this' ? 'Esta semana aún no hay entrenamientos completados.' : 'La semana pasada no hubo entrenamientos completados.'}</p>}
+        />
+      </GlassCard>
 
       <div className="split">
         <GlassCard aria-labelledby="st-weeks">
