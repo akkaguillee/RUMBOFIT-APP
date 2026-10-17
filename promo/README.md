@@ -1,6 +1,28 @@
 # RUMBO · vídeos promocionales (9:16)
 
-Dos piezas: el anuncio cinematográfico de 84 s (más abajo) y el anuncio de 40 s para Reels, TikTok y Shorts.
+Tres piezas: «Cada pequeño paso cuenta» (1:44,5, la más reciente, justo debajo), el anuncio cinematográfico de 84 s y el de 40 s para Reels, TikTok y Shorts.
+
+## «Cada pequeño paso cuenta» (1:44,5)
+
+Resultado en `out/pasos/`: el máster 2K a 60 fps, `RUMBO-cada-paso-cuenta-9x16-2k60.mp4` (1440 × 2560), y su versión a 1080 × 1920 y 30 fps; además, la adaptación 4:5 con encuadre propio (1440 × 1800 a 60 fps, y 1080 × 1350 a 30 fps). Todos son H.264 + AAC 48 kHz, −14 LUFS, con subtítulos incrustados. La línea de tiempo está escrita en fotogramas de 30 fps, pero cada animación lee el tiempo (`useT()`), así que a 60 fps el movimiento es real. Además: la narración limpia (`…-voz-elevenlabs.wav`), el `.srt` y `NOTAS.md`, con las afirmaciones verificadas y las omitidas.
+
+- `capture/capture-pasos.mjs` + `capture/seed.mjs` — capturas reales de la app (390 × 844 pt a 3×) con un usuario ficticio, «Alex», cargado en la IndexedDB del navegador de captura. Incluye pulsaciones reales («+ 250», «Completar serie 1», color y tema) y el registro de red (`out/pasos/red-captura.json`). Las capturas van a `public/pasos/app/`.
+- `src/pasos/` — composiciones `RumboPasos` y `RumboPasos45`:
+  - `theme.ts` — identidad violeta de la app y maqueta por formato.
+  - `geo.ts` — medidas tomadas de las capturas.
+  - `choreo.ts` — pistas del móvil y de Rumbi a lo largo de toda la pieza.
+  - `scenes.tsx` — los ocho bloques.
+  - `Rumbi.tsx` — la mascota de la app, movida por su propio `rig.ts`.
+  - `kit.tsx` — teléfono, recortes, titulares y subtítulos.
+- `src/pasos/timeline.json` — bloques y entrada de cada frase. `audio/pasos_takes.py timeline` genera `voice.json` (fotograma de cada palabra, según la transcripción de Scribe), `captions.json`, el `.srt` y `beats.json` (los momentos que comparten imagen y sonido).
+- **Voz:** ElevenLabs (`eleven_v4`, voz «Marina»). Tomas en `audio/voice-pasos/takes/`, las elegidas en `audio/voice-pasos/l1…l9.wav` (`audio/pasos_takes.py pick`).
+- `audio/build_pasos.py` — música original (100 BPM, re mayor), efectos y voz; `audio/mux.sh` hace la mezcla y la codificación.
+
+```bash
+npm install && pip install numpy scipy soundfile
+npm run build:pasos        # tiempos → audio → render 9:16 → mezcla → render 4:5 → mezcla
+npm run stills -- RumboPasos out/stills 400 1178 2104
+```
 
 ## Anuncio de 40 s
 
