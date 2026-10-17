@@ -120,7 +120,7 @@ Los datos se guardan únicamente en el navegador del dispositivo (IndexedDB). No
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | Reconocer alimentos en fotos y traducir búsquedas en español (Claude) | Sí, para fotos y búsquedas en español |
 | `USDA_FDC_API_KEY` | Valores nutricionales de USDA FoodData Central (clave gratuita en fdc.nal.usda.gov/api-key-signup) | Sí, para fotos y búsquedas |
-| `RUMBO_FOOD_MODEL` | Modelo de Claude (por defecto `claude-opus-5-5`) | No |
+| `RUMBO_FOOD_MODEL` | Otro modelo de Claude para las fotos (por defecto, el definido en `netlify/lib/vision.ts`) | No |
 | `RUMBO_ALLOWED_ORIGINS` | Orígenes extra permitidos, separados por comas (p. ej. un dominio propio) | No |
 
 Sin claves, el escáner lo indica («Análisis por foto sin configurar») y ofrece el código de barras (Open Food Facts no necesita clave) y la introducción manual. Hay una plantilla en `.env.example`; con `netlify dev` las funciones leen un `.env` local. Las peticiones a Claude usan *fallback* del lado del servidor (`fallbacks: "default"`) para reintentar en el modelo recomendado si una foto fuera rechazada, y los límites de uso están en la configuración de cada función (12 análisis por minuto e IP; 60 búsquedas). En la versión de un solo archivo HTML no hay funciones: las fotos no se pueden analizar y se indica; el código de barras consulta Open Food Facts directamente.
