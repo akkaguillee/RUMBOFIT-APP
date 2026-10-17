@@ -482,7 +482,7 @@ export default function OnboardingPage() {
                     <ShieldCheck aria-hidden="true" />
                     {storageMode() === 'memory'
                       ? 'Modo temporal: ahora mismo no se puede guardar en este dispositivo, así que nada se conservará al cerrar.'
-                      : 'Tus datos se guardan solo en este dispositivo y no se envían a ningún servidor.'}
+                      : 'Tus datos se guardan solo en este dispositivo. Solo el escáner de alimentos, si lo usas, envía la foto para analizarla y no la guarda.'}
                   </motion.p>
                 </div>
               ) : (

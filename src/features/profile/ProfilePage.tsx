@@ -499,11 +499,11 @@ function DataSection() {
         {storageMode() === 'memory' ? (
           <p className="t-small">
             <strong>Modo temporal:</strong> ahora mismo no se puede guardar en este dispositivo, así que todo se borrará al cerrar o recargar.
-            Descarga una copia de seguridad antes de salir para restaurarla después. Nada se envía a ningún servidor.
+            Descarga una copia de seguridad antes de salir para restaurarla después. Tus registros no se envían a ningún servidor.
           </p>
         ) : (
           <p className="t-small">
-            Tus datos se guardan solo en este dispositivo (IndexedDB del navegador) y no se envían a ningún servidor. Si borras los datos del navegador
+            Tus datos se guardan solo en este dispositivo (IndexedDB del navegador). Lo único que sale de él es lo que envía el escáner de alimentos cuando lo usas (la foto, el nombre del alimento o el código de barras), solo para analizarlo y sin guardarlo. Si borras los datos del navegador
             los perderás, así que haz copias de seguridad de vez en cuando.
           </p>
         )}
