@@ -1,10 +1,10 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { useCurrentFrame, useVideoConfig, spring } from 'remotion';
+import { spring } from 'remotion';
 import { krophedWidth } from '../../../src/brand/krophed';
 import { accentAt, BEAT, cubicPath, hookLight, hookPath, screenPoint, w } from './choreo';
 import { CHART, CHIPS, column, CROP, HOY, onScreen, places, TAP } from './geo';
-import { clamp, Crop, DemoTag, easeInOut, Headline, keys, Logo, Phone, phoneGeom, prog, Ripple, Sparkle, Trail, windowed } from './kit';
-import { BRAND_GRAD, C, FONT, useLayout, type Layout } from './theme';
+import { clamp, Crop, DemoTag, easeInOut, Headline, keys, Logo, Phone, phoneGeom, prog, Ripple, Sparkle, Trail, useT, windowed } from './kit';
+import { BRAND_GRAD, C, FONT, FPS, useLayout, type Layout } from './theme';
 
 const v = <T,>(L: Layout, story: T, feed: T): T => (L.format === 'story' ? story : feed);
 
@@ -25,8 +25,8 @@ function Head({ children, style }: { children: ReactNode; style?: CSSProperties 
 
 /** A lifted card that springs out of the phone into the right-hand column. */
 function Lift({ crop, at, out, y, from }: { crop: (typeof CROP)[keyof typeof CROP]; at: number; out: number; y: number; from: { x: number; y: number } }) {
-  const f = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const f = useT();
+  const fps = FPS;
   const L = useLayout();
   const col = column(L);
   if (f < at - 1 || f > out + 20) return null;
@@ -49,7 +49,7 @@ function Lift({ crop, at, out, y, from }: { crop: (typeof CROP)[keyof typeof CRO
 
 /* ═══ 1 · Hook ═══════════════════════════════════════════════════════════ */
 export function Hook() {
-  const f = useCurrentFrame();
+  const f = useT();
   const L = useLayout();
   if (f > 300) return null;
   const light = hookLight(L);
@@ -93,7 +93,7 @@ export function Hook() {
 
 /* ═══ 2 · A companion: the path becomes the phone ════════════════════════ */
 export function AppScene() {
-  const f = useCurrentFrame();
+  const f = useT();
   const L = useLayout();
   if (f < 270 || f > 620) return null;
   const width = L.right - L.left;
@@ -120,7 +120,7 @@ export function AppScene() {
 
 /* ═══ 3 · Evolution, with context ════════════════════════════════════════ */
 export function Evolution() {
-  const f = useCurrentFrame();
+  const f = useT();
   const L = useLayout();
   if (f < 600 || f > 1060) return null;
   const P = places(L).evolution;
@@ -139,8 +139,8 @@ export function Evolution() {
 
 /* ═══ 4 · Training ═══════════════════════════════════════════════════════ */
 export function Training() {
-  const f = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const f = useT();
+  const fps = FPS;
   const L = useLayout();
   if (f < 1040 || f > 1510) return null;
   const P = places(L).training;
@@ -209,8 +209,8 @@ function Footprint({ size }: { size: number }) {
 }
 
 export function Habits() {
-  const f = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const f = useT();
+  const fps = FPS;
   const L = useLayout();
   if (f < 1500 || f > 1930) return null;
   const P = places(L).habits;
@@ -253,8 +253,8 @@ export function Habits() {
 
 /* ═══ 6 · Your style: accent colour and theme ════════════════════════════ */
 export function StyleBack() {
-  const f = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const f = useT();
+  const fps = FPS;
   const L = useLayout();
   if (f < BEAT.fan[0] - 2 || f > BEAT.fan[1] + 30) return null;
   const P = places(L).style;
@@ -290,7 +290,7 @@ export function StyleBack() {
 }
 
 export function Style() {
-  const f = useCurrentFrame();
+  const f = useT();
   const L = useLayout();
   if (f < 1920 || f > 2320) return null;
   return (
@@ -305,8 +305,8 @@ export function Style() {
 
 /* ═══ 7 · Privacy, only what the code proves ═════════════════════════════ */
 export function Privacy() {
-  const f = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const f = useT();
+  const fps = FPS;
   const L = useLayout();
   if (f < 2300 || f > 2700) return null;
   const P = places(L).privacy;
@@ -371,8 +371,8 @@ export function Privacy() {
 
 /* ═══ 8 · Close and call to action ═══════════════════════════════════════ */
 export function Close({ url }: { url: string }) {
-  const f = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const f = useT();
+  const fps = FPS;
   const L = useLayout();
   if (f < 2690) return null;
   const cards = [
@@ -468,7 +468,7 @@ export function Close({ url }: { url: string }) {
 
 /* ═══ Inside the screen: chart drawing, taps, the save glow ══════════════ */
 export function ScreenOverlay({ width }: { width: number }) {
-  const f = useCurrentFrame();
+  const f = useT();
   const g = phoneGeom(width);
   const k = g.k;
   const pt = (x: number, y: number) => ({ x: x * k, y: (47 + y) * k });

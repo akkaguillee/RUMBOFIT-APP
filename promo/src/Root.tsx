@@ -3,7 +3,7 @@ import { cancelRender, Composition, continueRender, delayRender, staticFile } fr
 import { Cinematic } from './cine/Cinematic';
 import { FPS as CINE_FPS, FRAMES as CINE_FRAMES } from './cine/timing';
 import { Pasos, type PasosProps } from './pasos/Pasos';
-import { FPS as PASOS_FPS, FRAMES as PASOS_FRAMES } from './pasos/theme';
+import { FPS as PASOS_TL_FPS, FRAMES as PASOS_FRAMES, RENDER_FPS as PASOS_FPS } from './pasos/theme';
 import { Promo } from './Promo';
 import timeline from './timeline.json';
 
@@ -65,7 +65,7 @@ export function Root() {
       <Composition
         id="RumboPasos"
         component={PasosWithFonts}
-        durationInFrames={PASOS_FRAMES}
+        durationInFrames={(PASOS_FRAMES * PASOS_FPS) / PASOS_TL_FPS}
         fps={PASOS_FPS}
         width={1080}
         height={1920}
@@ -74,7 +74,7 @@ export function Root() {
       <Composition
         id="RumboPasos45"
         component={PasosWithFonts}
-        durationInFrames={PASOS_FRAMES}
+        durationInFrames={(PASOS_FRAMES * PASOS_FPS) / PASOS_TL_FPS}
         fps={PASOS_FPS}
         width={1080}
         height={1350}

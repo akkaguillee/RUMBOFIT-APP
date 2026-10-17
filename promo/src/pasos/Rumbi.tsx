@@ -17,12 +17,13 @@ export type RumbiEvent =
   | { at: number; press: true }
   | { at: number; release: true };
 
-const STEPS_PER_FRAME = 2;
-const FPS = 30;
+/** The rig steps at 60 Hz: two ticks per timeline frame (30 fps), one per frame of a 60 fps render. */
+const TICK = 1 / 60;
+const TICKS_PER_FRAME = 2;
 
 interface Sim {
   key: string;
-  frame: number;
+  tick: number;
   rig: MascotRig;
 }
 const cache = new Map<string, Sim>();
@@ -35,7 +36,9 @@ function fresh(expression: MascotExpression, seed: number) {
   return rig;
 }
 
-function apply(rig: MascotRig, events: RumbiEvent[], f: number) {
+function apply(rig: MascotRig, events: RumbiEvent[], tick: number) {
+  if (tick % TICKS_PER_FRAME !== 0) return;
+  const f = tick / TICKS_PER_FRAME;
   for (const e of events) {
     if (e.at !== f) continue;
     if ('expr' in e) rig.setExpression(e.expr);
@@ -46,21 +49,21 @@ function apply(rig: MascotRig, events: RumbiEvent[], f: number) {
   }
 }
 
-/** Rig frame at `frame` frames after waking (a negative frame means still asleep). */
+/** Rig frame `frame` timeline frames after waking (fractional at 60 fps; negative means still asleep). */
 export function simulate(id: string, expression: MascotExpression, events: RumbiEvent[], frame: number, seed: number): RigFrame {
   if (frame < 0) return fresh(expression, seed).frame();
+  const tick = Math.round(frame * TICKS_PER_FRAME);
   const key = `${id}:${expression}:${seed}:${events.length}`;
   let sim = cache.get(id);
-  if (!sim || sim.key !== key || sim.frame > frame) {
-    sim = { key, frame: 0, rig: fresh(expression, seed) };
+  if (!sim || sim.key !== key || sim.tick > tick) {
+    sim = { key, tick: 0, rig: fresh(expression, seed) };
     apply(sim.rig, events, 0);
     cache.set(id, sim);
   }
-  const dt = 1 / FPS / STEPS_PER_FRAME;
-  while (sim.frame < frame) {
-    for (let s = 0; s < STEPS_PER_FRAME; s++) sim.rig.step(dt);
-    sim.frame++;
-    apply(sim.rig, events, sim.frame);
+  while (sim.tick < tick) {
+    sim.rig.step(TICK);
+    sim.tick++;
+    apply(sim.rig, events, sim.tick);
   }
   return sim.rig.frame();
 }

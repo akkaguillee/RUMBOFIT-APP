@@ -11,8 +11,11 @@
 import { createContext, useContext } from 'react';
 import timeline from './timeline.json';
 
+/** The timeline is written in frames of 30 fps; renders may run at any rate (60 fps for the 2K master). */
 export const FPS = timeline.fps;
 export const FRAMES = timeline.frames;
+/** Render rate of the compositions: twice the timeline, so 60 fps is real motion. */
+export const RENDER_FPS = 60;
 
 /* ── Identity (dark theme, violet accent) ─────────────────────────────── */
 export const C = {

@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { AbsoluteFill, useCurrentFrame } from 'remotion';
+import { AbsoluteFill } from 'remotion';
 import captions from './captions.json';
 import { BEAT, phoneAt, rumbiAt, rumbiEvents } from './choreo';
-import { Captions, Phone, Stage, type Cue } from './kit';
+import { Captions, Phone, Stage, useT, type Cue } from './kit';
 import { RumbiSvg, simulate } from './Rumbi';
 import { AppScene, Close, Evolution, Habits, Hook, Privacy, ScreenOverlay, stageAt, Style, StyleBack, Training } from './scenes';
 import { LAYOUTS, LayoutContext, useLayout, type Format } from './theme';
@@ -14,14 +14,14 @@ export type PasosProps = {
 };
 
 function Backdrop() {
-  const f = useCurrentFrame();
+  const f = useT();
   const L = useLayout();
   const s = stageAt(f, L);
   return <Stage glow={s.glow} y={s.y} tint={s.tint} light={s.light} />;
 }
 
 function AppPhone() {
-  const f = useCurrentFrame();
+  const f = useT();
   const L = useLayout();
   const p = phoneAt(f, L);
   if (!p) return null;
@@ -36,7 +36,7 @@ function AppPhone() {
 }
 
 function Mascot() {
-  const f = useCurrentFrame();
+  const f = useT();
   const L = useLayout();
   const events = useMemo(() => rumbiEvents(L).map((e) => ({ ...e, at: e.at - BEAT.wake })), [L]);
   const r = rumbiAt(f, L);

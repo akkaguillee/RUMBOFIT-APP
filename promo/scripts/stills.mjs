@@ -1,5 +1,7 @@
 // Review stills: bundles once and renders the given frames of a composition.
+// Frames are timeline frames at 30 fps (decimals allowed), whatever the render rate.
 //   node scripts/stills.mjs RumboPasos out/stills 40 150 235 …
+//   SCALE=1.3333333333 node scripts/stills.mjs …   (2K)
 import path from 'node:path';
 import { bundle } from '@remotion/bundler';
 import { renderStill, selectComposition } from '@remotion/renderer';
@@ -23,8 +25,10 @@ const serveUrl = await bundle({
   }),
 });
 const composition = await selectComposition({ serveUrl, id, browserExecutable, chromiumOptions: { gl: 'swangle' } });
+const scale = Number(process.env.SCALE ?? 1);
 for (const f of frames) {
   const output = path.resolve(outDir, `${id}-${String(f).padStart(4, '0')}.jpg`);
-  await renderStill({ composition, serveUrl, output, frame: Number(f), imageFormat: 'jpeg', jpegQuality: 88, browserExecutable, chromiumOptions: { gl: 'swangle' } });
+  const frame = Math.round((Number(f) * composition.fps) / 30);
+  await renderStill({ composition, serveUrl, output, frame, scale, imageFormat: 'jpeg', jpegQuality: 88, browserExecutable, chromiumOptions: { gl: 'swangle' } });
   console.log('·', output);
 }

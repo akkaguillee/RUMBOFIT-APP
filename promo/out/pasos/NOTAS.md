@@ -1,13 +1,15 @@
 # RUMBO · «Cada pequeño paso cuenta» — nota de producción
 
-Anuncio vertical para Reels y TikTok (1:44,5) con adaptación 4:5 para el feed. Todo sale del código del proyecto: interfaz capturada de la app real, Rumbi movido por el motor de animación de la propia app y afirmaciones comprobadas en el código.
+Anuncio vertical para Reels y TikTok (1:44,5) con adaptación 4:5 para el feed, en 2K a 60 fps y en 1080p a 30 fps. Los 60 fps son movimiento real: toda la animación se calcula en tiempo, no se duplican fotogramas. Todo sale del código del proyecto: interfaz capturada de la app real, Rumbi movido por el motor de animación de la propia app y afirmaciones comprobadas en el código.
 
 ## Archivos
 
 | Archivo | Qué es |
 | --- | --- |
-| `RUMBO-cada-paso-cuenta-9x16.mp4` | Máster 1080 × 1920, 30 fps, H.264 + AAC 48 kHz, −14 LUFS, subtítulos incrustados |
-| `RUMBO-cada-paso-cuenta-4x5.mp4` | Adaptación 1080 × 1350 con encuadre propio (no es un recorte) |
+| `RUMBO-cada-paso-cuenta-9x16-2k60.mp4` | Máster 2K: 1440 × 2560 a 60 fps, H.264 (High 5.1) + AAC 48 kHz, −14 LUFS, subtítulos incrustados |
+| `RUMBO-cada-paso-cuenta-9x16.mp4` | La misma pieza a 1080 × 1920 y 30 fps (de la misma renderización, un fotograma de cada dos) |
+| `RUMBO-cada-paso-cuenta-4x5-2k60.mp4` | Adaptación 4:5 con encuadre propio (no es un recorte): 1440 × 1800 a 60 fps |
+| `RUMBO-cada-paso-cuenta-4x5.mp4` | La adaptación 4:5 a 1080 × 1350 y 30 fps |
 | `RUMBO-cada-paso-cuenta-voz-elevenlabs.wav` | Narración limpia de ElevenLabs, sin música ni efectos, alineada con el vídeo (48 kHz, 24 bits) |
 | `RUMBO-cada-paso-cuenta.es.srt` | Subtítulos en español (32 frases cortas, tiempos sacados de la propia voz) |
 | `../../audio/voice-pasos/l1…l9.wav` | Las nueve tomas elegidas, recortadas; `takes/` guarda todas las tomas generadas |

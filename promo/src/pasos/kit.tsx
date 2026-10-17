@@ -4,7 +4,7 @@ import { fitsKrophed } from '../../../src/brand/krophed';
 import { RUNNER_VIEWBOX, WORDMARK_TEXT_VIEWBOX, runnerPaths, wordmarkPaths } from '../../../src/brand/logoPaths';
 import { clamp, ease, easeInOut, prog } from '../ui';
 import shots from './shots.json';
-import { BRAND_GRAD, C, FONT, useLayout } from './theme';
+import { BRAND_GRAD, C, FONT, FPS, useLayout } from './theme';
 
 export { clamp, ease, easeInOut, prog };
 
@@ -16,6 +16,16 @@ export const shotH = (name: string) => (shots as Record<string, number>)[name] ?
 /** Status bar height (pt) drawn above every capture, as on a phone. */
 export const BAR = 47;
 export const SCREEN_H = 844 + BAR;
+
+/**
+ * Current time in timeline frames (30 per second), fractional when the
+ * composition renders faster: every beat, spring and track reads this clock.
+ */
+export function useT(): number {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  return (frame * FPS) / fps;
+}
 
 /** Eased value between keyframes [[frame, value], …]. */
 export function keys(frame: number, pts: [number, number][], easing = easeInOut) {
@@ -33,14 +43,13 @@ export function windowed(frame: number, a: number, b: number, fadeIn = 10, fadeO
 }
 
 export function useSpr(at: number, config: { damping?: number; stiffness?: number; mass?: number } = {}) {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  return spring({ frame: frame - at, fps, config: { damping: 20, stiffness: 120, mass: 1, ...config } });
+  const frame = useT();
+  return spring({ frame: frame - at, fps: FPS, config: { damping: 20, stiffness: 120, mass: 1, ...config } });
 }
 
 /* ── Backdrop: the app's deep violet-black with soft moving light ──────── */
 export function Stage({ glow = 1, x = 0.5, y = 0.42, tint = C.violet, light = 0 }: { glow?: number; x?: number; y?: number; tint?: string; light?: number }) {
-  const frame = useCurrentFrame();
+  const frame = useT();
   const { W, H } = useLayout();
   const t = frame / 30;
   const dx = Math.sin(t * 0.31) * 60;
@@ -156,7 +165,7 @@ export function Phone({
   /** 0–1: draw only the outline of the phone (the path turning into a phone). */
   outline?: number;
 }) {
-  const frame = useCurrentFrame();
+  const frame = useT();
   const g = phoneGeom(width);
   const sheen = 28 + ry * 1.2 + Math.sin(frame / 60) * 5;
   const body = outline === undefined ? 1 : 0;
@@ -367,8 +376,8 @@ export function Headline({
   color?: string;
   style?: CSSProperties;
 }) {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const frame = useT();
+  const fps = FPS;
   const display = (upper ?? true) && fitsKrophed(text);
   const words = text.split(' ');
   return (
@@ -408,7 +417,7 @@ export function Headline({
 
 /* ── Small text pill: «Datos de demostración» ─────────────────────────── */
 export function DemoTag({ x, y, at, out, align = 'center' }: { x: number; y: number; at: number; out?: number; align?: 'left' | 'center' | 'right' }) {
-  const frame = useCurrentFrame();
+  const frame = useT();
   const o = prog(frame, at, at + 12) * (out === undefined ? 1 : 1 - prog(frame, out, out + 10));
   const tx = align === 'center' ? '-50%' : align === 'right' ? '-100%' : '0';
   return (
@@ -442,7 +451,7 @@ export function DemoTag({ x, y, at, out, align = 'center' }: { x: number; y: num
 
 /* ── Tap ripple and achievement sparkle ───────────────────────────────── */
 export function Ripple({ x, y, at, size = 90, color = '#fff' }: { x: number; y: number; at: number; size?: number; color?: string }) {
-  const frame = useCurrentFrame();
+  const frame = useT();
   const p = prog(frame, at, at + 16);
   if (frame < at || p >= 1) return null;
   return (
@@ -465,7 +474,7 @@ export function Ripple({ x, y, at, size = 90, color = '#fff' }: { x: number; y: 
 
 /** A soft burst of small stars and dots: a milestone, never a flash. */
 export function Sparkle({ x, y, at, radius = 140, count = 12, seed = 1 }: { x: number; y: number; at: number; radius?: number; count?: number; seed?: number }) {
-  const frame = useCurrentFrame();
+  const frame = useT();
   const parts = useMemo(() => {
     let a = seed * 9301;
     const rnd = () => ((a = (a * 9301 + 49297) % 233280) / 233280);
@@ -522,7 +531,7 @@ export function Trail({ d, from = 0, to, opacity = 1, width = 6, head = true }: 
   const { W, H } = useLayout();
   const pts = usePathPoints(d);
   const h = pointAt(pts, to);
-  const frame = useCurrentFrame();
+  const frame = useT();
   const pulse = 1 + Math.sin(frame / 5) * 0.12;
   return (
     <svg width={W} height={H} style={{ position: 'absolute', inset: 0, opacity, overflow: 'visible' }}>
@@ -547,8 +556,8 @@ export function Trail({ d, from = 0, to, opacity = 1, width = 6, head = true }: 
 
 /* ── RUMBO logo, drawn like the app's splash ──────────────────────────── */
 export function Logo({ width, at, color = '#fff' }: { width: number; at: number; color?: string }) {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const frame = useT();
+  const fps = FPS;
   const [, , rw, rh] = RUNNER_VIEWBOX.split(' ').map(Number) as [number, number, number, number];
   const [wx, wy, ww, wh] = WORDMARK_TEXT_VIEWBOX.split(' ').map(Number) as [number, number, number, number];
   const markH = width * 0.36;
@@ -593,7 +602,7 @@ export interface Cue {
 
 /** Short phrases in a dark pill: high contrast, no bouncing; key terms in lavender. */
 export function Captions({ cues }: { cues: Cue[] }) {
-  const frame = useCurrentFrame();
+  const frame = useT();
   const L = useLayout();
   const cue = cues.find((c) => frame >= c.start && frame < c.end);
   if (!cue) return null;
