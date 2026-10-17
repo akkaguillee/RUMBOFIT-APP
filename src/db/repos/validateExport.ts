@@ -59,7 +59,7 @@ const nutrients = (n: unknown) =>
   (n.satFat === undefined || num(n.satFat)) &&
   (n.fiber === undefined || num(n.fiber)) &&
   (n.sugars === undefined || num(n.sugars));
-const nutrientSource = (v: unknown) => obj(v) && (v.kind === 'usda' || v.kind === 'off' || v.kind === 'manual');
+const nutrientSource = (v: unknown) => obj(v) && (v.kind === 'usda' || v.kind === 'off' || v.kind === 'ai' || v.kind === 'manual');
 const mealItem = (i: unknown) =>
   obj(i) && str(i.name) && optNum(i.grams) && (i.unit === undefined || i.unit === 'ml') && nutrients(i.nutrients) && (i.per100 === undefined || nutrients(i.per100)) && nutrientSource(i.source) && bool(i.estimated);
 const mealType = oneOf('breakfast', 'lunch', 'dinner', 'snack');

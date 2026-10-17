@@ -4,7 +4,7 @@ import { Button } from '@/ui/Button';
 import { cx } from '@/ui/cx';
 import type { PreparedImage } from './api';
 
-export type WorkStep = 'upload' | 'identify' | 'lookup' | 'product';
+export type WorkStep = 'upload' | 'identify' | 'product';
 
 interface Step {
   id: string;
@@ -14,8 +14,7 @@ interface Step {
 const PHOTO_STEPS: Step[] = [
   { id: 'prepare', label: 'Foto preparada en tu móvil' },
   { id: 'upload', label: 'Enviando la foto' },
-  { id: 'identify', label: 'Identificando alimentos y cantidades' },
-  { id: 'lookup', label: 'Buscando valores nutricionales' },
+  { id: 'identify', label: 'Identificando alimentos, cantidades y valores' },
 ];
 
 const CODE_STEPS: Step[] = [
@@ -48,14 +47,8 @@ export function WorkingView({ image, code, step, upload, onCancel }: Props) {
       <div className="work__visual">
         {image ? (
           <>
-            <motion.img
-              src={image.url}
-              alt="Foto que se está analizando"
-              className="work__photo"
-              initial={reduce ? false : { scale: 1.04, filter: 'brightness(1.25)' }}
-              animate={{ scale: 1, filter: 'brightness(1)' }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            />
+            {/* The frame settles in place after the shot (transform only; no filter animation, costly in Safari). */}
+            <img src={image.url} alt="Foto que se está analizando" className="work__photo" />
             {!reduce && <span className="work__scan" aria-hidden="true" />}
             <span className="work__grid" aria-hidden="true" />
           </>

@@ -335,6 +335,8 @@ export interface Nutrients {
 export type NutrientSource =
   | { kind: 'usda'; id: number; label: string; dataType: string }
   | { kind: 'off'; id: string; label: string }
+  /** Typical values per 100 g estimated by the AI from food composition tables (not verified in a database). */
+  | { kind: 'ai'; label: string }
   | { kind: 'manual' };
 
 export interface MealItem {

@@ -8,7 +8,7 @@ import { isDateKey, todayKey } from '@/domain/dates';
 import type { MealType } from '@/domain/types';
 import { cheer } from '@/ui/cheer';
 import { toastError } from '@/ui/toast';
-import { analyzePhoto, FoodApiError, lookupBarcode, lookupNutrients, type PreparedImage } from './api';
+import { analyzePhoto, FoodApiError, lookupBarcode, lookupNutrients, scannerStatus, type PreparedImage, type ScannerStatus } from './api';
 import { CaptureView, type ScanMode } from './CaptureView';
 import { ConsentView } from './ConsentView';
 import { applyLookups, draftFromAnalysis, draftFromProduct, emptyDraft, failLookups, retryLookups, summarize, toMealItems, waitingKeys, type Draft } from './draft';
@@ -51,8 +51,21 @@ export default function ScannerPage() {
     return d && isDateKey(d) && d < todayKey() ? d : undefined;
   });
   const [saving, setSaving] = useState(false);
+  const [server, setServer] = useState<ScannerStatus | null>(null);
+  const [shots, setShots] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  /** Increases with every scan, so late answers never land on a newer result. */
+  const scanRef = useRef(0);
+
+  // Ask once what the server can do, to warn before a photo is taken.
+  useEffect(() => {
+    let alive = true;
+    void scannerStatus().then((s) => alive && setServer(s));
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const close = useCallback(() => {
     abortRef.current?.abort();
@@ -75,6 +88,7 @@ export default function ScannerPage() {
 
   const backToCapture = () => {
     abortRef.current?.abort();
+    scanRef.current++;
     setPhase({ kind: 'capture' });
   };
 
@@ -88,17 +102,33 @@ export default function ScannerPage() {
     }
   };
 
+  /** Checks the estimated values against USDA in the background and puts the answers on the result. */
+  const verify = async (scan: number, draft: Draft) => {
+    const pending = waitingKeys(draft);
+    if (!pending.length) return;
+    try {
+      const results = await lookupNutrients(pending);
+      if (scanRef.current === scan) setPhase((p) => (p.kind === 'result' ? { ...p, draft: applyLookups(p.draft, results), lookupError: undefined } : p));
+    } catch (e) {
+      if (scanRef.current === scan) setPhase((p) => (p.kind === 'result' ? { ...p, draft: failLookups(p.draft), lookupError: asFoodError(e) } : p));
+    }
+  };
+
   const runPhoto = async (image: PreparedImage, hint?: string) => {
     abortRef.current?.abort();
     const ctrl = new AbortController();
     abortRef.current = ctrl;
+    const scan = ++scanRef.current;
     setPhase({ kind: 'working', image, step: 'upload', upload: 0 });
     try {
-      const analysis = await analyzePhoto(image, {
-        hint,
-        signal: ctrl.signal,
-        onUpload: (f) => setPhase((p) => (p.kind === 'working' && p.step === 'upload' ? { ...p, upload: f, step: f >= 1 ? 'identify' : 'upload' } : p)),
-      });
+      const [analysis, status] = await Promise.all([
+        analyzePhoto(image, {
+          hint,
+          signal: ctrl.signal,
+          onUpload: (f) => setPhase((p) => (p.kind === 'working' && p.step === 'upload' ? { ...p, upload: f, step: f >= 1 ? 'identify' : 'upload' } : p)),
+        }),
+        scannerStatus(),
+      ]);
       if (ctrl.signal.aborted) return;
       // A legible barcode on a package beats a visual estimate: try the product data first.
       if (analysis.barcode) {
@@ -119,16 +149,10 @@ export default function ScannerPage() {
         setPhase({ kind: 'failed', error: new FoodApiError('not_found', message), image, retry: null });
         return;
       }
-      let draft = draftFromAnalysis(analysis);
-      setPhase({ kind: 'working', image, step: 'lookup', upload: 1 });
-      let lookupError: FoodApiError | undefined;
-      try {
-        draft = applyLookups(draft, await lookupNutrients(waitingKeys(draft)));
-      } catch (e) {
-        draft = failLookups(draft);
-        lookupError = asFoodError(e);
-      }
-      if (!ctrl.signal.aborted) setPhase({ kind: 'result', draft, image, lookupError });
+      // Results show at once with the estimated values; the database check follows.
+      const draft = draftFromAnalysis(analysis, { verify: status?.database !== false });
+      setPhase({ kind: 'result', draft, image });
+      void verify(scan, draft);
     } catch (e) {
       const err = asFoodError(e);
       if (err.code === 'aborted') return;
@@ -136,16 +160,11 @@ export default function ScannerPage() {
     }
   };
 
-  const retryValues = async () => {
+  const retryValues = () => {
     if (phase.kind !== 'result') return;
     const draft = retryLookups(phase.draft);
     setPhase({ ...phase, draft, lookupError: undefined });
-    try {
-      const results = await lookupNutrients(waitingKeys(draft));
-      setPhase((p) => (p.kind === 'result' ? { ...p, draft: applyLookups(p.draft, results) } : p));
-    } catch (e) {
-      setPhase((p) => (p.kind === 'result' ? { ...p, draft: failLookups(p.draft), lookupError: asFoodError(e) } : p));
-    }
+    void verify(scanRef.current, draft);
   };
 
   const save = async (meal: MealType) => {
@@ -188,6 +207,8 @@ export default function ScannerPage() {
               key="capture"
               mode={mode}
               onModeChange={setMode}
+              server={server}
+              onShot={() => setShots((n) => n + 1)}
               onPhoto={(image) => void runPhoto(image)}
               onCode={(code) => void runBarcode(code)}
               onManual={startManual}
@@ -222,7 +243,7 @@ export default function ScannerPage() {
               lookupError={phase.lookupError}
               saving={saving}
               onChange={(draft) => setPhase((p) => (p.kind === 'result' ? { ...p, draft } : p))}
-              onRetryValues={() => void retryValues()}
+              onRetryValues={retryValues}
               onReanalyze={phase.image ? (hint) => void runPhoto(phase.image!, hint) : undefined}
               onSave={(meal) => void save(meal)}
               onRescan={backToCapture}
@@ -239,6 +260,8 @@ export default function ScannerPage() {
           )}
         </AnimatePresence>
       )}
+      {/* Camera flash: a short white blink above everything when a photo is taken. */}
+      {shots > 0 && !reduce && <span key={shots} className="shot-flash" aria-hidden="true" />}
     </motion.div>
   );
 

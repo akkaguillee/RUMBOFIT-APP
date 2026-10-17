@@ -14,7 +14,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAYAAAAICAIAAABVpBlvAAAAIUlEQVR
 test.use({ launchOptions: { args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] }, permissions: ['camera'] });
 
 test.describe('Escáner de alimentos · cámara', () => {
-  test('photo → foods with database values → fix what is missing → save to the log', async ({ page }) => {
+  test('photo → foods with values at once → verified in the database → fix what is missing → save to the log', async ({ page }) => {
     const calls = await mockFunctions(page);
     await onboard(page);
     await page.getByRole('button', { name: 'Escanear', exact: true }).click();
@@ -34,15 +34,25 @@ test.describe('Escáner de alimentos · cámara', () => {
     expect(sent.mediaType).toBe('image/jpeg');
     expect(Buffer.from(sent.image!, 'base64').subarray(0, 2).toString('hex')).toBe('ffd8');
 
-    // Estimates are marked as such; a food without data is not invented and blocks saving.
+    // Values show at once (typical values from the analysis), then the database confirms them.
+    await expect(page.locator('.vchip--verified')).toHaveCount(2);
     await expect(page.locator('.tile--kcal')).toContainText('≈ 432');
+    // Each food is labelled on the photo, and a label opens it.
+    await expect(page.locator('.tag')).toHaveCount(2);
+    await page.locator('.tag', { hasText: 'Pechuga de pollo' }).click();
+    const chickenSheet = page.getByRole('dialog', { name: 'Pechuga de pollo' });
+    await expect(chickenSheet).toBeVisible();
+    await expect(chickenSheet).toContainText('USDA FoodData Central');
+    await page.getByRole('button', { name: 'Listo' }).click();
+    await expect(chickenSheet).toHaveCount(0);
+    // A food without any data is not invented and blocks saving.
     await expect(page.getByText('No hemos encontrado datos fiables para este alimento.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Guardar en mi registro' })).toBeDisabled();
     await page.getByRole('button', { name: 'Quitar', exact: true }).click();
     await expect(page.getByText('Salsa de la casa')).toHaveCount(0);
 
     // Adjust an amount.
-    await page.getByRole('button', { name: /^Arroz blanco/ }).click();
+    await page.locator('.item__main', { hasText: 'Arroz blanco' }).click();
     await page.getByRole('button', { name: '200 g' }).click();
     await page.getByRole('button', { name: 'Listo' }).click();
     await expect(page.locator('.tile--kcal')).toContainText('458');
@@ -76,6 +86,41 @@ test.describe('Escáner de alimentos · cámara', () => {
     await expect(page.locator('.cap__video[data-live]')).toBeVisible();
     await page.getByRole('button', { name: 'Cerrar escáner' }).click();
     await expect(page).toHaveURL(/\/habitos/);
+  });
+
+  test('without the database key the values are still shown, marked as estimates', async ({ page }) => {
+    const calls = await mockFunctions(page, { database: false });
+    await onboard(page);
+    await page.goto('/habitos/escaner');
+    await page.getByRole('button', { name: 'Entendido, empezar' }).click();
+    await expect(page.locator('.cap__video[data-live]')).toBeVisible();
+    await page.getByRole('button', { name: 'Hacer foto' }).click();
+    await expect(page.getByRole('heading', { name: 'Arroz con pollo' })).toBeVisible();
+    await expect(page.locator('.vchip--estimate')).toHaveCount(2);
+    await expect(page.locator('.tile--kcal')).toContainText('≈ 422');
+    await expect(page.getByText(/valores típicos por 100 g estimados por la IA/)).toBeVisible();
+    // Nothing tells the user the values are «missing»: only the sauce, without data, needs a decision.
+    await expect(page.getByText('Faltan sus valores nutricionales.')).toHaveCount(0);
+    await expect(page.getByText('No hemos encontrado datos fiables para este alimento.')).toHaveCount(1);
+    expect(calls.nutrients).toBe(0);
+    await page.getByRole('button', { name: 'Quitar', exact: true }).click();
+    await page.getByRole('button', { name: 'Guardar en mi registro' }).click();
+    await expect(page.getByRole('heading', { name: /^Guardado en/ })).toBeVisible();
+  });
+
+  test('the flash button explains the system camera when the browser cannot light it', async ({ page }) => {
+    await mockFunctions(page);
+    await onboard(page);
+    await page.goto('/habitos/escaner');
+    await page.getByRole('button', { name: 'Entendido, empezar' }).click();
+    await expect(page.locator('.cap__video[data-live]')).toBeVisible();
+    // Chromium's fake camera has no light, like Safari on iPhone.
+    await page.getByRole('button', { name: 'Encender el flash' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Flash' });
+    await expect(sheet).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'Hacer la foto con la cámara del sistema' })).toBeVisible();
+    await sheet.getByRole('button', { name: 'Entendido' }).click();
+    await expect(sheet).toHaveCount(0);
   });
 
   test('a code typed by hand is checked and looked up', async ({ page }) => {

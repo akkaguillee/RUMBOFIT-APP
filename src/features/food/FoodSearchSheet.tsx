@@ -1,11 +1,12 @@
-import { PencilLine, Search } from 'lucide-react';
+import { PencilLine, Search, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { UsdaFood } from '@/domain/nutrition/usda';
+import type { Nutrients } from '@/domain/types';
 import { formatInt, formatNumber } from '@/domain/units';
 import { Button } from '@/ui/Button';
 import { TextField } from '@/ui/Field';
 import { Sheet } from '@/ui/Sheet';
-import { FoodApiError, searchFoods } from './api';
+import { FoodApiError, searchFoods, type FoodSearchResult } from './api';
 import { dataTypeLabel } from './draft';
 
 interface Props {
@@ -13,23 +14,25 @@ interface Props {
   initial?: string;
   onClose: () => void;
   onPick: (food: UsdaFood, name: string) => void;
+  /** Typical values estimated by the AI (when the database has little or nothing). */
+  onEstimate: (per100: Nutrients, name: string) => void;
   onManual: (name: string) => void;
 }
 
-type SearchState = { kind: 'idle' } | { kind: 'loading' } | { kind: 'done'; foods: UsdaFood[] } | { kind: 'error'; error: FoodApiError };
+type SearchState = { kind: 'idle' } | { kind: 'loading' } | ({ kind: 'done' } & FoodSearchResult) | { kind: 'error'; error: FoodApiError };
 
 const capitalize = (s: string) => s.charAt(0).toLocaleUpperCase('es') + s.slice(1);
 
 /** Search in USDA FoodData Central (Spanish names are translated on the server). */
-export function FoodSearchSheet({ open, initial, onClose, onPick, onManual }: Props) {
+export function FoodSearchSheet({ open, initial, onClose, onPick, onEstimate, onManual }: Props) {
   return (
-    <Sheet open={open} onClose={onClose} title="Buscar alimento" description="Valores de referencia de USDA FoodData Central, por 100 g." initialFocus="input">
-      <SearchBody initial={initial} onPick={onPick} onManual={onManual} />
+    <Sheet open={open} onClose={onClose} title="Buscar alimento" description="Valores por 100 g de USDA FoodData Central, o una estimación de IA marcada como tal." initialFocus="input">
+      <SearchBody initial={initial} onPick={onPick} onEstimate={onEstimate} onManual={onManual} />
     </Sheet>
   );
 }
 
-function SearchBody({ initial, onPick, onManual }: Omit<Props, 'open' | 'onClose'>) {
+function SearchBody({ initial, onPick, onEstimate, onManual }: Omit<Props, 'open' | 'onClose'>) {
   const [query, setQuery] = useState(initial ?? '');
   const [state, setState] = useState<SearchState>({ kind: 'idle' });
   const [attempt, setAttempt] = useState(0);
@@ -41,7 +44,7 @@ function SearchBody({ initial, onPick, onManual }: Omit<Props, 'open' | 'onClose
     const timer = window.setTimeout(() => {
       setState({ kind: 'loading' });
       searchFoods(q)
-        .then((foods) => !cancelled && setState({ kind: 'done', foods }))
+        .then((result) => !cancelled && setState({ kind: 'done', ...result }))
         .catch((e: unknown) => !cancelled && setState({ kind: 'error', error: e instanceof FoodApiError ? e : new FoodApiError('upstream', 'No se ha podido buscar.') }));
     }, 450);
     return () => {
@@ -96,14 +99,27 @@ function SearchBody({ initial, onPick, onManual }: Omit<Props, 'open' | 'onClose
             </div>
           </div>
         )}
+        {shown.kind === 'done' && shown.estimate?.per100 && (
+          <button type="button" className="alt alt--estimate" onClick={() => onEstimate(shown.estimate!.per100!, capitalize(shown.estimate!.name) || name)}>
+            <span className="alt__name">
+              <Sparkles aria-hidden="true" /> {capitalize(shown.estimate.name)} · valores típicos
+            </span>
+            <span className="alt__meta t-num">
+              {formatInt(shown.estimate.per100.kcal)} kcal · P {formatNumber(shown.estimate.per100.protein, 1)} · H {formatNumber(shown.estimate.per100.carbs, 1)} · G{' '}
+              {formatNumber(shown.estimate.per100.fat, 1)} por 100 g · estimación de IA
+            </span>
+          </button>
+        )}
         {shown.kind === 'done' &&
           (shown.foods.length === 0 ? (
+            shown.estimate ? null : (
             <div className="food-search__msg">
               <p>Sin resultados para «{q}». Prueba con otras palabras o introduce los valores de la etiqueta.</p>
               <Button size="sm" variant="secondary" icon={<PencilLine />} onClick={() => onManual(name)}>
                 Introducir valores
               </Button>
             </div>
+            )
           ) : (
             <ul className="food-search__list">
               {shown.foods.map((f) => (
@@ -120,7 +136,7 @@ function SearchBody({ initial, onPick, onManual }: Omit<Props, 'open' | 'onClose
             </ul>
           ))}
       </div>
-      {shown.kind === 'done' && shown.foods.length > 0 && (
+      {shown.kind === 'done' && (shown.foods.length > 0 || shown.estimate) && (
         <button type="button" className="link-btn food-search__manual" onClick={() => onManual(name)}>
           <Search aria-hidden="true" /> ¿No está? Introduce los valores de la etiqueta
         </button>

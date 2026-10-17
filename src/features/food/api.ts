@@ -1,4 +1,4 @@
-import { parsePhotoAnalysis, type PhotoAnalysis } from '@/domain/nutrition/analysis';
+import { parseFoodReference, parsePhotoAnalysis, type FoodReference, type PhotoAnalysis } from '@/domain/nutrition/analysis';
 import { isValidGtin } from '@/domain/nutrition/barcode';
 import { isPlausiblePer100 } from '@/domain/nutrition/nutrients';
 import { parseOffProduct, type OffProduct } from '@/domain/nutrition/off';
@@ -191,23 +191,57 @@ export interface NutrientLookup {
   id: string;
   match: UsdaFood | null;
   alternatives: UsdaFood[];
+  /** The search for this food failed (the others may have worked). */
+  failed?: boolean;
 }
 
 export async function lookupNutrients(items: { id: string; query: string }[]): Promise<NutrientLookup[]> {
   const body = await request<{ results?: unknown[] }>('food-nutrients', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ items }) }, 20_000);
   return (body.results ?? []).map((r) => {
-    const row = (r ?? {}) as { id?: unknown; match?: unknown; alternatives?: unknown };
+    const row = (r ?? {}) as { id?: unknown; match?: unknown; alternatives?: unknown; error?: unknown };
     return {
       id: typeof row.id === 'string' ? row.id : '',
       match: validFood(row.match),
       alternatives: (Array.isArray(row.alternatives) ? row.alternatives : []).map(validFood).filter((f): f is UsdaFood => f !== null),
+      ...(typeof row.error === 'string' ? { failed: true } : {}),
     };
   });
 }
 
-export async function searchFoods(q: string): Promise<UsdaFood[]> {
-  const body = await request<{ foods?: unknown[] }>(`food-search?q=${encodeURIComponent(q)}`, {}, 25_000);
-  return (body.foods ?? []).map(validFood).filter((f): f is UsdaFood => f !== null);
+export interface FoodSearchResult {
+  foods: UsdaFood[];
+  /** Typical values estimated by the AI, offered when the database has little or nothing. */
+  estimate: FoodReference | null;
+}
+
+export async function searchFoods(q: string): Promise<FoodSearchResult> {
+  const body = await request<{ foods?: unknown[]; estimate?: unknown }>(`food-search?q=${encodeURIComponent(q)}`, {}, 25_000);
+  const estimate = parseFoodReference(body.estimate);
+  return {
+    foods: (body.foods ?? []).map(validFood).filter((f): f is UsdaFood => f !== null),
+    estimate: estimate?.per100 ? estimate : null,
+  };
+}
+
+export interface ScannerStatus {
+  /** Photos can be analysed. */
+  vision: boolean;
+  /** Values can be verified in USDA FoodData Central. */
+  database: boolean;
+}
+
+let status: Promise<ScannerStatus | null> | null = null;
+
+/** What the server can do, asked once per session (null when it cannot be known). */
+export function scannerStatus(): Promise<ScannerStatus | null> {
+  status ??= request<{ vision?: unknown; database?: unknown }>('food-status', {}, 8000)
+    .then((b) => ({ vision: b.vision === true, database: b.database === true }))
+    .catch((e: unknown) => {
+      status = null;
+      if (e instanceof FoodApiError && e.code === 'unavailable' && STANDALONE) return { vision: false, database: false };
+      return null;
+    });
+  return status;
 }
 
 const OFF_FIELDS = 'code,product_name,product_name_es,generic_name,generic_name_es,brands,quantity,serving_size,serving_quantity,nutriments';

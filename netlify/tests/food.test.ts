@@ -106,12 +106,47 @@ describe('food-nutrients', async () => {
     const res = await handler(post('food-nutrients', { items: [{ id: 'a', query: 'omelet cheese' }] }));
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.results[0]).toMatchObject({ id: 'a', match: { fdcId: 2, per100: { kcal: 154, protein: 10.6 } }, alternatives: [{ fdcId: 1 }] });
-    const url = new URL(String(fetchMock.mock.calls[0]![0]));
+    // The branded entry is filtered out: only generic foods describe the food itself.
+    expect(body.results[0]).toMatchObject({ id: 'a', match: { fdcId: 2, per100: { kcal: 154, protein: 10.6 } }, alternatives: [] });
+    const [first, init] = fetchMock.mock.calls[0]!;
+    const url = new URL(String(first));
     expect(url.origin + url.pathname).toBe('https://api.nal.usda.gov/fdc/v1/foods/search');
-    expect(url.searchParams.get('dataType')).toBe('Survey (FNDDS),SR Legacy,Foundation');
     expect(url.searchParams.get('api_key')).toBe('test-usda-key');
+    // Documented POST search: data types as a JSON array.
+    expect((init as RequestInit).method).toBe('POST');
+    expect(JSON.parse(String((init as RequestInit).body))).toEqual({ query: 'omelet cheese', pageSize: 8, dataType: ['Survey (FNDDS)', 'SR Legacy', 'Foundation'] });
     expect(JSON.stringify(body)).not.toContain('test-usda-key');
+  });
+
+  it('falls back to the GET search when the POST search is refused', async () => {
+    fetchMock
+      .mockResolvedValueOnce(new Response('bad request', { status: 400 }))
+      .mockResolvedValueOnce(Response.json({ foods: [usdaHit(3, 'Rice, white, cooked', 'SR Legacy', 130)] }));
+    const body = await (await handler(post('food-nutrients', { items: [{ id: 'r', query: 'rice white cooked' }] }))).json();
+    expect(body.results[0]).toMatchObject({ id: 'r', match: { fdcId: 3 } });
+    const second = new URL(String(fetchMock.mock.calls[1]![0]));
+    expect(second.searchParams.get('query')).toBe('rice white cooked');
+    expect(fetchMock.mock.calls[1]![1]).not.toHaveProperty('method', 'POST');
+  });
+
+  it('looks each food up on its own: one failed search does not hide the others', async () => {
+    fetchMock.mockImplementation(async (_url: string, init?: RequestInit) => {
+      const { query } = JSON.parse(String(init?.body ?? '{}')) as { query?: string };
+      if (query === 'broken') throw new TypeError('network');
+      return Response.json({ foods: [usdaHit(4, 'Banana, raw', 'Foundation', 89)] });
+    });
+    const body = await (
+      await handler(
+        post('food-nutrients', {
+          items: [
+            { id: 'a', query: 'banana raw' },
+            { id: 'b', query: 'broken' },
+          ],
+        }),
+      )
+    ).json();
+    expect(body.results[0]).toMatchObject({ id: 'a', match: { fdcId: 4 } });
+    expect(body.results[1]).toMatchObject({ id: 'b', match: null, error: 'upstream' });
   });
 
   it('returns no match instead of guessing when the database has nothing', async () => {
@@ -127,9 +162,11 @@ describe('food-nutrients', async () => {
     expect(await res.json()).toMatchObject({ error: { code: 'not_configured' } });
     vi.stubEnv('USDA_FDC_API_KEY', 'k');
     fetchMock.mockResolvedValue(new Response('busy', { status: 429 }));
-    expect((await handler(post('food-nutrients', { items: [{ id: 'a', query: 'rice' }] }))).status).toBe(429);
-    fetchMock.mockRejectedValue(new TypeError('network'));
-    expect((await handler(post('food-nutrients', { items: [{ id: 'a', query: 'rice' }] }))).status).toBe(502);
+    expect((await (await handler(post('food-nutrients', { items: [{ id: 'a', query: 'rice' }] }))).json()).results[0]).toMatchObject({ error: 'rate_limited' });
+    fetchMock.mockResolvedValue(new Response('no', { status: 403 }));
+    const bad = await handler(post('food-nutrients', { items: [{ id: 'a', query: 'rice' }] }));
+    expect(bad.status).toBe(503);
+    expect(await bad.json()).toMatchObject({ error: { code: 'not_configured' } });
     expect((await handler(post('food-nutrients', { items: [] }))).status).toBe(400);
   });
 });
@@ -138,7 +175,7 @@ describe('food-analyze', async () => {
   const { default: handler } = await import('../functions/food-analyze');
   const photo = { image: 'aGVsbG8=', mediaType: 'image/jpeg' };
 
-  it('identifies foods with a structured answer from Claude and never asks it for nutrients', async () => {
+  it('identifies foods with a structured answer from Claude, with checked typical values per 100 g', async () => {
     create.mockResolvedValue({
       stop_reason: 'end_turn',
       content: [
@@ -148,7 +185,29 @@ describe('food-analyze', async () => {
             is_food: true,
             image_quality: 'good',
             dish_name: 'Tortilla de patatas',
-            items: [{ name_es: 'Tortilla de patatas', usda_query: 'omelet with potatoes', grams: 180, grams_confidence: 'medium', preparation: '' }],
+            items: [
+              {
+                name_es: 'Tortilla de patatas',
+                usda_query: 'omelet with potatoes',
+                grams: 180,
+                grams_confidence: 'medium',
+                preparation: '',
+                per_100g: { kcal: 160, protein_g: 6.5, carbs_g: 11, fat_g: 10, sat_fat_g: 1.8, fiber_g: 1, sugars_g: 1, alcohol_g: 0 },
+                center_x: 0.48,
+                center_y: 0.55,
+              },
+              {
+                // Energy that does not add up with the macronutrients is not passed on.
+                name_es: 'Pan',
+                usda_query: 'bread white',
+                grams: 40,
+                grams_confidence: 'high',
+                preparation: '',
+                per_100g: { kcal: 900, protein_g: 9, carbs_g: 49, fat_g: 3, sat_fat_g: 0.6, fiber_g: 3, sugars_g: 5, alcohol_g: 0 },
+                center_x: 1.7,
+                center_y: 0.2,
+              },
+            ],
             barcode: '',
             caveats: ['Puede llevar aceite que no se ve.'],
           }),
@@ -157,7 +216,11 @@ describe('food-analyze', async () => {
     });
     const res = await handler(post('food-analyze', { ...photo, hint: 'es tortilla de patatas' }));
     expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ ok: true, analysis: { isFood: true, items: [{ name: 'Tortilla de patatas', grams: 180 }] } });
+    const out = await res.json();
+    expect(out).toMatchObject({ ok: true, analysis: { isFood: true } });
+    expect(out.analysis.items[0]).toMatchObject({ name: 'Tortilla de patatas', grams: 180, per100: { kcal: 160, protein: 6.5, satFat: 1.8 }, at: { x: 0.48, y: 0.55 } });
+    expect(out.analysis.items[1]).not.toHaveProperty('per100');
+    expect(out.analysis.items[1]).not.toHaveProperty('at');
     const params = create.mock.calls[0]![0];
     expect(params).toMatchObject({
       model: 'claude-opus-5-5',
@@ -165,7 +228,8 @@ describe('food-analyze', async () => {
       betas: ['server-side-fallback-2026-07-01'],
       output_config: { effort: 'low', format: { type: 'json_schema' } },
     });
-    expect(JSON.stringify(params.output_config.format.schema)).not.toMatch(/kcal|calor|protein/i);
+    expect(params.output_config.format.schema.properties.items.items.required).toEqual(expect.arrayContaining(['per_100g', 'center_x', 'center_y']));
+    expect(params.system).toMatch(/per 100 g/);
     expect(params.messages[0].content[0]).toMatchObject({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: 'aGVsbG8=' } });
     expect(params.messages[0].content[1].text).toContain('es tortilla de patatas');
   });
@@ -202,17 +266,46 @@ describe('food-analyze', async () => {
 describe('food-search', async () => {
   const { default: handler } = await import('../functions/food-search');
 
-  it('translates a Spanish name once when the database finds nothing', async () => {
+  const reference = {
+    is_food: true,
+    name_es: 'Tortilla de patatas',
+    usda_query: 'omelet with potatoes',
+    per_100g: { kcal: 160, protein_g: 6.5, carbs_g: 11, fat_g: 10, sat_fat_g: 1.8, fiber_g: 1, sugars_g: 1, alcohol_g: 0 },
+  };
+
+  it('translates a Spanish name when the database finds nothing, and offers typical values as an estimate', async () => {
     fetchMock
       .mockResolvedValueOnce(Response.json({ foods: [] }))
       .mockResolvedValueOnce(Response.json({ foods: [usdaHit(5, 'Omelet, potato', 'Survey (FNDDS)', 160)] }));
-    create.mockResolvedValue({ stop_reason: 'end_turn', content: [{ type: 'text', text: '{"usda_query":"omelet with potatoes"}' }] });
+    create.mockResolvedValue({ stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify(reference) }] });
     const body = await (await handler(get('food-search?q=tortilla%20de%20patatas'))).json();
-    expect(body).toMatchObject({ ok: true, query: 'omelet with potatoes', foods: [{ fdcId: 5 }] });
-    expect(new URL(String(fetchMock.mock.calls[1]![0])).searchParams.get('query')).toBe('omelet with potatoes');
+    expect(body).toMatchObject({ ok: true, query: 'omelet with potatoes', foods: [{ fdcId: 5 }], estimate: { name: 'Tortilla de patatas', per100: { kcal: 160 } } });
+    expect(JSON.parse(String(fetchMock.mock.calls[1]![1]?.body)).query).toBe('omelet with potatoes');
+  });
+
+  it('still answers without the database key, with the estimate only', async () => {
+    vi.stubEnv('USDA_FDC_API_KEY', '');
+    create.mockResolvedValue({ stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify(reference) }] });
+    const body = await (await handler(get('food-search?q=tortilla'))).json();
+    expect(body).toMatchObject({ ok: true, foods: [], estimate: { name: 'Tortilla de patatas' } });
+    expect(fetchMock).not.toHaveBeenCalled();
+    vi.stubEnv('ANTHROPIC_API_KEY', '');
+    expect((await handler(get('food-search?q=tortilla'))).status).toBe(503);
   });
 
   it('needs at least two letters', async () => {
     expect((await handler(get('food-search?q=a'))).status).toBe(400);
+  });
+});
+
+describe('food-status', async () => {
+  const { default: handler } = await import('../functions/food-status');
+
+  it('says which parts are configured, never the keys', async () => {
+    const body = await (await handler(get('food-status'))).json();
+    expect(body).toEqual({ ok: true, vision: true, database: true });
+    vi.stubEnv('USDA_FDC_API_KEY', ' ');
+    expect(await (await handler(get('food-status'))).json()).toEqual({ ok: true, vision: true, database: false });
+    expect((await handler(get('food-status', 'https://evil.example'))).status).toBe(403);
   });
 });

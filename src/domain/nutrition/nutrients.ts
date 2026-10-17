@@ -83,3 +83,13 @@ export function isPlausiblePer100(n: Nutrients): boolean {
 
 /** Energy that the macronutrients alone would give (Atwater 4/4/9), to flag inconsistent sources. */
 export const atwaterKcal = (n: Nutrients): number => 4 * n.protein + 4 * n.carbs + 9 * n.fat;
+
+/**
+ * Whether the energy agrees with the macronutrients (4 kcal/g protein and
+ * carbohydrates, 9 kcal/g fat, 7 kcal/g alcohol), with room for fibre and
+ * rounding. Used to reject estimated values that do not add up.
+ */
+export function energyAddsUp(n: Nutrients, alcohol = 0): boolean {
+  const expected = atwaterKcal(n) + 7 * Math.max(0, alcohol);
+  return Math.abs(n.kcal - expected) <= Math.max(30, expected * 0.25);
+}

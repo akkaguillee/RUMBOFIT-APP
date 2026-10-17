@@ -1,6 +1,6 @@
-import { AlertTriangle, ArrowLeft, Barcode, ChevronRight, Info, Lightbulb, Pencil, PencilLine, Plus, RefreshCw, ScanLine, Search, Sparkles, X } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Barcode, Check, ChevronRight, Info, Lightbulb, Pencil, PencilLine, Plus, RefreshCw, ScanLine, Search, Sparkles, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useMealsDay, useProfile, useWeights } from '@/db/hooks';
 import { energyEstimate, latestWeightUpTo } from '@/domain/body';
 import { nowTime, todayKey } from '@/domain/dates';
@@ -22,6 +22,7 @@ import {
   addItem,
   availableBases,
   canSave,
+  chooseEstimate,
   chooseFood,
   confirmAmount,
   itemValues,
@@ -95,10 +96,18 @@ export function ResultView({ draft, date, image, lookupError, saving, onChange, 
     setSheet({ kind: 'item', key: item.key });
   };
 
+  const addEstimate = (per100: Nutrients, name: string) => {
+    const item: DraftItem = { key: newKey(), name, query: '', grams: 100, amount: 'user', status: 'ok', per100, source: { kind: 'ai', label: name }, alternatives: [] };
+    onChange({ ...addItem(draft, item), dish: draft.dish || name });
+    setSheet({ kind: 'item', key: item.key });
+  };
+  const missingValues = draft.items.some((i) => i.status === 'error');
+
   return (
     <motion.div className="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.14 } }}>
       <div className={cx('result__hero', !image && 'result__hero--plain')}>
         {image && <img src={image.url} alt="Foto analizada" className="result__photo" />}
+        {image && <FoodTags items={draft.items} src={image.url} onOpen={(key) => setSheet({ kind: 'item', key })} />}
         <div className="result__hero-bar">
           <button type="button" className="scan-btn" aria-label="Volver a la cámara" onClick={onRescan}>
             <ArrowLeft />
@@ -163,10 +172,19 @@ export function ResultView({ draft, date, image, lookupError, saving, onChange, 
             <NutrientTiles values={values} approx={shownBasis === 'portion' && summary.estimated} />
             <OptionalRow values={values} missing={summary.missing} />
             <p className="result__basis-note">{basisNote(draft, shownBasis, summary.estimated)}</p>
+            {summary.aiValues && (
+              <p className="result__note">
+                <Sparkles aria-hidden="true" />
+                <span>
+                  Incluye valores típicos por 100 g estimados por la IA a partir de tablas de composición: tómalos como aproximados.
+                  {draft.items.some((i) => i.verify === 'verified') ? ' Los marcados como «Verificado» coinciden con USDA FoodData Central.' : ''}
+                </span>
+              </p>
+            )}
           </section>
         )}
 
-        {lookupError && (
+        {lookupError && missingValues && (
           <div className="result__note result__note--warn" role="alert">
             <AlertTriangle aria-hidden="true" />
             <span>
@@ -178,7 +196,7 @@ export function ResultView({ draft, date, image, lookupError, saving, onChange, 
           </div>
         )}
 
-        {pending.length > 0 && !loading && !lookupError && draft.items.length > 0 && (
+        {pending.length > 0 && !loading && !(lookupError && missingValues) && draft.items.length > 0 && (
           <p className="result__note result__note--warn" role="status">
             <Info aria-hidden="true" />
             {pending.length === 1
@@ -211,8 +229,9 @@ export function ResultView({ draft, date, image, lookupError, saving, onChange, 
           ) : (
             <ul className="items">
               <AnimatePresence initial={false}>
-                {draft.items.map((it) => (
+                {draft.items.map((it, index) => (
                   <ItemRow
+                    index={index}
                     key={it.key}
                     item={it}
                     onOpen={() => setSheet({ kind: 'item', key: it.key })}
@@ -296,6 +315,12 @@ export function ResultView({ draft, date, image, lookupError, saving, onChange, 
             setSheet({ kind: 'item', key: sheet.key });
           } else addFood(food, name);
         }}
+        onEstimate={(per100, name) => {
+          if (sheet?.kind === 'search' && sheet.key) {
+            onChange(chooseEstimate(draft, sheet.key, per100, name));
+            setSheet({ kind: 'item', key: sheet.key });
+          } else addEstimate(per100, name);
+        }}
         onManual={(name) => setSheet({ kind: 'manual', key: sheet?.kind === 'search' ? sheet.key : undefined, initial: name })}
       />
       <ManualFoodSheet
@@ -339,6 +364,7 @@ function sourcesNote(draft: Draft): string {
   const parts: string[] = [];
   if (kinds.has('usda')) parts.push('USDA FoodData Central');
   if (kinds.has('off')) parts.push('Open Food Facts');
+  if (kinds.has('ai')) parts.push('estimaciones de IA a partir de tablas de composición');
   if (kinds.has('manual')) parts.push('valores introducidos por ti');
   const from = parts.length ? `Valores de ${parts.join(', ')}.` : '';
   const how = draft.origin === 'photo' ? ' Alimentos y cantidades estimados por IA a partir de la foto; la foto no se guarda.' : '';
@@ -404,6 +430,7 @@ function OptionalRow({ values, missing }: { values: Nutrients; missing: readonly
 
 function ItemRow({
   item,
+  index,
   onOpen,
   onSearch,
   onManual,
@@ -412,6 +439,7 @@ function ItemRow({
   onRetry,
 }: {
   item: DraftItem;
+  index: number;
   onOpen: () => void;
   onSearch: () => void;
   onManual: () => void;
@@ -426,8 +454,9 @@ function ItemRow({
     <motion.li
       layout="position"
       className={cx('item', `item--${item.status}`, item.amount === 'default' && 'item--ask')}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
+      // Full transform strings stay on the compositor; a short stagger lets the list read in order.
+      initial={{ opacity: 0, transform: 'translateY(10px)' }}
+      animate={{ opacity: 1, transform: 'translateY(0px)', transition: { duration: 0.32, ease: [0.23, 1, 0.32, 1], delay: Math.min(index, 8) * 0.045 } }}
       exit={{ opacity: 0, height: 0, marginTop: 0, paddingTop: 0, paddingBottom: 0, transition: { duration: 0.2 } }}
     >
       <button type="button" className="item__main" onClick={onOpen} disabled={item.status === 'loading'}>
@@ -439,7 +468,10 @@ function ItemRow({
             {item.preparation ? ` · ${item.preparation}` : ''}
             {item.amount === 'label' ? ' · ración del envase' : ''}
           </span>
-          {item.amount === 'photo' && item.confidence && <span className={`conf conf--${item.confidence}`}>{CONFIDENCE_LABEL[item.confidence]}</span>}
+          <span className="item__chips">
+            {item.amount === 'photo' && item.confidence && <span className={`conf conf--${item.confidence}`}>{CONFIDENCE_LABEL[item.confidence]}</span>}
+            <ValueChip item={item} />
+          </span>
         </span>
         <span className="item__kcal t-num">
           {item.status === 'loading' ? (
@@ -612,5 +644,101 @@ function NameSheet({ open, value, onClose, onSubmit }: { open: boolean; value: s
         <TextField label="Nombre" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} data-autofocus />
       </form>
     </Sheet>
+  );
+}
+
+/** Where an item's values come from, and whether the database confirmed them. */
+function ValueChip({ item }: { item: DraftItem }) {
+  if (item.status !== 'ok') return null;
+  if (item.verify === 'pending') {
+    return (
+      <span key="pending" className="vchip vchip--pending">
+        <span className="vchip__spin" aria-hidden="true" /> Verificando valores…
+      </span>
+    );
+  }
+  if (item.verify === 'verified' && item.source?.kind === 'usda') {
+    return (
+      <span key="verified" className="vchip vchip--verified">
+        <Check aria-hidden="true" /> Verificado · USDA
+      </span>
+    );
+  }
+  if (item.source?.kind === 'ai') {
+    return (
+      <span key="estimate" className="vchip vchip--estimate">
+        <Sparkles aria-hidden="true" /> Valores estimados
+      </span>
+    );
+  }
+  return null;
+}
+
+/**
+ * Labels on the photo where each food is, as the AI placed them. The photo is
+ * shown cropped to fill (object-fit: cover), so positions are mapped through
+ * the same crop; labels that would fall off the visible area are left out.
+ */
+function FoodTags({ items, src, onOpen }: { items: DraftItem[]; src: string; onOpen: (key: string) => void }) {
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
+  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    const img = new Image();
+    img.onload = () => alive && setNatural({ w: img.naturalWidth, h: img.naturalHeight });
+    img.src = src;
+    return () => {
+      alive = false;
+    };
+  }, [src]);
+
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => entry && setBox({ w: entry.contentRect.width, h: entry.contentRect.height }));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const tags =
+    natural && box
+      ? items
+          .filter((it) => it.at && it.status === 'ok')
+          .map((it) => {
+            const scale = Math.max(box.w / natural.w, box.h / natural.h);
+            const dw = natural.w * scale;
+            const dh = natural.h * scale;
+            return { it, x: (box.w - dw) / 2 + it.at!.x * dw, y: (box.h - dh) / 2 + it.at!.y * dh };
+          })
+          .filter(({ x, y }) => x > 16 && x < box.w - 16 && y > 64 && y < box.h - 44)
+      : [];
+
+  return (
+    <div ref={boxRef} className="tags">
+      {tags.map(({ it, x, y }, i) => {
+        const v = itemValues(it);
+        const side = box && x > box.w * 0.58 ? 'left' : 'right';
+        return (
+          <button
+            key={it.key}
+            type="button"
+            className={`tag tag--${side}`}
+            style={{ transform: `translate(${Math.round(x)}px, ${Math.round(y)}px)`, '--i': i } as CSSProperties}
+            onClick={() => onOpen(it.key)}
+            aria-label={`${it.name}: ver y ajustar`}
+          >
+            <span className="tag__inner">
+              <span className="tag__dot" aria-hidden="true" />
+              <span className="tag__label">
+                {it.name}
+                {v && <span className="tag__kcal t-num"> · {formatInt(v.kcal)} kcal</span>}
+              </span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
   );
 }

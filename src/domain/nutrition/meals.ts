@@ -45,6 +45,8 @@ export function sourceLabel(source: NutrientSource): string {
       return `USDA FoodData Central · ${source.label}`;
     case 'off':
       return `Open Food Facts · ${source.label}`;
+    case 'ai':
+      return 'Estimación de IA · valores típicos por 100 g';
     case 'manual':
       return 'Introducido a mano';
   }

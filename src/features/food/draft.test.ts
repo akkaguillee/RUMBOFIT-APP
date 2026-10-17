@@ -4,6 +4,7 @@ import type { OffProduct } from '@/domain/nutrition/off';
 import type { UsdaFood } from '@/domain/nutrition/usda';
 import {
   applyLookups,
+  chooseEstimate,
   availableBases,
   canSave,
   chooseFood,
@@ -115,5 +116,60 @@ describe('scan draft', () => {
     let d = draftFromAnalysis({ ...analysis, items: analysis.items.slice(0, 1) });
     d = applyLookups(d, [{ id: d.items[0]!.key, match: rice, alternatives: [] }]);
     expect(toMealItems(d)[0]).toMatchObject({ name: 'Arroz blanco', grams: 180, estimated: true });
+  });
+
+  describe('estimated values and their verification', () => {
+    const est = { kcal: 128, protein: 2.6, carbs: 28, fat: 0.4 };
+    const photo: PhotoAnalysis = {
+      ...analysis,
+      items: [
+        { name: 'Arroz blanco', query: 'rice white cooked', grams: 180, confidence: 'medium', per100: est, at: { x: 0.4, y: 0.6 } },
+        { name: 'Pechuga de pollo', query: 'chicken breast grilled', grams: 120, confidence: 'high', per100: { kcal: 300, protein: 25, carbs: 0, fat: 22 } },
+        { name: 'Salsa', query: 'sauce unknown', grams: 30, confidence: 'low' },
+      ],
+    };
+
+    it('shows estimated values at once, marked as such, and checks them in the background', () => {
+      const d = draftFromAnalysis(photo);
+      expect(d.items.map((i) => i.status)).toEqual(['ok', 'ok', 'loading']);
+      expect(d.items[0]).toMatchObject({ source: { kind: 'ai' }, verify: 'pending', at: { x: 0.4, y: 0.6 } });
+      expect(summarize(d)).toMatchObject({ ready: 2, aiValues: true });
+      expect(waitingKeys(d)).toHaveLength(3);
+    });
+
+    it('takes the database values when they agree, keeps the estimate when they do not', () => {
+      const d0 = draftFromAnalysis(photo);
+      const [a, b, c] = d0.items.map((i) => i.key);
+      const d = applyLookups(d0, [
+        { id: a!, match: rice, alternatives: [] },
+        { id: b!, match: chicken, alternatives: [] },
+        { id: c!, match: null, alternatives: [] },
+      ]);
+      expect(d.items[0]).toMatchObject({ verify: 'verified', source: { kind: 'usda', id: 1 }, per100: rice.per100 });
+      // 165 vs 300 kcal: likely a different food, so the estimate stays and the match is offered.
+      expect(d.items[1]).toMatchObject({ verify: 'unverified', source: { kind: 'ai' }, per100: { kcal: 300 } });
+      expect(d.items[1]!.alternatives[0]).toMatchObject({ fdcId: 2 });
+      expect(d.items[2]!.status).toBe('none');
+    });
+
+    it('keeps estimates usable when the check fails, and asks the user only for foods without values', () => {
+      const d = failLookups(draftFromAnalysis(photo));
+      expect(d.items.map((i) => [i.status, i.verify])).toEqual([
+        ['ok', 'unverified'],
+        ['ok', 'unverified'],
+        ['error', undefined],
+      ]);
+      expect(canSave(removeItem(d, d.items[2]!.key))).toBe(true);
+      const offline = draftFromAnalysis(photo, { verify: false });
+      expect(offline.items.map((i) => i.status)).toEqual(['ok', 'ok', 'none']);
+      expect(offline.items[0]!.verify).toBeUndefined();
+      expect(waitingKeys(offline)).toHaveLength(0);
+    });
+
+    it('saves estimated values with their source', () => {
+      let d = draftFromAnalysis({ ...photo, items: photo.items.slice(0, 1) }, { verify: false });
+      d = chooseEstimate(d, d.items[0]!.key, { kcal: 130, protein: 2.7, carbs: 28, fat: 0.3 }, 'Arroz');
+      expect(toMealItems(d)[0]).toMatchObject({ name: 'Arroz', source: { kind: 'ai' }, estimated: true });
+    });
   });
 });

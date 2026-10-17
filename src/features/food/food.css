@@ -37,10 +37,10 @@
   flex: none;
   border-radius: 50%;
   color: #fff;
-  background: rgba(16, 14, 24, 0.42);
+  /* Solid tint instead of a backdrop blur: over a live camera image the blur
+     would have to be recomputed on every frame. */
+  background: rgba(12, 10, 20, 0.55);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  backdrop-filter: blur(14px) saturate(160%);
   transition:
     transform var(--dur-fast) var(--ease-out),
     background-color var(--dur-fast);
@@ -206,10 +206,43 @@
   border-radius: 28px;
   /* Dims everything around the frame. */
   box-shadow: 0 0 0 100vmax rgba(5, 4, 10, 0.42);
-  transition:
-    width 0.42s var(--ease-out),
-    height 0.42s var(--ease-out),
-    border-radius 0.42s var(--ease-out);
+  /* Remounted on mode change: the new frame settles in from slightly larger. */
+  animation: cap-frame-in 280ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes cap-frame-in {
+  from {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+}
+
+/* Idle viewfinder: the corners breathe gently so the frame reads as live. */
+.cap__frame--photo .cap__corner {
+  animation: cap-corner-breathe 2.4s cubic-bezier(0.77, 0, 0.175, 1) infinite alternate;
+}
+
+.cap__corner--tl {
+  --dx: -1;
+  --dy: -1;
+}
+.cap__corner--tr {
+  --dx: 1;
+  --dy: -1;
+}
+.cap__corner--bl {
+  --dx: -1;
+  --dy: 1;
+}
+.cap__corner--br {
+  --dx: 1;
+  --dy: 1;
+}
+
+@keyframes cap-corner-breathe {
+  to {
+    transform: translate(calc(var(--dx) * 5px), calc(var(--dy) * 5px));
+  }
 }
 
 .cap__frame--photo {
@@ -315,6 +348,9 @@
 }
 
 .cap__hint {
+  /* Above the frame's dimming shadow. */
+  position: relative;
+  z-index: 1;
   max-width: min(320px, calc(100vw - 2 * var(--gutter)));
   padding: 8px 14px;
   text-wrap: balance;
@@ -323,9 +359,7 @@
   font-weight: var(--weight-medium);
   text-align: center;
   color: #fff;
-  background: rgba(10, 8, 18, 0.5);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  background: rgba(10, 8, 18, 0.62);
 }
 
 .cap__top {
@@ -340,6 +374,120 @@
   padding: calc(var(--safe-top) + 10px) var(--gutter) 10px;
   background: linear-gradient(180deg, rgba(5, 4, 10, 0.55), transparent);
   pointer-events: none;
+}
+
+.cap__top-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.scan-btn--flash svg {
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.scan-btn--flash[data-on] {
+  color: #1a1400;
+  background: #ffd84d;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+    0 0 22px rgba(255, 216, 77, 0.55);
+}
+
+.scan-btn--flash[data-on] svg {
+  transform: rotate(-12deg) scale(1.08);
+}
+
+.cap__notice {
+  position: absolute;
+  top: calc(var(--safe-top) + 66px);
+  left: var(--gutter);
+  right: var(--gutter);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  color: #fff;
+  background: rgba(12, 10, 20, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(255, 216, 77, 0.35);
+  animation: cap-notice-in 260ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.cap__notice button {
+  font-weight: var(--weight-semibold);
+  color: #ffd84d;
+}
+
+@keyframes cap-notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.cap__resume {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  font-weight: var(--weight-semibold);
+  color: #fff;
+}
+
+.cap__resume-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  color: #120f1d;
+  background: #fff;
+  animation: cap-resume-pulse 1.6s cubic-bezier(0.23, 1, 0.32, 1) infinite;
+}
+
+.cap__resume-icon svg {
+  width: 30px;
+  height: 30px;
+  margin-left: 3px;
+}
+
+@keyframes cap-resume-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 22px rgba(255, 255, 255, 0);
+  }
+}
+
+.flash-sheet__actions {
+  display: grid;
+  gap: var(--space-2);
+}
+
+/* Shutter flash: a short white blink above everything (opacity only, CSS so it never waits for JS). */
+.shot-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: #fff;
+  pointer-events: none;
+  animation: shot-flash 320ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes shot-flash {
+  0% {
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .cap__top > * {
@@ -495,9 +643,7 @@
   position: absolute;
   inset: 0;
   justify-content: center;
-  background: rgba(5, 4, 10, 0.6);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
+  background: rgba(5, 4, 10, 0.72);
 }
 
 .cap__fallback {
@@ -577,6 +723,14 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* The frozen frame settles after the shot. */
+  animation: work-photo-in 420ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes work-photo-in {
+  from {
+    transform: scale(1.06);
+  }
 }
 
 .work__grid {
@@ -929,7 +1083,117 @@
   position: relative;
   flex: none;
   height: min(42dvh, 380px);
+  overflow: hidden;
   background: #07060b;
+}
+
+/* ── Labels on the photo ─────────────────────────────────────────────── */
+
+.tags {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+}
+
+.tag__inner {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  max-width: min(58vw, 260px);
+  padding: 6px 11px 6px 6px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: #fff;
+  background: rgba(10, 8, 18, 0.74);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 6px 18px rgba(0, 0, 0, 0.35);
+  transform: translate(-11px, -50%);
+  /* Pops in where the food is, one after another. */
+  animation: tag-in 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation-delay: calc(220ms + var(--i, 0) * 70ms);
+}
+
+.tag--left .tag__inner {
+  flex-direction: row-reverse;
+  padding: 6px 6px 6px 11px;
+  transform: translate(calc(-100% + 11px), -50%);
+}
+
+@keyframes tag-in {
+  from {
+    opacity: 0;
+    scale: 0.9;
+  }
+}
+
+.tag__dot {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--acc-hi, #c9b8ff);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 45%, transparent);
+}
+
+.tag__dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--acc-hi, #c9b8ff);
+  animation: tag-ping 1.6s cubic-bezier(0.23, 1, 0.32, 1) 2;
+  animation-delay: calc(520ms + var(--i, 0) * 70ms);
+}
+
+@keyframes tag-ping {
+  from {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.8);
+  }
+}
+
+.tag__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag__kcal {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tag:hover .tag__inner {
+    background: rgba(10, 8, 18, 0.9);
+  }
+}
+
+.tag:active .tag__inner {
+  scale: 0.96;
+}
+
+.tag:focus-visible {
+  outline: none;
+}
+
+.tag:focus-visible .tag__inner {
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 4px var(--acc);
 }
 
 .result__hero--plain {
@@ -1233,13 +1497,79 @@
   color: var(--text-2);
 }
 
+.item__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  margin-top: 4px;
+}
+
+.item__chips:empty {
+  display: none;
+}
+
+/* Where the values come from: estimated, being checked, or verified. */
+.vchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-2xs, 0.6875rem);
+  font-weight: var(--weight-semibold);
+  color: var(--text-2);
+  background: var(--control-fill);
+  animation: vchip-in 260ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.vchip svg {
+  width: 11px;
+  height: 11px;
+}
+
+.vchip--verified {
+  color: var(--good-text);
+  background: var(--good-soft);
+}
+
+.vchip--verified svg {
+  animation: vchip-check 420ms cubic-bezier(0.23, 1, 0.32, 1) 80ms both;
+}
+
+.vchip--estimate {
+  color: var(--accent-text);
+  background: var(--accent-soft);
+}
+
+.vchip__spin {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  animation: work-spin 0.8s linear infinite;
+}
+
+@keyframes vchip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes vchip-check {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-30deg);
+  }
+}
+
 /* How sure the photo estimate is (always in words, the colour only supports it). */
 .conf {
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-top: 4px;
   padding: 2px 8px 2px 7px;
   border-radius: var(--radius-pill);
   font-size: var(--text-2xs, 0.6875rem);
@@ -1565,8 +1895,25 @@
 }
 
 .alt__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
+}
+
+.alt__name svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: var(--accent-text);
+}
+
+.alt--estimate {
+  margin-bottom: 6px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--acc) 14%, transparent), transparent 70%),
+    var(--control-fill);
 }
 
 .alt__meta {
@@ -1788,6 +2135,26 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* Keep the fades that explain what happened; drop movement and blinking. */
+  .cap__frame--photo .cap__corner,
+  .cap__resume-icon,
+  .tag__dot::after,
+  .shot-flash {
+    animation: none;
+  }
+
+  .work__photo,
+  .cap__frame,
+  .cap__notice,
+  .vchip,
+  .vchip--verified svg {
+    animation-name: food-fade;
+  }
+
+  .tag__inner {
+    animation-name: food-fade;
+  }
+
   .cap__laser,
   .work__scan,
   .item__skeleton,
@@ -1804,5 +2171,11 @@
   .cap__frame,
   .cap__video {
     transition: none;
+  }
+}
+
+@keyframes food-fade {
+  from {
+    opacity: 0;
   }
 }

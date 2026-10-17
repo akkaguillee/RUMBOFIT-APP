@@ -7,15 +7,20 @@ import type { MealItem, NutrientSource, Nutrients } from '@/domain/types';
 import type { NutrientLookup } from './api';
 
 /**
- * The editable result of a scan before it is saved. Values always come from
- * a database (or the user); an item without reliable data stays visibly
- * unresolved and the meal cannot be saved until the user fixes or removes it.
+ * The editable result of a scan before it is saved. Values come from a
+ * database, the package, the user, or (marked as an estimate) the typical
+ * values the AI gives for each food, which USDA verifies when it can. An item
+ * without any reliable value stays visibly unresolved and the meal cannot be
+ * saved until the user fixes or removes it.
  */
 
 export type ItemStatus = 'loading' | 'ok' | 'none' | 'error';
 
 /** Where the amount comes from: a photo estimate, the package, the user, or nothing yet. */
 export type AmountSource = 'photo' | 'label' | 'user' | 'default';
+
+/** Checking estimated values against the database: running, confirmed, or not confirmed. */
+export type VerifyState = 'pending' | 'verified' | 'unverified';
 
 export interface DraftItem {
   key: string;
@@ -32,6 +37,9 @@ export interface DraftItem {
   source?: NutrientSource;
   alternatives: UsdaFood[];
   serving?: { grams: number; label?: string };
+  verify?: VerifyState;
+  /** Where the food is in the photo (fractions), for the labels on the picture. */
+  at?: { x: number; y: number };
 }
 
 export interface Draft {
@@ -62,7 +70,12 @@ const DATA_TYPE: Record<string, string> = {
 /** What kind of FoodData Central entry a food is, in words. */
 export const dataTypeLabel = (t: string): string => DATA_TYPE[t] ?? t;
 
-export function draftFromAnalysis(a: PhotoAnalysis): Draft {
+/**
+ * Items with estimated values are ready at once (and, when `verify` is true,
+ * checked against the database afterwards); items without them wait for the
+ * database, or need the user when there is none.
+ */
+export function draftFromAnalysis(a: PhotoAnalysis, opts: { verify: boolean } = { verify: true }): Draft {
   return {
     origin: 'photo',
     dish: a.dish || a.items[0]?.name || 'Comida',
@@ -76,7 +89,10 @@ export function draftFromAnalysis(a: PhotoAnalysis): Draft {
       amount: 'photo',
       confidence: it.confidence,
       preparation: it.preparation,
-      status: 'loading',
+      ...(it.at ? { at: it.at } : {}),
+      ...(it.per100
+        ? { status: 'ok' as const, per100: it.per100, source: { kind: 'ai' as const, label: it.name }, ...(opts.verify ? { verify: 'pending' as const } : {}) }
+        : { status: opts.verify ? ('loading' as const) : ('none' as const) }),
       alternatives: [],
     })),
   };
@@ -113,21 +129,42 @@ export const emptyDraft = (): Draft => ({ origin: 'manual', dish: '', items: [],
 const mapItems = (draft: Draft, fn: (it: DraftItem) => DraftItem): Draft => ({ ...draft, items: draft.items.map(fn) });
 const mapItem = (draft: Draft, key: string, fn: (it: DraftItem) => DraftItem): Draft => mapItems(draft, (it) => (it.key === key ? fn(it) : it));
 
-/** Puts the database answers on the items that were waiting for them. */
+/** How far database energy may be from the estimate and still confirm it. */
+export const VERIFY_TOLERANCE = 0.35;
+
+const agrees = (a: Nutrients, b: Nutrients) => Math.abs(a.kcal - b.kcal) <= Math.max(25, VERIFY_TOLERANCE * Math.max(a.kcal, b.kcal));
+
+/**
+ * Puts the database answers on the items. An item waiting for values takes
+ * the match; an estimated item is confirmed (and takes the database values)
+ * when the match agrees with it, and otherwise keeps the estimate with the
+ * database entry offered as an alternative, since a wrong match is likelier
+ * than a wildly wrong typical value.
+ */
 export function applyLookups(draft: Draft, results: readonly NutrientLookup[]): Draft {
   const byId = new Map(results.map((r) => [r.id, r]));
   return mapItems(draft, (it) => {
-    if (it.status !== 'loading') return it;
     const r = byId.get(it.key);
-    if (!r?.match) return { ...it, status: 'none', alternatives: r?.alternatives ?? [] };
-    return { ...it, status: 'ok', per100: r.match.per100, source: usdaSource(r.match), alternatives: r.alternatives };
+    if (it.status === 'loading') {
+      if (!r || r.failed) return { ...it, status: 'error' };
+      if (!r.match) return { ...it, status: 'none', alternatives: r.alternatives };
+      return { ...it, status: 'ok', per100: r.match.per100, source: usdaSource(r.match), alternatives: r.alternatives, verify: 'verified' };
+    }
+    if (it.verify !== 'pending' || !it.per100) return it;
+    if (!r?.match) return { ...it, verify: 'unverified', alternatives: r?.alternatives ?? it.alternatives };
+    if (agrees(it.per100, r.match.per100)) {
+      return { ...it, per100: r.match.per100, source: usdaSource(r.match), alternatives: r.alternatives, verify: 'verified' };
+    }
+    return { ...it, verify: 'unverified', alternatives: [r.match, ...r.alternatives].slice(0, 5) };
   });
 }
 
-export const failLookups = (draft: Draft): Draft => mapItems(draft, (it) => (it.status === 'loading' ? { ...it, status: 'error' } : it));
+/** The database could not be asked: estimates stay as they are, items without values need the user. */
+export const failLookups = (draft: Draft): Draft =>
+  mapItems(draft, (it) => (it.status === 'loading' ? { ...it, status: 'error' } : it.verify === 'pending' ? { ...it, verify: 'unverified' } : it));
 export const retryLookups = (draft: Draft): Draft => mapItems(draft, (it) => (it.status === 'error' ? { ...it, status: 'loading' } : it));
 export const waitingKeys = (draft: Draft): { id: string; query: string }[] =>
-  draft.items.filter((it) => it.status === 'loading' && it.query).map((it) => ({ id: it.key, query: it.query }));
+  draft.items.filter((it) => (it.status === 'loading' || it.verify === 'pending') && it.query).map((it) => ({ id: it.key, query: it.query }));
 
 export const setGrams = (draft: Draft, key: string, grams: number): Draft =>
   mapItem(draft, key, (it) => ({ ...it, grams: clampGrams(grams), amount: 'user', confidence: undefined }));
@@ -139,11 +176,15 @@ export const renameItem = (draft: Draft, key: string, name: string): Draft => ma
 
 /** Uses another database food for an item (keeps the amount). */
 export const chooseFood = (draft: Draft, key: string, food: UsdaFood, name?: string): Draft =>
-  mapItem(draft, key, (it) => ({ ...it, name: name || it.name, status: 'ok', per100: food.per100, source: usdaSource(food) }));
+  mapItem(draft, key, (it) => ({ ...it, name: name || it.name, status: 'ok', per100: food.per100, source: usdaSource(food), verify: undefined }));
+
+/** Uses typical values estimated by the AI for an item (keeps the amount). */
+export const chooseEstimate = (draft: Draft, key: string, per100: Nutrients, name: string): Draft =>
+  mapItem(draft, key, (it) => ({ ...it, name: name || it.name, status: 'ok', per100, source: { kind: 'ai', label: name || it.name }, verify: undefined }));
 
 /** Values typed by the user, per 100 g. */
 export const setManualValues = (draft: Draft, key: string, per100: Nutrients, name: string): Draft =>
-  mapItem(draft, key, (it) => ({ ...it, name, status: 'ok', per100, source: { kind: 'manual' }, unit: undefined }));
+  mapItem(draft, key, (it) => ({ ...it, name, status: 'ok', per100, source: { kind: 'manual' }, unit: undefined, verify: undefined }));
 
 export const removeItem = (draft: Draft, key: string): Draft => ({ ...draft, items: draft.items.filter((it) => it.key !== key) });
 export const addItem = (draft: Draft, item: DraftItem): Draft => ({ ...draft, items: [...draft.items, item] });
@@ -163,6 +204,8 @@ export interface DraftSummary {
   pending: number;
   /** Some amount is a visual estimate. */
   estimated: boolean;
+  /** Some values are AI estimates not confirmed in a database. */
+  aiValues: boolean;
   liquid: boolean;
 }
 
@@ -176,6 +219,7 @@ export function summarize(draft: Draft): DraftSummary {
     ready: ok.length,
     pending: draft.items.length - ok.length,
     estimated: ok.some((it) => it.amount === 'photo'),
+    aiValues: ok.some((it) => it.source?.kind === 'ai'),
     liquid: ok.length > 0 && ok.every((it) => it.unit === 'ml'),
   };
 }

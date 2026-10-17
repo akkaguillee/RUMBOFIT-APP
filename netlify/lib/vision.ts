@@ -1,12 +1,22 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { AnalysisFormatError, cleanQuery, MAX_HINT_LENGTH, parsePhotoAnalysis, PHOTO_ANALYSIS_SCHEMA, type PhotoAnalysis } from '../../src/domain/nutrition/analysis';
+import {
+  AnalysisFormatError,
+  FOOD_REFERENCE_SCHEMA,
+  MAX_HINT_LENGTH,
+  parseFoodReference,
+  parsePhotoAnalysis,
+  PHOTO_ANALYSIS_SCHEMA,
+  type FoodReference,
+  type PhotoAnalysis,
+} from '../../src/domain/nutrition/analysis';
 import { HttpError } from './http';
 
 /**
  * Food recognition with Claude. The model identifies foods, estimates the
- * amount on the plate and writes a search query for USDA FoodData Central;
- * it never provides nutrient values (those come from the database).
- * The photo is only sent for this request and is not stored.
+ * amount on the plate, gives typical values per 100 g from food composition
+ * tables (shown in the app as estimates) and writes a search query so USDA
+ * FoodData Central can verify them. The photo is only sent for this request
+ * and is not stored.
  */
 
 const MODEL = process.env.RUMBO_FOOD_MODEL || 'claude-opus-5-5';
@@ -19,9 +29,10 @@ For each distinct food or drink you can see:
 - grams: the edible amount you estimate is on the plate, using visual cues (a dinner plate is about 26 cm, cutlery, glass size, typical portions).
 - grams_confidence: "high" only when the amount is easy to judge (a whole fruit, a packaged item with visible size), "low" when the food is piled, hidden or partly out of frame.
 - preparation: how it seems cooked ("frito", "a la plancha", "cocido", "crudo"…) or an empty string.
+- per_100g: typical composition per 100 g of that food as prepared, as listed in standard food composition tables (USDA FoodData Central, BEDCA). Energy in kcal; protein, carbohydrates (total, including fibre and sugars), fat, saturated fat, fibre, sugars and alcohol in grams. Values are per 100 g, never for the portion. Energy must agree with the macronutrients (about 4 kcal/g protein and carbohydrates, 9 kcal/g fat, 7 kcal/g alcohol). Use 0 for alcohol in foods without it.
+- center_x, center_y: the approximate centre of that food in the photo, as fractions of the image width and height (0,0 is the top-left corner, 1,1 the bottom-right).
 
 Rules:
-- Only identify foods and estimate amounts. Never estimate calories or nutrients.
 - If the photo does not show food, set is_food to false, image_quality to "not_food" and return no items.
 - If the photo is too blurry or dark to identify the food, say so in image_quality and list only what you can recognise.
 - Do not invent ingredients you cannot see. Mention what a photo cannot show (cooking oil, sauces, fillings, portion depth) in caveats, in Spanish, briefly.
@@ -30,7 +41,7 @@ Rules:
 - At most 10 items. A user hint, if present, describes the photo; trust it for identification but still estimate amounts from the image.`;
 
 export function visionConfigured(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY);
+  return Boolean(process.env.ANTHROPIC_API_KEY?.trim());
 }
 
 function client(): Anthropic {
@@ -99,15 +110,12 @@ export async function analyzePhoto(image: { data: string; mediaType: ImageMediaT
   }
 }
 
-const QUERY_SCHEMA = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['usda_query'],
-  properties: { usda_query: { type: 'string' } },
-} as const;
-
-/** Turns a food name typed in Spanish into an English query for FoodData Central. */
-export async function translateFoodQuery(text: string): Promise<string> {
+/**
+ * A food typed by the user (usually in Spanish): an English query for
+ * FoodData Central and typical values per 100 g, used as an estimate when
+ * the database has no entry or is not configured.
+ */
+export async function referenceFood(text: string): Promise<FoodReference | null> {
   const api = client();
   let response: Anthropic.Beta.BetaMessage;
   try {
@@ -116,19 +124,18 @@ export async function translateFoodQuery(text: string): Promise<string> {
       max_tokens: 16000,
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
-      output_config: { effort: 'low', format: { type: 'json_schema', schema: QUERY_SCHEMA } },
+      output_config: { effort: 'low', format: { type: 'json_schema', schema: FOOD_REFERENCE_SCHEMA } },
       system:
-        'Convert a food name (usually in Spanish) into a short English search query that matches a generic USDA FoodData Central entry for that food, e.g. "tortilla de patatas" → "omelet with potatoes". Reply with the query only.',
+        'The user names a food or dish, usually in Spanish. Reply with: is_food (false if it is not a food or drink); name_es, a short Spanish name; usda_query, a short English query that matches a generic USDA FoodData Central entry for it as usually eaten (e.g. "tortilla de patatas" → "omelet with potatoes"); per_100g, its typical composition per 100 g as listed in standard food composition tables (USDA, BEDCA): kcal, and grams of protein, total carbohydrates, fat, saturated fat, fibre, sugars and alcohol. Energy must agree with the macronutrients.',
       messages: [{ role: 'user', content: text.slice(0, 80) }],
     });
   } catch (e) {
     mapError(e);
   }
-  if (response.stop_reason !== 'end_turn') return '';
+  if (response.stop_reason !== 'end_turn') return null;
   try {
-    const parsed = JSON.parse(textOf(response.content)) as { usda_query?: unknown };
-    return cleanQuery(parsed.usda_query);
+    return parseFoodReference(JSON.parse(textOf(response.content)));
   } catch {
-    return '';
+    return null;
   }
 }

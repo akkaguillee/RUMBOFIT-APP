@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { AnalysisFormatError, parsePhotoAnalysis } from './analysis';
+import { AnalysisFormatError, parseEstimatedPer100, parseFoodReference, parsePhotoAnalysis } from './analysis';
 import { isValidGtin, normalizeBarcode } from './barcode';
 import { goalFamily, mealGuidance, type GuidanceInput } from './guidance';
 import { itemFromPer100, mealForTime, withGrams } from './meals';
-import { isPlausiblePer100, kcalToKj, per100Of, scaleNutrients, sumNutrients } from './nutrients';
+import { energyAddsUp, isPlausiblePer100, kcalToKj, per100Of, scaleNutrients, sumNutrients } from './nutrients';
 import { parseOffProduct, perServing } from './off';
 import { bestUsdaMatch, parseUsdaFood, parseUsdaSearch } from './usda';
 
@@ -253,5 +253,54 @@ describe('meal guidance', () => {
     expect(restricted.headline).toMatch(/^Aporta 900 kcal/);
     expect(restricted.note).toMatch(/no mostramos comparaciones/);
     expect(mealGuidance({ ...base, targetKcal: null, noTarget: 'missing', estimated: false }).note).toMatch(/Completa tu peso/);
+  });
+});
+
+describe('estimated values per 100 g', () => {
+  it('accepts typical values whose energy adds up, rounded', () => {
+    expect(parseEstimatedPer100({ kcal: 130, protein_g: 2.69, carbs_g: 28.2, fat_g: 0.28, sat_fat_g: 0.08, fiber_g: 0.4, sugars_g: 0.05, alcohol_g: 0 })).toEqual({
+      kcal: 130,
+      protein: 2.7,
+      carbs: 28.2,
+      fat: 0.3,
+      satFat: 0.1,
+      fiber: 0.4,
+      sugars: 0.1,
+    });
+  });
+
+  it('counts alcohol, and rejects energy that does not match or impossible values', () => {
+    // Red wine: most of its energy is alcohol.
+    expect(parseEstimatedPer100({ kcal: 85, protein_g: 0.1, carbs_g: 2.6, fat_g: 0, sat_fat_g: 0, fiber_g: 0, sugars_g: 0.6, alcohol_g: 10.6 })).toBeDefined();
+    expect(parseEstimatedPer100({ kcal: 85, protein_g: 0.1, carbs_g: 2.6, fat_g: 0, sat_fat_g: 0, fiber_g: 0, sugars_g: 0.6, alcohol_g: 0 })).toBeUndefined();
+    expect(parseEstimatedPer100({ kcal: 900, protein_g: 9, carbs_g: 49, fat_g: 3, sat_fat_g: 0, fiber_g: 0, sugars_g: 0, alcohol_g: 0 })).toBeUndefined();
+    expect(parseEstimatedPer100({ kcal: 400, protein_g: 60, carbs_g: 60, fat_g: 0, sat_fat_g: 0, fiber_g: 0, sugars_g: 0, alcohol_g: 0 })).toBeUndefined();
+    expect(parseEstimatedPer100(null)).toBeUndefined();
+    expect(energyAddsUp({ kcal: 160, protein: 6.5, carbs: 11, fat: 10 })).toBe(true);
+  });
+
+  it('keeps positions inside the photo only', () => {
+    const a = parsePhotoAnalysis({
+      is_food: true,
+      image_quality: 'good',
+      dish_name: 'Plato',
+      items: [
+        { name_es: 'Arroz', usda_query: 'rice', grams: 150, grams_confidence: 'medium', preparation: '', center_x: 0.3, center_y: 0.7 },
+        { name_es: 'Pollo', usda_query: 'chicken', grams: 100, grams_confidence: 'medium', preparation: '', center_x: -0.2, center_y: 0.5 },
+      ],
+      barcode: '',
+      caveats: [],
+    });
+    expect(a.items[0]!.at).toEqual({ x: 0.3, y: 0.7 });
+    expect(a.items[1]!.at).toBeUndefined();
+  });
+
+  it('reads a typed food reference, refusing things that are not food', () => {
+    expect(parseFoodReference({ is_food: true, name_es: 'Garbanzos cocidos', usda_query: 'chickpeas cooked', per_100g: { kcal: 164, protein_g: 8.9, carbs_g: 27.4, fat_g: 2.6, sat_fat_g: 0.3, fiber_g: 7.6, sugars_g: 4.8, alcohol_g: 0 } })).toMatchObject({
+      name: 'Garbanzos cocidos',
+      query: 'chickpeas cooked',
+      per100: { kcal: 164 },
+    });
+    expect(parseFoodReference({ is_food: false, name_es: 'Mesa', usda_query: '', per_100g: {} })).toBeNull();
   });
 });
