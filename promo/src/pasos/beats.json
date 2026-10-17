@@ -1,0 +1,108 @@
+{
+ "wake": 18,
+ "light": 2095,
+ "trail": [
+  96,
+  222
+ ],
+ "logo": 222,
+ "outline": [
+  256,
+  302
+ ],
+ "phoneIn": [
+  290,
+  318
+ ],
+ "scroll1": [
+  423,
+  467
+ ],
+ "scroll2": [
+  493,
+  528
+ ],
+ "toProgress": [
+  604,
+  622
+ ],
+ "chartDraw": [
+  698,
+  772
+ ],
+ "imc": 766,
+ "kcal": 808,
+ "zoomChart": [
+  885,
+  905
+ ],
+ "markers": [
+  902,
+  991
+ ],
+ "toTemplates": [
+  1052,
+  1068
+ ],
+ "cardIn": [
+  1058,
+  1084
+ ],
+ "toSession": [
+  1090,
+  1104
+ ],
+ "setDone": 1174,
+ "records": 1190,
+ "history": [
+  1225,
+  1339
+ ],
+ "stats": 1286,
+ "proud": 1354,
+ "toHoy": [
+  1502,
+  1520
+ ],
+ "icons": 1537,
+ "iconsWater": 1633,
+ "iconsSteps": 1664,
+ "water": 1691,
+ "streak": 1705,
+ "calendar": 1774,
+ "toStyle": [
+  1924,
+  1940
+ ],
+ "sheetUp": 2007,
+ "cyan": 2048,
+ "sheetDown": 2069,
+ "fan": [
+  2140,
+  2250
+ ],
+ "backViolet": 2258,
+ "chipsIn": [
+  2362,
+  2400
+ ],
+ "chipsHome": [
+  2435,
+  2479
+ ],
+ "saved": 2481,
+ "phoneOut": [
+  2658,
+  2696
+ ],
+ "cardA": 2704,
+ "cardB": 2740,
+ "cardC": 2803,
+ "closeTrail": [
+  2846,
+  2874
+ ],
+ "logoEnd": 2860,
+ "tagline": 2929,
+ "cta": 3028
+}

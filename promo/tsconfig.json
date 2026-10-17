@@ -9,7 +9,20 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "noEmit": true,
-    "lib": ["DOM", "ES2022"]
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2023"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "../src/*"
+      ]
+    }
   },
-  "include": ["src", "remotion.config.ts"]
+  "include": [
+    "src",
+    "remotion.config.ts"
+  ]
 }
