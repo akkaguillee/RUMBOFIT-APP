@@ -1,17 +1,26 @@
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ACHIEVEMENTS, COLLECTOR, RARITIES } from '@/domain/achievements/catalog';
+import { findAchievementDef, RARITIES, type AchievementDef } from '@/domain/achievements/catalog';
 import { markUnlocksSeen, useUnseenUnlocks } from '@/db/hooks';
 import { Button } from '@/ui/Button';
+import { cx } from '@/ui/cx';
 import { AchievementBadge } from './AchievementBadge';
 import { RARITY_COLORS } from './icons';
 
-const defs = new Map([...ACHIEVEMENTS, COLLECTOR].map((d) => [d.id, d]));
+type Def = Omit<AchievementDef, 'metric'>;
+
+/** From this many simultaneous unlocks (e.g. new milestones met by past records) one summary is shown. */
+export const SUMMARY_FROM = 3;
+/** Rows listed in the summary; the rest are counted. */
+const LIST_MAX = 5;
 
 /**
  * Shows newly unlocked achievements once (persisted "seen" flag), with a
- * light burst and a glass card that expands from the medal.
+ * light burst and a glass card that expands from the medal. One or two
+ * unlocks get the full medal; several at once (a big session, or milestones
+ * added in an update that the user's records already met) become a single
+ * compact summary instead of a queue of dialogs.
  */
 export function UnlockCelebration({ enabled }: { enabled: boolean }) {
   const unseen = useUnseenUnlocks();
@@ -25,7 +34,7 @@ export function UnlockCelebration({ enabled }: { enabled: boolean }) {
   // filling up, «Hecho», Rumbi's hop) is seen before the celebration covers it.
   useEffect(() => {
     if (!enabled || batch || !unseen?.length) return;
-    const t = window.setTimeout(() => setBatch(unseen.map((u) => u.id).filter((id) => defs.has(id))), 1100);
+    const t = window.setTimeout(() => setBatch(unseen.map((u) => u.id).filter((id) => findAchievementDef(id))), 1100);
     return () => window.clearTimeout(t);
   }, [unseen, enabled, batch]);
 
@@ -70,21 +79,23 @@ export function UnlockCelebration({ enabled }: { enabled: boolean }) {
     return () => document.removeEventListener('keydown', onKey);
   });
 
-  // Highlight the rarest achievement of the batch.
+  // Rarest first: it leads the single view and the summary.
   const sorted = (batch ?? [])
-    .map((id) => defs.get(id)!)
+    .map((id) => findAchievementDef(id))
+    .filter((d): d is Def => !!d)
     .sort((a, b) => RARITIES[b.rarity].order - RARITIES[a.rarity].order);
   const main = sorted[0];
+  const summary = sorted.length >= SUMMARY_FROM;
   const rest = sorted.slice(1);
 
   return (
     <AnimatePresence>
       {main && (
-        <div className="celebrate" role="dialog" aria-modal="true" aria-labelledby="celebrate-title">
+        <div className="celebrate" role="dialog" aria-modal="true" aria-labelledby="celebrate-title" aria-describedby="celebrate-text">
           <motion.div className="celebrate__scrim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => void close()} />
           <motion.div
             ref={cardRef}
-            className="celebrate__card glass glass--sheet"
+            className={cx('celebrate__card glass glass--sheet', summary && 'celebrate__card--summary')}
             style={{ '--medal-glow': RARITY_COLORS[main.rarity].glow } as React.CSSProperties}
             initial={reduce ? { opacity: 0 } : { opacity: 0, clipPath: 'circle(8% at 50% 92px)' }}
             animate={reduce ? { opacity: 1 } : { opacity: 1, clipPath: 'circle(150% at 50% 92px)' }}
@@ -109,33 +120,7 @@ export function UnlockCelebration({ enabled }: { enabled: boolean }) {
                 />
               </>
             )}
-            <motion.div
-              className="celebrate__medal"
-              initial={reduce ? false : { scale: 0.2, rotate: -40 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 14, delay: 0.1 }}
-            >
-              <AchievementBadge icon={main.icon} rarity={main.rarity} unlocked size={96} />
-            </motion.div>
-            <p className="t-eyebrow celebrate__eyebrow">
-              Hito desbloqueado · {RARITIES[main.rarity].label}
-            </p>
-            <h2 id="celebrate-title" className="celebrate__title">
-              {main.name}
-            </h2>
-            <p className="celebrate__text">{main.description}</p>
-            {rest.length > 0 && (
-              <>
-                <div className="celebrate__more" aria-label={`Y ${rest.length} hitos más`}>
-                  {rest.slice(0, 5).map((d) => (
-                    <AchievementBadge key={d.id} icon={d.icon} rarity={d.rarity} unlocked size={36} />
-                  ))}
-                </div>
-                <p className="t-small" style={{ marginTop: -12, marginBottom: 20 }}>
-                  {rest.length === 1 ? `También: ${rest[0]!.name}` : `Y ${rest.length} hitos más`}
-                </p>
-              </>
-            )}
+            {summary ? <SummaryBody items={sorted} reduce={!!reduce} /> : <SingleBody main={main} rest={rest} reduce={!!reduce} />}
             <div className="vstack" style={{ gap: 10 }}>
               <Button ref={closeRef} block onClick={() => void close()}>
                 Seguir avanzando
@@ -148,5 +133,88 @@ export function UnlockCelebration({ enabled }: { enabled: boolean }) {
         </div>
       )}
     </AnimatePresence>
+  );
+}
+
+/** One unlock (or two): the medal leads, as it always has. */
+function SingleBody({ main, rest, reduce }: { main: Def; rest: Def[]; reduce: boolean }) {
+  return (
+    <>
+      <motion.div
+        className="celebrate__medal"
+        initial={reduce ? false : { scale: 0.2, rotate: -40 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 14, delay: 0.1 }}
+      >
+        <AchievementBadge icon={main.icon} rarity={main.rarity} unlocked size={96} />
+      </motion.div>
+      <p className="t-eyebrow celebrate__eyebrow">Hito desbloqueado · {RARITIES[main.rarity].label}</p>
+      <h2 id="celebrate-title" className="celebrate__title">
+        {main.name}
+      </h2>
+      <p id="celebrate-text" className="celebrate__text">
+        {main.description}
+      </p>
+      {rest.length > 0 && (
+        <>
+          <div className="celebrate__more" aria-hidden="true">
+            {rest.map((d) => (
+              <AchievementBadge key={d.id} icon={d.icon} rarity={d.rarity} unlocked size={36} />
+            ))}
+          </div>
+          <p className="t-small" style={{ marginTop: -12, marginBottom: 20 }}>
+            También: {rest.map((d) => d.name).join(', ')}
+          </p>
+        </>
+      )}
+    </>
+  );
+}
+
+/** Several unlocks at once: a fan of the three rarest medals and a short list. */
+function SummaryBody({ items, reduce }: { items: Def[]; reduce: boolean }) {
+  const fan = [items[1], items[0], items[2]];
+  const listed = items.length <= LIST_MAX ? items : items.slice(0, LIST_MAX - 1);
+  const hidden = items.length - listed.length;
+  return (
+    <>
+      <motion.div
+        className="celebrate__fan"
+        aria-hidden="true"
+        initial={reduce ? false : { scale: 0.3, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 16, delay: 0.1 }}
+      >
+        {fan.map(
+          (d, i) =>
+            d && (
+              <span key={d.id} className={`celebrate__fan-item celebrate__fan-item--${['side', 'center', 'side'][i]}`} data-side={i === 0 ? 'left' : i === 2 ? 'right' : undefined}>
+                <AchievementBadge icon={d.icon} rarity={d.rarity} unlocked size={i === 1 ? 84 : 58} />
+              </span>
+            ),
+        )}
+      </motion.div>
+      <p className="t-eyebrow celebrate__eyebrow">Hitos desbloqueados</p>
+      <h2 id="celebrate-title" className="celebrate__title">
+        ¡{items.length} hitos nuevos!
+      </h2>
+      <p id="celebrate-text" className="celebrate__text">
+        Todos salen de tus registros.
+      </p>
+      <ul className="celebrate__list">
+        {listed.map((d) => (
+          <li key={d.id}>
+            <AchievementBadge icon={d.icon} rarity={d.rarity} unlocked size={30} />
+            <span className="celebrate__list-name">{d.name}</span>
+            <span className={`rarity-tag rarity-tag--${d.rarity}`}>{RARITIES[d.rarity].label}</span>
+          </li>
+        ))}
+      </ul>
+      {hidden > 0 && (
+        <p className="celebrate__list-more">
+          Y {hidden} {hidden === 1 ? 'hito' : 'hitos'} más en tu colección.
+        </p>
+      )}
+    </>
   );
 }

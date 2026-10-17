@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '@/db/db';
 import { useNote, useWaterDay } from '@/db/hooks';
 import { deleteSteps, deleteWater, setNote } from '@/db/repos/tracking';
-import { ACHIEVEMENTS, COLLECTOR } from '@/domain/achievements/catalog';
+import { findAchievementDef } from '@/domain/achievements/catalog';
 import { formatDate, formatMinutes, todayKey } from '@/domain/dates';
 import type { DaySummary } from '@/domain/summary';
 import type { Profile, WeightEntry } from '@/domain/types';
@@ -19,8 +19,6 @@ import { StepsSheet } from '../shared/sheets/StepsSheet';
 import { WaterSheet } from '../shared/sheets/WaterSheet';
 import { WeightSheet } from '../shared/sheets/WeightSheet';
 import { useUnits } from '../shared/units';
-
-const defs = new Map([...ACHIEVEMENTS, COLLECTOR].map((d) => [d.id, d]));
 
 interface Props {
   date: string;
@@ -225,7 +223,7 @@ export function DayDetail({ date, summary, profile }: Props) {
           <ul className="hstack wrap" style={{ gap: 6 }}>
             {s.unlocked.slice(0, 8).map((id) => (
               <li key={id} className="badge badge--accent">
-                {defs.get(id)?.name ?? id}
+                {findAchievementDef(id)?.name ?? id}
               </li>
             ))}
             {s.unlocked.length > 8 && <li className="badge">y {s.unlocked.length - 8} más</li>}

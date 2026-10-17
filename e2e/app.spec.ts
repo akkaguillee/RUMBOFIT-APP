@@ -134,8 +134,27 @@ test.describe('RUMBO', () => {
     await page.getByRole('button', { name: 'Listo' }).click();
     await expect(page.getByText('Entrenamiento libre').first()).toBeVisible();
     await page.goto('/hitos');
-    const card = page.locator('.ms-card', { hasText: 'Primera Sesión' });
+    // Each rarity block shows five milestones; «Ver todos» reveals the rest of the block.
+    const common = page.getByRole('region', { name: 'Común', exact: true });
+    await expect(common).toBeVisible();
+    // The same button toggles: «Ver todos (n)» ↔ «Mostrar menos».
+    const toggle = common.locator('button[aria-controls]');
+    const collapsible = (await toggle.count()) > 0;
+    if (collapsible) {
+      await expect(toggle).toContainText('Ver todos');
+      await toggle.click();
+      await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+      await expect(toggle).toContainText('Mostrar menos');
+    }
+    const card = common.locator('.ms-card', { hasText: 'Primera Sesión' });
+    await expect(card).toBeVisible();
     await expect(card).toContainText('Desbloqueado');
+    // «Mostrar menos» collapses the block back to five milestones.
+    if (collapsible) {
+      await toggle.click();
+      await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      await expect(common.locator('.ms-card')).toHaveCount(5);
+    }
   });
 
   test('creator page keeps the official text and real social links', async ({ page }) => {

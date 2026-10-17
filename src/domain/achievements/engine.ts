@@ -1,5 +1,5 @@
 import type { AchievementUnlock, GoalType } from '../types';
-import { ACHIEVEMENTS, COLLECTOR, RARITIES, type AchievementDef } from './catalog';
+import { ACHIEVEMENTS, META_ACHIEVEMENTS, RARITIES, type AchievementDef } from './catalog';
 import { computeMetrics, type AchievementData, type Metrics } from './metrics';
 
 export interface AchievementState {
@@ -18,31 +18,27 @@ export function isApplicable(def: Pick<AchievementDef, 'requires'>, goal?: GoalT
   return true;
 }
 
+function evaluate({ metric, ...def }: AchievementDef, metrics: Metrics, goal?: GoalType): AchievementState {
+  const raw = metric(metrics);
+  const current = Math.min(raw, def.target);
+  return {
+    def,
+    current,
+    target: def.target,
+    progress: def.target > 0 ? current / def.target : 0,
+    achieved: raw >= def.target,
+    // Weight-goal milestones remain visible if they were already earned under a previous goal.
+    applicable: isApplicable(def, goal) || raw >= def.target,
+  };
+}
+
 export function evaluateAchievements(data: AchievementData): { states: AchievementState[]; metrics: Metrics } {
-  const metrics = computeMetrics(data);
+  const base = computeMetrics(data);
   const goal = data.profile?.goal;
-  const states: AchievementState[] = ACHIEVEMENTS.map(({ metric, ...def }) => {
-    const raw = metric(metrics);
-    const current = Math.min(raw, def.target);
-    return {
-      def,
-      current,
-      target: def.target,
-      progress: def.target > 0 ? current / def.target : 0,
-      achieved: raw >= def.target,
-      // Weight-goal milestones remain visible if they were already earned under a previous goal.
-      applicable: isApplicable(def, goal) || raw >= def.target,
-    };
-  });
-  const achievedCount = states.filter((s) => s.achieved).length;
-  states.push({
-    def: COLLECTOR,
-    current: Math.min(achievedCount, COLLECTOR.target),
-    target: COLLECTOR.target,
-    progress: Math.min(achievedCount, COLLECTOR.target) / COLLECTOR.target,
-    achieved: achievedCount >= COLLECTOR.target,
-    applicable: true,
-  });
+  const states = ACHIEVEMENTS.map((def) => evaluate(def, base, goal));
+  // Meta milestones («Coleccionista»…) count the regular ones achieved.
+  const metrics: Metrics = { ...base, milestonesAchieved: states.filter((s) => s.achieved).length };
+  for (const def of META_ACHIEVEMENTS) states.push(evaluate(def, metrics, goal));
   return { states, metrics };
 }
 

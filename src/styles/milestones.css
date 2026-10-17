@@ -30,14 +30,26 @@
     inset 0 0 0 1px var(--hairline);
 }
 
+/* In progress: the silhouette takes a quiet tint of its rarity and loses the lock. */
+.medal[data-state='progress'] {
+  color: color-mix(in srgb, var(--medal-from) 60%, var(--text));
+  background:
+    radial-gradient(120% 120% at 30% 10%, var(--glass-sheen), transparent 45%),
+    linear-gradient(145deg, color-mix(in srgb, var(--medal-to) 26%, transparent), color-mix(in srgb, var(--medal-from) 14%, transparent)),
+    var(--control-fill);
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge-mid),
+    inset 0 0 0 1px color-mix(in srgb, var(--medal-to) 38%, transparent);
+}
+
 .medal__lock {
   position: absolute;
   right: -4px;
   bottom: -4px;
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: var(--lock-size, 22px);
+  height: var(--lock-size, 22px);
   border-radius: 50%;
   background: var(--surface-solid);
   box-shadow: 0 0 0 2px var(--bg);
@@ -46,10 +58,42 @@
 }
 
 .medal__lock svg {
-  width: 11px;
-  height: 11px;
+  width: calc(var(--lock-size, 22px) * 0.5);
+  height: calc(var(--lock-size, 22px) * 0.5);
   transform: none;
   filter: none;
+}
+
+/* Rarity label (celebration summary). Colours follow the medals. */
+.rarity-tag {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  background: var(--neutral-soft);
+  color: var(--text-2);
+}
+
+.rarity-tag--uncommon {
+  background: var(--good-soft);
+  color: var(--good-text);
+}
+
+.rarity-tag--rare {
+  background: color-mix(in srgb, var(--series-water) 16%, transparent);
+  color: color-mix(in srgb, var(--series-water) 75%, var(--text));
+}
+
+.rarity-tag--epic {
+  background: color-mix(in srgb, #e53945 15%, transparent);
+  color: color-mix(in srgb, #e53945 70%, var(--text));
+}
+
+.rarity-tag--legendary {
+  background: var(--warn-soft);
+  color: var(--warn-text);
 }
 
 /* Celebration overlay */
@@ -143,4 +187,97 @@
   justify-content: center;
   gap: 8px;
   margin: calc(-1 * var(--space-3)) 0 var(--space-5);
+}
+
+/* Several unlocks at once: a fan of medals and a short list in one card. */
+.celebrate__fan {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 96px;
+  margin-bottom: var(--space-4);
+}
+
+.celebrate__fan-item {
+  display: flex;
+}
+
+.celebrate__fan-item--center {
+  position: relative;
+  z-index: 1;
+}
+
+.celebrate__fan-item--side {
+  margin: 0 -12px;
+  opacity: 0.92;
+}
+
+.celebrate__fan-item[data-side='left'] {
+  transform: translateY(12px) rotate(-12deg);
+}
+
+.celebrate__fan-item[data-side='right'] {
+  transform: translateY(12px) rotate(12deg);
+}
+
+.celebrate__card--summary .celebrate__text {
+  margin-bottom: var(--space-4);
+}
+
+.celebrate__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 var(--space-4);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  text-align: left;
+}
+
+:root[data-theme='light'] .celebrate__list {
+  background: color-mix(in srgb, var(--surface-2) 70%, #fff);
+}
+
+.celebrate__list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 42px;
+  padding: 4px 6px;
+}
+
+.celebrate__list li + li {
+  border-top: 1px solid var(--divider);
+}
+
+.celebrate__list-name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: 1.25;
+}
+
+.celebrate__list-more {
+  margin: calc(-1 * var(--space-2)) 0 var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-2);
+}
+
+/* Short screens (small phones, landscape): tighter summary so the buttons stay on screen. */
+@media (max-height: 700px) {
+  .celebrate__card--summary {
+    padding-top: var(--space-6);
+  }
+
+  .celebrate__card--summary .celebrate__fan {
+    height: 84px;
+    margin-bottom: var(--space-3);
+  }
+
+  .celebrate__card--summary .celebrate__list li {
+    min-height: 38px;
+  }
 }

@@ -1,68 +1,145 @@
+/* ──────────────────────────────────────────────────────────────────────
+   Hitos: a compact collection. Collection + next goal on top, filters,
+   then one block per rarity (Común → Legendario) showing at most five
+   milestones; «Ver todos» reveals the rest of the block in place.
+   ────────────────────────────────────────────────────────────────────── */
+
 .ms-top {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-3);
   margin-bottom: var(--space-5);
 }
 
 @media (min-width: 900px) {
   .ms-top {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: var(--space-5);
+    gap: var(--space-4);
   }
 }
 
+/* Collection */
 .ms-summary {
   display: flex;
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
-@media (max-width: 420px) {
-  .ms-summary {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .ms-summary > div:first-child {
-    align-self: center;
-  }
-}
-
-.rarity-list {
+.ms-summary__ring {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  font-size: var(--text-sm);
+  align-items: center;
+  line-height: 1;
 }
 
-.rarity-list li {
+.ms-summary__count {
+  font-size: 26px;
+  font-weight: 740;
+  letter-spacing: -0.03em;
+}
+
+.ms-summary__ring .t-small {
+  margin-top: 4px;
+  font-size: var(--text-xs);
+}
+
+.ms-summary__title {
+  margin-bottom: 4px;
+}
+
+.ms-rarities {
+  display: flex;
+  flex-direction: column;
+}
+
+.ms-rarities__row {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: calc(100% + 12px);
+  min-height: 30px;
+  margin: 0 -6px;
+  padding: 0 6px;
+  border-radius: var(--radius-xs);
+  font-size: var(--text-sm);
+  color: var(--text);
+  text-align: left;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.ms-rarities__count {
+  font-weight: var(--weight-semibold);
+}
+
+.ms-rarities__chev {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--text-3);
+}
+
+@media (hover: hover) {
+  .ms-rarities__row:hover {
+    background: var(--control-fill);
+  }
+}
+
+.ms-rarities__row:active {
+  background: var(--control-fill);
 }
 
 .rarity-dot {
   width: 12px;
   height: 12px;
+  flex: none;
   border-radius: 4px;
   transform: rotate(-6deg);
 }
 
-.ms-upcoming {
-  margin-top: var(--space-4);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--divider);
+/* Next goal */
+.ms-next__row {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: var(--text-sm);
-}
-
-.ms-upcoming li {
-  display: flex;
+  align-items: flex-start;
   gap: var(--space-3);
+  margin-top: 10px;
 }
 
+.ms-next__name {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.012em;
+  line-height: 1.25;
+}
+
+.ms-next__desc {
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  line-height: 1.38;
+  color: var(--text-2);
+}
+
+/* "Also close": only where the next-goal card sits beside the collection. */
+.ms-next__more {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .ms-next__more {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--divider);
+    font-size: var(--text-sm);
+  }
+
+  .ms-next__more li {
+    display: flex;
+    gap: var(--space-3);
+  }
+}
+
+/* Filters */
 .ms-filters {
   display: flex;
   flex-direction: column;
@@ -70,23 +147,134 @@
   margin-bottom: var(--space-4);
 }
 
-.ms-section + .ms-section {
-  margin-top: var(--space-6);
+.ms-empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
 }
 
+/* ── Rarity blocks ─────────────────────────────────────────────────── */
+
+.ms-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ms-group.glass {
+  container: ms-group / inline-size;
+  padding: var(--space-4) var(--space-3) var(--space-3);
+  border-radius: var(--radius-xl);
+  /* A faint wash of the rarity colour tells the blocks apart at a glance. */
+  background:
+    radial-gradient(85% 70% at 0% 0%, color-mix(in srgb, var(--rar-to) 10%, transparent), transparent 70%),
+    var(--glass-fill);
+  scroll-margin-top: calc(var(--header-h) + var(--safe-top) + var(--space-3));
+  outline: none;
+}
+
+:root[data-theme='light'] .ms-group.glass {
+  background:
+    radial-gradient(85% 70% at 0% 0%, color-mix(in srgb, var(--rar-from) 11%, transparent), transparent 70%),
+    var(--glass-fill);
+}
+
+.ms-group.glass:focus-visible {
+  box-shadow:
+    var(--glass-inner),
+    var(--glass-shadow),
+    var(--focus-ring);
+}
+
+@media (min-width: 640px) {
+  .ms-group.glass {
+    padding: var(--space-5);
+  }
+}
+
+.ms-group__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-1);
+  margin-bottom: var(--space-3);
+}
+
+.ms-group__title {
+  font-size: var(--fs-section);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  color: var(--title);
+}
+
+.ms-group__hint {
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  line-height: 1.3;
+  color: var(--text-3);
+}
+
+.ms-group__count {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex: none;
+  font-size: var(--text-sm);
+  color: var(--text-2);
+}
+
+.ms-group__count strong {
+  font-weight: var(--weight-bold);
+  color: var(--text);
+}
+
+.ms-group__count .progress {
+  width: 64px;
+  height: 5px;
+}
+
+/* Cards: one column on phones, two or three when the block is wide. */
 .ms-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
-  gap: var(--space-3);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+@container ms-group (min-width: 560px) {
+  .ms-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container ms-group (min-width: 900px) {
+  .ms-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .ms-card {
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
-  padding: var(--space-4);
-  border-radius: var(--radius-lg);
   min-width: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+:root[data-theme='light'] .ms-card {
+  background: color-mix(in srgb, var(--surface-2) 70%, #fff);
+}
+
+.ms-card .medal {
+  margin-top: 2px;
 }
 
 .ms-card__body {
@@ -94,53 +282,47 @@
   min-width: 0;
 }
 
-.ms-card__title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
 .ms-card__name {
   font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-  letter-spacing: -0.012em;
+  font-weight: var(--weight-semibold);
   line-height: 1.25;
-}
-
-.ms-card:not(.is-unlocked) .ms-card__name {
-  color: var(--text-2);
-}
-
-.ms-card .badge {
-  height: 22px;
-  padding: 0 8px;
-  font-size: 10.5px;
-  flex: none;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  overflow-wrap: anywhere;
 }
 
 .ms-card__desc {
-  margin-top: 3px;
+  margin-top: 2px;
   font-size: var(--text-sm);
+  line-height: 1.38;
   color: var(--text-2);
 }
 
-.ms-card__status {
-  margin-top: 8px;
+.ms-card__state {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
   font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
   color: var(--text-3);
 }
 
-.ms-card__status.is-done {
+.ms-card__state svg {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
+
+.ms-card__state.is-done {
   color: var(--good-text);
-  font-weight: var(--weight-semibold);
 }
 
 .ms-card__progress {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .ms-card__progress .progress {
@@ -148,35 +330,70 @@
   height: 6px;
 }
 
-.ms-card.is-unlocked {
-  box-shadow:
-    var(--glass-inner),
-    var(--glass-shadow),
-    0 18px 50px -34px var(--medal-glow);
+.ms-card__progress > span {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+/* Unlocked: a wash of the rarity colour. Locked: a quieter (still readable) title. */
+.ms-card.is-done {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--medal-to) 11%, var(--surface-2)), var(--surface-2) 72%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--medal-to) 22%, transparent);
+}
+
+:root[data-theme='light'] .ms-card.is-done {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--medal-from) 12%, #fff), color-mix(in srgb, var(--surface-2) 70%, #fff) 72%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--medal-from) 26%, transparent);
+}
+
+.ms-card.is-locked .ms-card__name,
+.ms-card.is-na .ms-card__name {
+  color: var(--text-2);
 }
 
 .ms-card.is-na {
-  opacity: 0.6;
+  opacity: 0.72;
 }
 
-.ms-rarity--uncommon {
-  background: var(--good-soft);
-  color: var(--good-text);
-}
-
-.ms-rarity--rare {
-  background: color-mix(in srgb, var(--series-water) 16%, transparent);
-  color: color-mix(in srgb, var(--series-water) 75%, var(--text));
-}
-
-.ms-rarity--epic {
-  background: var(--accent-soft);
+/* «Ver todos» / «Mostrar menos» */
+.ms-group__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 44px;
+  margin-top: var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
   color: var(--accent-text);
+  background: var(--control-fill);
+  box-shadow: inset 0 0 0 1px var(--hairline);
 }
 
-.ms-rarity--legendary {
-  background: var(--warn-soft);
-  color: var(--warn-text);
+.ms-group__toggle svg {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.ms-group__toggle[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+@media (hover: hover) {
+  .ms-group__toggle:hover {
+    background: var(--control-fill-hover);
+  }
+}
+
+/* ── History and rules ─────────────────────────────────────────────── */
+
+.ms-bottom {
+  margin-top: var(--space-6);
 }
 
 .ms-timeline {
@@ -188,7 +405,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  min-height: 56px;
+  min-height: 54px;
   border-bottom: 1px solid var(--divider);
 }
 
