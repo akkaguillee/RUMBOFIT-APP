@@ -27,3 +27,8 @@ promo/out/lead2
 promo/audio/voice/*.mp3
 promo/out/*-share.mp4
 __pycache__/
+promo/audio/stems-reel
+promo/out/reel/bundle
+promo/out/reel/stills*
+promo/out/reel/*-silent.mp4
+promo/out/reel/render.log

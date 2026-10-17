@@ -13,10 +13,16 @@
     "audio:cine": "python3 audio/build_cinematic.py",
     "render:cine": "remotion render src/index.ts RumboCinematic out/cine-silent.mp4 --codec=h264 --crf=16 --pixel-format=yuv420p --concurrency=4",
     "mux:cine": "STEMS=audio/stems-cine VIDEO=out/cine-silent.mp4 OUT=out/RUMBO-cinematico-9x16.mp4 LEN=84 MAXRATE=8 bash audio/mux.sh",
-    "build:cine": "npm run audio:cine && npm run render:cine && npm run mux:cine"
+    "build:cine": "npm run audio:cine && npm run render:cine && npm run mux:cine",
+    "audio:reel": "python3 audio/build_reel.py",
+    "render:reel": "remotion render src/index.ts RumboReel out/reel/reel-silent.mp4 --codec=h264 --crf=16 --pixel-format=yuv420p --concurrency=4",
+    "render:reel45": "remotion render src/index.ts RumboReel45 out/reel/reel45-silent.mp4 --codec=h264 --crf=16 --pixel-format=yuv420p --concurrency=4",
+    "mux:reel": "bash audio/mux_reel.sh",
+    "build:reel": "npm run audio:reel && npm run render:reel && npm run render:reel45 && npm run mux:reel"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.535",
+    "@remotion/paths": "4.0.535",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "remotion": "^4.0.535"

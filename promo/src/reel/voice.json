@@ -1,0 +1,641 @@
+{
+ "source": "guia",
+ "lines": [
+  {
+   "id": "r1",
+   "text": "No hace falta cambiarlo todo de un día para otro. Basta con dar el siguiente paso.",
+   "at": 54,
+   "end": 198,
+   "words": [
+    {
+     "w": "No",
+     "f": 54
+    },
+    {
+     "w": "hace",
+     "f": 59
+    },
+    {
+     "w": "falta",
+     "f": 68
+    },
+    {
+     "w": "cambiarlo",
+     "f": 77
+    },
+    {
+     "w": "todo",
+     "f": 90
+    },
+    {
+     "w": "de",
+     "f": 99
+    },
+    {
+     "w": "un",
+     "f": 104
+    },
+    {
+     "w": "día",
+     "f": 110
+    },
+    {
+     "w": "para",
+     "f": 115
+    },
+    {
+     "w": "otro.",
+     "f": 124
+    },
+    {
+     "w": "Basta",
+     "f": 140
+    },
+    {
+     "w": "con",
+     "f": 151
+    },
+    {
+     "w": "dar",
+     "f": 158
+    },
+    {
+     "w": "el",
+     "f": 164
+    },
+    {
+     "w": "siguiente",
+     "f": 170
+    },
+    {
+     "w": "paso.",
+     "f": 187
+    }
+   ]
+  },
+  {
+   "id": "r2",
+   "text": "RUMBO te ayuda a registrar lo que haces y a ver cómo avanza tu proceso, a tu manera.",
+   "at": 318,
+   "end": 463,
+   "words": [
+    {
+     "w": "RUMBO",
+     "f": 318
+    },
+    {
+     "w": "te",
+     "f": 327
+    },
+    {
+     "w": "ayuda",
+     "f": 332
+    },
+    {
+     "w": "a",
+     "f": 346
+    },
+    {
+     "w": "registrar",
+     "f": 351
+    },
+    {
+     "w": "lo",
+     "f": 364
+    },
+    {
+     "w": "que",
+     "f": 369
+    },
+    {
+     "w": "haces",
+     "f": 374
+    },
+    {
+     "w": "y",
+     "f": 383
+    },
+    {
+     "w": "a",
+     "f": 389
+    },
+    {
+     "w": "ver",
+     "f": 394
+    },
+    {
+     "w": "cómo",
+     "f": 399
+    },
+    {
+     "w": "avanza",
+     "f": 408
+    },
+    {
+     "w": "tu",
+     "f": 421
+    },
+    {
+     "w": "proceso,",
+     "f": 427
+    },
+    {
+     "w": "a",
+     "f": 440
+    },
+    {
+     "w": "tu",
+     "f": 445
+    },
+    {
+     "w": "manera.",
+     "f": 450
+    }
+   ]
+  },
+  {
+   "id": "r3",
+   "text": "Anota tu evolución y consulta tus datos de peso, IMC y calorías en un mismo lugar. Cada registro cuenta una parte de tu historia.",
+   "at": 672,
+   "end": 899,
+   "words": [
+    {
+     "w": "Anota",
+     "f": 672
+    },
+    {
+     "w": "tu",
+     "f": 686
+    },
+    {
+     "w": "evolución",
+     "f": 692
+    },
+    {
+     "w": "y",
+     "f": 711
+    },
+    {
+     "w": "consulta",
+     "f": 716
+    },
+    {
+     "w": "tus",
+     "f": 731
+    },
+    {
+     "w": "datos",
+     "f": 736
+    },
+    {
+     "w": "de",
+     "f": 746
+    },
+    {
+     "w": "peso,",
+     "f": 752
+    },
+    {
+     "w": "IMC",
+     "f": 762
+    },
+    {
+     "w": "y",
+     "f": 767
+    },
+    {
+     "w": "calorías",
+     "f": 772
+    },
+    {
+     "w": "en",
+     "f": 785
+    },
+    {
+     "w": "un",
+     "f": 790
+    },
+    {
+     "w": "mismo",
+     "f": 795
+    },
+    {
+     "w": "lugar.",
+     "f": 804
+    },
+    {
+     "w": "Cada",
+     "f": 821
+    },
+    {
+     "w": "registro",
+     "f": 831
+    },
+    {
+     "w": "cuenta",
+     "f": 845
+    },
+    {
+     "w": "una",
+     "f": 855
+    },
+    {
+     "w": "parte",
+     "f": 865
+    },
+    {
+     "w": "de",
+     "f": 874
+    },
+    {
+     "w": "tu",
+     "f": 880
+    },
+    {
+     "w": "historia.",
+     "f": 885
+    }
+   ]
+  },
+  {
+   "id": "r4",
+   "text": "Guarda tus entrenamientos, tus rutinas y tus marcas. Así puedes volver a ellos y reconocer todo el trabajo que ya has hecho.",
+   "at": 1104,
+   "end": 1315,
+   "words": [
+    {
+     "w": "Guarda",
+     "f": 1104
+    },
+    {
+     "w": "tus",
+     "f": 1115
+    },
+    {
+     "w": "entrenamientos,",
+     "f": 1120
+    },
+    {
+     "w": "tus",
+     "f": 1144
+    },
+    {
+     "w": "rutinas",
+     "f": 1150
+    },
+    {
+     "w": "y",
+     "f": 1166
+    },
+    {
+     "w": "tus",
+     "f": 1173
+    },
+    {
+     "w": "marcas.",
+     "f": 1179
+    },
+    {
+     "w": "Así",
+     "f": 1199
+    },
+    {
+     "w": "puedes",
+     "f": 1208
+    },
+    {
+     "w": "volver",
+     "f": 1217
+    },
+    {
+     "w": "a",
+     "f": 1226
+    },
+    {
+     "w": "ellos",
+     "f": 1232
+    },
+    {
+     "w": "y",
+     "f": 1241
+    },
+    {
+     "w": "reconocer",
+     "f": 1246
+    },
+    {
+     "w": "todo",
+     "f": 1263
+    },
+    {
+     "w": "el",
+     "f": 1272
+    },
+    {
+     "w": "trabajo",
+     "f": 1278
+    },
+    {
+     "w": "que",
+     "f": 1291
+    },
+    {
+     "w": "ya",
+     "f": 1296
+    },
+    {
+     "w": "has",
+     "f": 1301
+    },
+    {
+     "w": "hecho.",
+     "f": 1306
+    }
+   ]
+  },
+  {
+   "id": "r5",
+   "text": "Registra también tus hábitos diarios, como el agua y los pasos. Celebra los pequeños avances y construye constancia sin exigirte perfección.",
+   "at": 1536,
+   "end": 1781,
+   "words": [
+    {
+     "w": "Registra",
+     "f": 1536
+    },
+    {
+     "w": "también",
+     "f": 1552
+    },
+    {
+     "w": "tus",
+     "f": 1563
+    },
+    {
+     "w": "hábitos",
+     "f": 1569
+    },
+    {
+     "w": "diarios,",
+     "f": 1585
+    },
+    {
+     "w": "como",
+     "f": 1596
+    },
+    {
+     "w": "el",
+     "f": 1604
+    },
+    {
+     "w": "agua",
+     "f": 1609
+    },
+    {
+     "w": "y",
+     "f": 1618
+    },
+    {
+     "w": "los",
+     "f": 1623
+    },
+    {
+     "w": "pasos.",
+     "f": 1628
+    },
+    {
+     "w": "Celebra",
+     "f": 1646
+    },
+    {
+     "w": "los",
+     "f": 1661
+    },
+    {
+     "w": "pequeños",
+     "f": 1668
+    },
+    {
+     "w": "avances",
+     "f": 1684
+    },
+    {
+     "w": "y",
+     "f": 1700
+    },
+    {
+     "w": "construye",
+     "f": 1706
+    },
+    {
+     "w": "constancia",
+     "f": 1722
+    },
+    {
+     "w": "sin",
+     "f": 1738
+    },
+    {
+     "w": "exigirte",
+     "f": 1744
+    },
+    {
+     "w": "perfección.",
+     "f": 1765
+    }
+   ]
+  },
+  {
+   "id": "r6",
+   "text": "Y adapta la experiencia a ti: cambia los colores y elige el tema que prefieras.",
+   "at": 1968,
+   "end": 2093,
+   "words": [
+    {
+     "w": "Y",
+     "f": 1968
+    },
+    {
+     "w": "adapta",
+     "f": 1973
+    },
+    {
+     "w": "la",
+     "f": 1986
+    },
+    {
+     "w": "experiencia",
+     "f": 1991
+    },
+    {
+     "w": "a",
+     "f": 2007
+    },
+    {
+     "w": "ti:",
+     "f": 2012
+    },
+    {
+     "w": "cambia",
+     "f": 2017
+    },
+    {
+     "w": "los",
+     "f": 2026
+    },
+    {
+     "w": "colores",
+     "f": 2031
+    },
+    {
+     "w": "y",
+     "f": 2044
+    },
+    {
+     "w": "elige",
+     "f": 2049
+    },
+    {
+     "w": "el",
+     "f": 2062
+    },
+    {
+     "w": "tema",
+     "f": 2067
+    },
+    {
+     "w": "que",
+     "f": 2075
+    },
+    {
+     "w": "prefieras.",
+     "f": 2080
+    }
+   ]
+  },
+  {
+   "id": "r7",
+   "text": "Y tu privacidad importa: tus registros se guardan en tu propio dispositivo.",
+   "at": 2412,
+   "end": 2536,
+   "words": [
+    {
+     "w": "Y",
+     "f": 2412
+    },
+    {
+     "w": "tu",
+     "f": 2418
+    },
+    {
+     "w": "privacidad",
+     "f": 2423
+    },
+    {
+     "w": "importa:",
+     "f": 2442
+    },
+    {
+     "w": "tus",
+     "f": 2456
+    },
+    {
+     "w": "registros",
+     "f": 2462
+    },
+    {
+     "w": "se",
+     "f": 2476
+    },
+    {
+     "w": "guardan",
+     "f": 2482
+    },
+    {
+     "w": "en",
+     "f": 2492
+    },
+    {
+     "w": "tu",
+     "f": 2497
+    },
+    {
+     "w": "propio",
+     "f": 2503
+    },
+    {
+     "w": "dispositivo.",
+     "f": 2513
+    }
+   ]
+  },
+  {
+   "id": "r8",
+   "text": "Entrena, registra tu progreso y celebra cada paso. RUMBO. Cada pequeño paso cuenta. Empieza hoy.",
+   "at": 2832,
+   "end": 3047,
+   "words": [
+    {
+     "w": "Entrena,",
+     "f": 2832
+    },
+    {
+     "w": "registra",
+     "f": 2851
+    },
+    {
+     "w": "tu",
+     "f": 2866
+    },
+    {
+     "w": "progreso",
+     "f": 2871
+    },
+    {
+     "w": "y",
+     "f": 2886
+    },
+    {
+     "w": "celebra",
+     "f": 2892
+    },
+    {
+     "w": "cada",
+     "f": 2907
+    },
+    {
+     "w": "paso.",
+     "f": 2917
+    },
+    {
+     "w": "RUMBO.",
+     "f": 2938
+    },
+    {
+     "w": "Cada",
+     "f": 2960
+    },
+    {
+     "w": "pequeño",
+     "f": 2971
+    },
+    {
+     "w": "paso",
+     "f": 2986
+    },
+    {
+     "w": "cuenta.",
+     "f": 2997
+    },
+    {
+     "w": "Empieza",
+     "f": 3019
+    },
+    {
+     "w": "hoy.",
+     "f": 3039
+    }
+   ]
+  }
+ ]
+}

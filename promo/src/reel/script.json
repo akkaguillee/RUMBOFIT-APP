@@ -1,0 +1,13 @@
+{
+  "voice": "ElevenLabs · eleven_v4 · «Sofia - Captivating Narration» (español de España)",
+  "lines": [
+    { "id": "r1", "text": "No hace falta cambiarlo todo de un día para otro. Basta con dar el siguiente paso." },
+    { "id": "r2", "text": "RUMBO te ayuda a registrar lo que haces y a ver cómo avanza tu proceso, a tu manera.", "speak": "Rumbo te ayuda a registrar lo que haces y a ver cómo avanza tu proceso, a tu manera." },
+    { "id": "r3", "text": "Anota tu evolución y consulta tus datos de peso, IMC y calorías en un mismo lugar. Cada registro cuenta una parte de tu historia." },
+    { "id": "r4", "text": "Guarda tus entrenamientos, tus rutinas y tus marcas. Así puedes volver a ellos y reconocer todo el trabajo que ya has hecho." },
+    { "id": "r5", "text": "Registra también tus hábitos diarios, como el agua y los pasos. Celebra los pequeños avances y construye constancia sin exigirte perfección." },
+    { "id": "r6", "text": "Y adapta la experiencia a ti: cambia los colores y elige el tema que prefieras." },
+    { "id": "r7", "text": "Y tu privacidad importa: tus registros se guardan en tu propio dispositivo." },
+    { "id": "r8", "text": "Entrena, registra tu progreso y celebra cada paso. RUMBO. Cada pequeño paso cuenta. Empieza hoy.", "speak": "Entrena, registra tu progreso y celebra cada paso. Rumbo. Cada pequeño paso cuenta. Empieza hoy." }
+  ]
+}

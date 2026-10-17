@@ -45,16 +45,31 @@ interface Props {
   /** Frames to wait before the rig starts (it stays asleep until then). */
   delay?: number;
   accent?: string;
+  /** Light-theme shading (the values of mascot.css under :root[data-theme='light']). */
+  light?: boolean;
 }
 
-export function Rumbi({ size, expression = 'neutral', events = [], seed = 11, delay = 0, accent = '#e53945' }: Props) {
+const LIGHT_VARS = {
+  '--mascot-mid': '#e9e7f0',
+  '--mascot-lo': '#c3bfd0',
+  '--mascot-edge': '#a19bb3',
+  '--mascot-ink': '#15121a',
+  '--mascot-rim-mid': '0.3',
+  '--mascot-rim-edge': '0.85',
+  '--mascot-glow-a': '0.34',
+  '--mascot-glow-b': '0.14',
+  '--mascot-shadow': '#2a1d52',
+  '--mascot-shadow-a': '0.32',
+};
+
+export function Rumbi({ size, expression = 'neutral', events = [], seed = 11, delay = 0, accent = '#e53945', light = false }: Props) {
   const frame = Math.max(0, useCurrentFrame() - delay);
   const f = useMemo(() => simulate(expression, events, frame, 30, seed), [expression, events, frame, seed]);
   const uid = `r${seed}`;
   return (
     <span
       className="mascot"
-      style={{ ['--acc' as string]: accent, ['--surface-solid' as string]: '#13141b', ['--mascot-size' as string]: `${size}px`, width: size, height: size }}
+      style={{ ['--acc' as string]: accent, ['--surface-solid' as string]: light ? '#ffffff' : '#13141b', ['--mascot-size' as string]: `${size}px`, width: size, height: size, ...(light ? LIGHT_VARS : {}) }}
     >
       <svg className="mascot__svg" viewBox="0 0 100 100" width={size} height={size}>
         <defs>

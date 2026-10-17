@@ -1,0 +1,113 @@
+{
+ "fps": 30,
+ "frames": 3195,
+ "bpm": 100,
+ "scenes": {
+  "hook": [
+   0,
+   288
+  ],
+  "reveal": [
+   288,
+   648
+  ],
+  "evolution": [
+   648,
+   1080
+  ],
+  "training": [
+   1080,
+   1512
+  ],
+  "habits": [
+   1512,
+   1944
+  ],
+  "style": [
+   1944,
+   2376
+  ],
+  "privacy": [
+   2376,
+   2808
+  ],
+  "finale": [
+   2808,
+   3195
+  ]
+ },
+ "cues": {
+  "hook.look": 16,
+  "hook.spark": 34,
+  "hook.dot": 46,
+  "hook.path": 54,
+  "hook.pathEnd": 228,
+  "hook.logo": 70,
+  "hook.title": 206,
+  "reveal.phone": 288,
+  "reveal.screen": 308,
+  "reveal.tap": 343,
+  "reveal.hl1": 355,
+  "reveal.hl2": 394,
+  "reveal.title": 473,
+  "evo.tab": 650,
+  "evo.scroll": 688,
+  "evo.draw": 704,
+  "evo.imc": 759,
+  "evo.cal": 777,
+  "evo.back": 813,
+  "evo.tip": 827,
+  "evo.list": 905,
+  "evo.title": 911,
+  "train.card": 1080,
+  "train.hist": 1114,
+  "train.rut": 1146,
+  "train.marcas": 1175,
+  "train.ses": 1213,
+  "train.check": 1276,
+  "train.check2": 1298,
+  "train.title": 1325,
+  "hab.icons": 1512,
+  "hab.cards": 1528,
+  "hab.agua": 1565,
+  "hab.aguaTap": 1603,
+  "hab.pasos": 1627,
+  "hab.pasosTap": 1639,
+  "hab.hito": 1667,
+  "hab.racha": 1714,
+  "hab.flame": 1740,
+  "hab.cal": 1758,
+  "hab.legend": 1772,
+  "hab.title": 1789,
+  "sty.accentTap": 2017,
+  "sty.sheet": 2021,
+  "sty.pick": 2041,
+  "sty.accents": [
+   2049,
+   2067,
+   2085,
+   2103,
+   2121
+  ],
+  "sty.violet": 2139,
+  "sty.theme": 2153,
+  "sty.light": [
+   2189,
+   2207,
+   2225
+  ],
+  "sty.title": 2181,
+  "sty.dark": 2346,
+  "priv.in": 2376,
+  "priv.halo": 2446,
+  "priv.title": 2542,
+  "fin.out": 2808,
+  "fin.lines": 2826,
+  "fin.runner": 2848,
+  "fin.fill": 2886,
+  "fin.word": 2934,
+  "fin.slogan": 2960,
+  "fin.cta": 3017
+ },
+ "voice": "guia"
+}
