@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from 'motion/react';
 import { useEffect, useId, useMemo, useRef } from 'react';
-import { RUNNER_VIEWBOX, WORDMARK_VIEWBOX, runnerPaths, wordmarkPaths } from '@/brand/logoPaths';
+import { RUNNER_HEAD, RUNNER_VIEWBOX, WORDMARK_VIEWBOX, runnerPaths, wordmarkPaths } from '@/brand/logoPaths';
 import type { IntroMode } from './intro';
 
 interface Props {
@@ -15,7 +15,7 @@ const EASE_IN_OUT = [0.65, 0, 0.35, 1] as const;
 const CURTAIN = [0.76, 0, 0.24, 1] as const;
 
 /** Head centre in runner viewBox units (used for the shockwave). */
-const HEAD = { x: 1652, y: 175, r: 176 };
+const HEAD = RUNNER_HEAD;
 
 /** Deterministic pseudo-random so the streak layout is stable between renders. */
 function streaks(count: number) {

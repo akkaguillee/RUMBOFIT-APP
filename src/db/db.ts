@@ -8,6 +8,7 @@ import type {
   DayNote,
   EnergyRecord,
   GoalRecord,
+  MealEntry,
   PlanDay,
   Profile,
   Setting,
@@ -41,6 +42,7 @@ export class RumboDB extends Dexie {
   achievements!: EntityTable<AchievementUnlock, 'id'>;
   snapshots!: EntityTable<GoalSnapshot, 'date'>;
   settings!: EntityTable<Setting, 'key'>;
+  meals!: EntityTable<MealEntry, 'id'>;
 
   constructor(name = 'rumbo') {
     super(name, { indexedDB: idbFactoryProxy, IDBKeyRange: keyRangeProxy });
@@ -61,6 +63,8 @@ export class RumboDB extends Dexie {
       snapshots: 'date',
       settings: 'key',
     });
+    // v2 adds the food log; existing tables and records are untouched.
+    this.version(2).stores({ meals: '++id, date' });
   }
 }
 
@@ -82,6 +86,7 @@ export const ALL_TABLES = [
   'achievements',
   'snapshots',
   'settings',
+  'meals',
 ] as const;
 
 export type TableName = (typeof ALL_TABLES)[number];

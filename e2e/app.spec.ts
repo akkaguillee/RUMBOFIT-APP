@@ -182,7 +182,7 @@ test.describe('RUMBO', () => {
     page.on('pageerror', (e) => errors.push(String(e)));
     page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
     await onboard(page);
-    for (const path of ['/', '/progresos', '/progresos?tab=registros', '/progresos?tab=imc', '/progresos?tab=calorias', '/calendario', '/habitos', '/habitos?tab=pasos', '/entreno', '/entreno?tab=historial', '/entreno?tab=ejercicios', '/entreno?tab=plantillas', '/entreno?tab=stats', '/hitos', '/perfil', '/quien-soy']) {
+    for (const path of ['/', '/progresos', '/progresos?tab=registros', '/progresos?tab=imc', '/progresos?tab=calorias', '/calendario', '/habitos', '/habitos?tab=pasos', '/habitos?tab=comidas', '/entreno', '/entreno?tab=historial', '/entreno?tab=ejercicios', '/entreno?tab=plantillas', '/entreno?tab=stats', '/hitos', '/perfil', '/quien-soy']) {
       await page.goto(path);
       await page.waitForTimeout(400);
       await noHorizontalOverflow(page);

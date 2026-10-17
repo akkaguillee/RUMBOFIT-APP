@@ -73,20 +73,29 @@
   pointer-events: none;
 }
 
-.greet__top {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: 6px;
+.greet__date {
+  margin-bottom: 8px;
 }
 
+/* Handwritten sign-off: a short accent stroke, then the line, tilted a touch like a signature. */
 .greet__note {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: var(--space-3);
+  font-size: 1.4rem;
+  transform: rotate(-2deg);
+  transform-origin: left center;
+}
+
+.greet__note::before {
+  content: '';
+  width: 22px;
+  height: 2px;
   flex: none;
-  margin: 0;
-  font-size: 1.15rem;
-  transform: rotate(-4deg);
-  transform-origin: right center;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.55;
 }
 
 .greet__name {
@@ -237,8 +246,8 @@
 /* Quick actions: a light toolbar on the page background (no extra card). */
 .quick {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-2);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-1);
 }
 
 .quick__btn {
@@ -303,6 +312,22 @@
 
 .quick__icon--train {
   color: var(--text);
+}
+
+.quick__icon--scan {
+  color: var(--accent-text);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--acc) 16%, transparent), transparent),
+    var(--glass-fill);
+}
+
+/* Five actions on narrow phones: slightly smaller tiles keep the labels on one line. */
+@media (max-width: 400px) {
+  .quick__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 18px;
+  }
 }
 
 @media (hover: hover) {

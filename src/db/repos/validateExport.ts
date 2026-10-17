@@ -50,6 +50,20 @@ const activityProfile = (v: unknown) =>
   v === undefined || (obj(v) && str(v.posture) && str(v.job) && num(v.trainingDays) && arrOf(v.activityTypes, str));
 const energyPlan = (v: unknown) =>
   v === undefined || (obj(v) && num(v.proteinPerKg) && num(v.fatPct) && optStr(v.targetId) && (v.targetGoal === undefined || goal(v.targetGoal)));
+const nutrients = (n: unknown) =>
+  obj(n) &&
+  num(n.kcal) &&
+  num(n.protein) &&
+  num(n.carbs) &&
+  num(n.fat) &&
+  (n.satFat === undefined || num(n.satFat)) &&
+  (n.fiber === undefined || num(n.fiber)) &&
+  (n.sugars === undefined || num(n.sugars));
+const nutrientSource = (v: unknown) => obj(v) && (v.kind === 'usda' || v.kind === 'off' || v.kind === 'manual');
+const mealItem = (i: unknown) =>
+  obj(i) && str(i.name) && optNum(i.grams) && (i.unit === undefined || i.unit === 'ml') && nutrients(i.nutrients) && (i.per100 === undefined || nutrients(i.per100)) && nutrientSource(i.source) && bool(i.estimated);
+const mealType = oneOf('breakfast', 'lunch', 'dinner', 'snack');
+const mealOrigin = oneOf('photo', 'barcode', 'manual');
 const workoutExercise = (e: unknown) => obj(e) && str(e.uid) && str(e.exerciseId) && num(e.restSec) && arrOf(e.sets, set);
 const templateExercise = (e: unknown) => obj(e) && str(e.exerciseId) && num(e.sets) && num(e.restSec);
 
@@ -109,6 +123,16 @@ const ROW_CHECKS: Record<TableName, (r: Row) => boolean> = {
   achievements: (r) => str(r.id) && num(r.unlockedAt) && bool(r.seen),
   snapshots: (r) => isDate(r.date) && num(r.waterGoalMl) && num(r.stepsGoal),
   settings: (r) => str(r.key),
+  meals: (r) =>
+    autoId(r.id) &&
+    isDate(r.date) &&
+    str(r.time) &&
+    mealType(r.meal) &&
+    str(r.name) &&
+    arrOf(r.items, mealItem) &&
+    mealOrigin(r.origin) &&
+    num(r.createdAt) &&
+    num(r.updatedAt),
 };
 
 /** Fields that must be unique within a table (primary keys and unique indexes). */
@@ -128,6 +152,7 @@ const UNIQUE: Partial<Record<TableName, string[]>> = {
   achievements: ['id'],
   snapshots: ['date'],
   settings: ['key'],
+  meals: ['id'],
 };
 
 export const TABLE_LABELS: Record<TableName, string> = {
@@ -146,6 +171,7 @@ export const TABLE_LABELS: Record<TableName, string> = {
   achievements: 'los hitos',
   snapshots: 'los objetivos diarios',
   settings: 'los ajustes',
+  meals: 'las comidas',
 };
 
 /** Returns the first table with an invalid or duplicated row, or null if all rows are valid. */

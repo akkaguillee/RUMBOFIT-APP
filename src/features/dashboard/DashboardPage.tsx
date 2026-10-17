@@ -1,4 +1,4 @@
-import { CalendarDays, Check, ChevronRight, Dumbbell, Droplets, Footprints, Plus, Scale } from 'lucide-react';
+import { CalendarDays, Check, ChevronRight, Dumbbell, Droplets, Footprints, Plus, Scale, ScanLine } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -149,16 +149,15 @@ export default function DashboardPage() {
   return (
     <Page>
       <motion.header className="greet" variants={riseVariants}>
-        <div className="greet__top">
-          <p className="t-eyebrow greet__date">{formatDate.header(today)}</p>
-          <p className="hand greet__note" aria-hidden="true">
-            tu ritmo, tu rumbo
-          </p>
-        </div>
+        <p className="t-eyebrow greet__date">{formatDate.header(today)}</p>
         <h1 className="greet__name">
           {greeting()}, <span>{profile.name}</span>
         </h1>
         <p className="greet__msg">{model.message}</p>
+        {/* The brand line signs the greeting off, below the message and before the actions. */}
+        <p className="hand greet__note" aria-hidden="true">
+          tu ritmo, tu rumbo
+        </p>
       </motion.header>
 
       <div className="dash">
@@ -182,6 +181,12 @@ export default function DashboardPage() {
                 <Footprints aria-hidden="true" />
               </span>
               Pasos
+            </button>
+            <button type="button" className="quick__btn" onClick={() => navigate('/habitos/escaner')}>
+              <span className="quick__icon quick__icon--scan">
+                <ScanLine aria-hidden="true" />
+              </span>
+              Escanear
             </button>
             <button type="button" className="quick__btn" onClick={() => navigate(model.active ? '/entreno/sesion' : '/entreno')}>
               <span className="quick__icon quick__icon--train">

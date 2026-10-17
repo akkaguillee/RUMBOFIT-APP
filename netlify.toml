@@ -1,0 +1,6 @@
+# Build command and publish directory stay in the Netlify UI (npm run build → dist).
+# Functions: the food scanner backend. Keys go in Site settings → Environment variables
+# (see .env.example); they are only read on the server.
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"

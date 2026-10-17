@@ -86,6 +86,14 @@ export function useExerciseLibrary() {
   }, [custom]);
 }
 
+/** Food log entries of a day, in the order they were eaten. */
+export function useMealsDay(date: DateKey) {
+  return useLiveQuery(
+    async () => (await db.meals.where('date').equals(date).toArray()).sort((a, b) => a.time.localeCompare(b.time) || a.createdAt - b.createdAt),
+    [date],
+  );
+}
+
 export function useAchievementData() {
   return useLiveQuery(async () => {
     const data = await loadAchievementData(todayKey());

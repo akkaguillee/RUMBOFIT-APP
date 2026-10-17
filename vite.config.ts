@@ -66,7 +66,7 @@ export default defineConfig(({ mode }) => {
     },
     test: {
       environment: 'node',
-      include: ['src/**/*.test.ts'],
+      include: ['src/**/*.test.ts', 'netlify/**/*.test.ts'],
       setupFiles: ['src/test/setup.ts'],
     },
   };

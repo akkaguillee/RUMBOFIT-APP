@@ -327,24 +327,31 @@
   margin: var(--space-1) 0 var(--space-5);
 }
 
+/* The section's brand word in Krophed. Its size follows the word's own width
+   (Display passes it in em) so it fills the column up to a cap, as it did
+   originally. Solid colour: a gradient clipped to the text paints unreliably
+   in Safari on iOS inside animated parents. */
 .page-head__display {
   display: block;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   font-size: var(--fs-brand);
   white-space: nowrap;
 }
 
 .page-head__display.display {
-  background: var(--brand-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  font-size: min(var(--display-max, 2.6rem), calc(100cqi / var(--display-em, 6)));
+  color: var(--accent-text);
+  text-shadow: 0 0 28px color-mix(in srgb, var(--acc) 35%, transparent);
 }
 
 :root[data-theme='light'] .page-head__display.display {
-  background: linear-gradient(120deg, var(--acc-deep), var(--acc-fill-l) 70%, var(--acc-hi));
-  -webkit-background-clip: text;
-  background-clip: text;
+  text-shadow: none;
+}
+
+@supports not (width: 1cqi) {
+  .page-head__display.display {
+    font-size: min(var(--display-max, 2.6rem), calc((100vw - 2 * var(--gutter)) / var(--display-em, 6)));
+  }
 }
 
 .page-head__title {

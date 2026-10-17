@@ -99,7 +99,7 @@ export const RARITIES: Record<Rarity, { label: string; order: number }> = {
   common: { label: 'Común', order: 0 },
   uncommon: { label: 'Poco común', order: 1 },
   rare: { label: 'Raro', order: 2 },
-  epic: { label: 'Épico', order: 3 },
+  epic: { label: 'Élite', order: 3 },
   legendary: { label: 'Legendario', order: 4 },
 };
 
@@ -188,7 +188,7 @@ const defs: D[] = [
   { id: 'active-week', name: 'Semana Activa', description: 'Completa 2 entrenamientos en una misma semana.', category: 'gym', icon: 'dumbbell', rarity: 'common', target: 2, unit: 'sesiones', metric: 'maxWorkoutsInWeek' },
   { id: 'full-map', name: 'Mapa Completo', description: 'Entrena los 12 grupos musculares principales del mapa muscular.', category: 'gym', icon: 'map', rarity: 'rare', target: 12, unit: 'grupos', metric: 'majorMusclesTrained' },
   { id: 'routine-12', name: 'Trimestre Activo', description: 'Entrena al menos 2 veces por semana durante 12 semanas seguidas.', category: 'gym', icon: 'shield', rarity: 'epic', target: 12, unit: 'semanas', metric: 'workoutWeeksRun2' },
-  { id: 'elite-discipline', name: 'Disciplina de Élite', description: 'Entrena al menos 3 veces por semana durante 12 semanas seguidas.', category: 'gym', icon: 'crown', rarity: 'legendary', target: 12, unit: 'semanas', metric: 'workoutWeeksRun3' },
+  { id: 'elite-discipline', name: 'Disciplina de Hierro', description: 'Entrena al menos 3 veces por semana durante 12 semanas seguidas.', category: 'gym', icon: 'crown', rarity: 'legendary', target: 12, unit: 'semanas', metric: 'workoutWeeksRun3' },
 
   // ── Fuerza
   { id: 'progression', name: 'Progresión Registrada', description: 'Mejora una marca personal registrada (siempre con buena técnica).', category: 'strength', icon: 'trending', rarity: 'uncommon', target: 1, metric: 'personalBests' },

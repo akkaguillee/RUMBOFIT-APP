@@ -36,6 +36,8 @@
 }
 
 .page-head__text {
+  container-type: inline-size;
+  flex: 1;
   min-width: 0;
 }
 

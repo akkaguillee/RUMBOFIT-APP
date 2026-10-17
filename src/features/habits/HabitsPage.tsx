@@ -6,6 +6,7 @@ import { riseVariants } from '@/ui/motion';
 import { Page, PageHead } from '@/ui/Page';
 import { TabPanel } from '@/ui/TabPanel';
 import { Segmented } from '@/ui/Segmented';
+import { FoodLogPanel } from '../food/FoodLogPanel';
 import { StepsPanel } from './StepsPanel';
 import { WaterPanel } from './WaterPanel';
 import './habits.css';
@@ -13,11 +14,12 @@ import './habits.css';
 export default function HabitsPage() {
   const profile = useProfile();
   const [params, setParams] = useSearchParams();
-  const tab = params.get('tab') === 'pasos' ? 'pasos' : 'agua';
+  const requested = params.get('tab');
+  const tab = requested === 'pasos' || requested === 'comidas' ? requested : 'agua';
   if (!profile) return <Loader />;
   return (
     <Page>
-      <PageHead eyebrow="Hábitos" display="Agua + pasos" title="Agua y movimiento" subtitle="Pequeños gestos diarios que suman." note="poco a poco, suma" />
+      <PageHead eyebrow="Hábitos" display="Rutina" title="Agua, pasos y comidas" subtitle="Pequeños gestos diarios que suman." note="poco a poco, suma" />
       <motion.div className="tabs-row" variants={riseVariants} style={{ marginBottom: 20 }}>
         <Segmented
           mode="tabs"
@@ -26,6 +28,7 @@ export default function HabitsPage() {
           options={[
             { value: 'agua', label: 'Agua' },
             { value: 'pasos', label: 'Pasos' },
+            { value: 'comidas', label: 'Comidas' },
           ]}
           value={tab}
           onChange={(v) => setParams(v === 'agua' ? {} : { tab: v }, { replace: true })}
@@ -33,7 +36,7 @@ export default function HabitsPage() {
         />
       </motion.div>
       <TabPanel tab={tab} idPrefix="habits">
-        {tab === 'agua' ? <WaterPanel profile={profile} /> : <StepsPanel profile={profile} />}
+        {tab === 'agua' ? <WaterPanel profile={profile} /> : tab === 'pasos' ? <StepsPanel profile={profile} /> : <FoodLogPanel profile={profile} />}
       </TabPanel>
     </Page>
   );

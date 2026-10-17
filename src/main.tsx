@@ -23,6 +23,15 @@ import { db } from './db/db';
 // iOS Safari only shows :active press states when a touch listener exists.
 document.addEventListener('touchstart', () => {}, { passive: true });
 
+// Start loading the brand faces right away (bundled with the app): section
+// titles and handwritten notes then render in them on first paint.
+try {
+  void document.fonts?.load('500 1em Krophed');
+  void document.fonts?.load('400 1em "212 Baby Girl"');
+} catch {
+  /* Font Loading API not available: the CSS loads them on demand. */
+}
+
 // The single-file build is opened from disk (file://), where only hash URLs work.
 const Router = import.meta.env.MODE === 'standalone' ? HashRouter : BrowserRouter;
 

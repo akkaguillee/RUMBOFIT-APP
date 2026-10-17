@@ -2,7 +2,7 @@
   "name": "rumbo",
   "private": true,
   "version": "1.0.0",
-  "description": "RUMBO \u2014 h\u00e1bitos, evoluci\u00f3n f\u00edsica y entrenamiento con una experiencia Liquid Glass.",
+  "description": "RUMBO — hábitos, evolución física y entrenamiento con una experiencia Liquid Glass.",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,6 +16,7 @@
     "build:html": "tsc -b && vite build --mode standalone"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
     "@fontsource-variable/inter": "5.3.0",
     "d3-shape": "3.2.0",
     "dexie": "4.4.6",

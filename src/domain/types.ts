@@ -311,3 +311,55 @@ export interface Setting<T = unknown> {
   key: string;
   value: T;
 }
+
+// ── Food log ─────────────────────────────────────────────────────────────
+
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+
+/**
+ * Nutrients for an amount of food (or per 100 g when used as `per100`).
+ * Energy and the three macronutrients are always present; saturated fat,
+ * fiber and sugars only when the source provides them.
+ */
+export interface Nutrients {
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  satFat?: number;
+  fiber?: number;
+  sugars?: number;
+}
+
+/** Where the values of a food come from. */
+export type NutrientSource =
+  | { kind: 'usda'; id: number; label: string; dataType: string }
+  | { kind: 'off'; id: string; label: string }
+  | { kind: 'manual' };
+
+export interface MealItem {
+  name: string;
+  /** Amount eaten in grams (or millilitres for drinks), when known. */
+  grams?: number;
+  /** Drinks described per 100 ml. */
+  unit?: 'ml';
+  /** Values for the amount eaten. */
+  nutrients: Nutrients;
+  /** Values per 100 g when the source gives them, so the amount can be edited later. */
+  per100?: Nutrients;
+  source: NutrientSource;
+  /** The amount was estimated from a photo, not weighed or read from a label. */
+  estimated: boolean;
+}
+
+export interface MealEntry {
+  id?: number;
+  date: DateKey;
+  time: string;
+  meal: MealType;
+  name: string;
+  items: MealItem[];
+  origin: 'photo' | 'barcode' | 'manual';
+  createdAt: number;
+  updatedAt: number;
+}
