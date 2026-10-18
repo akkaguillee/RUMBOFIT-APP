@@ -32,3 +32,5 @@ promo/out/pasos/*-silent.mp4
 promo/audio/stems-pasos
 promo/audio/voice-pasos/takes-all.wav
 promo/audio/voice-pasos/takes-all.mp3
+# Full-bitrate 2K masters (over GitHub's 100 MB limit; the repo keeps size-fitted copies)
+promo/out/pasos/*-master.mp4
