@@ -8,6 +8,7 @@ MIXED=$2
 OUT=$3
 MB=${4:-95}
 LEVEL=${5:-5.1}
+if [ "$(wc -c < "$MIXED")" -le $((MB * 1000000)) ]; then cp "$MIXED" "$OUT"; ls -la "$OUT"; exit 0; fi
 DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$MIXED")
 AUDIO=$(ffprobe -v error -select_streams a:0 -show_entries stream=bit_rate -of csv=p=0 "$MIXED")
 FPS=$(ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of csv=p=0 "$VIDEO" | cut -d/ -f1)

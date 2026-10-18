@@ -6,9 +6,9 @@ Anuncio vertical para Reels y TikTok (1:44,5) con adaptación 4:5 para el feed, 
 
 | Archivo | Qué es |
 | --- | --- |
-| `RUMBO-cada-paso-cuenta-9x16-2k60.mp4` | Máster 2K: 1440 × 2560 a 60 fps, H.264 (High 5.1) + AAC 48 kHz, −14 LUFS, subtítulos incrustados |
+| `RUMBO-cada-paso-cuenta-9x16-2k60.mp4` | Máster 2K: 1440 × 2560 a 60 fps, H.264 (High 5.1) + AAC 48 kHz, −14 LUFS, subtítulos incrustados. En el repositorio va una copia de unos 94 MB (GitHub no admite archivos de más de 100 MB), codificada en dos pasadas desde el render de alta calidad; la copia de más tasa, `…-2k60-master.mp4`, queda fuera del repositorio y se rehace con `npm run mux:pasos` |
 | `RUMBO-cada-paso-cuenta-9x16.mp4` | La misma pieza a 1080 × 1920 y 30 fps (de la misma renderización, un fotograma de cada dos) |
-| `RUMBO-cada-paso-cuenta-4x5-2k60.mp4` | Adaptación 4:5 con encuadre propio (no es un recorte): 1440 × 1800 a 60 fps |
+| `RUMBO-cada-paso-cuenta-4x5-2k60.mp4` | Adaptación 4:5 con encuadre propio (no es un recorte): 1440 × 1800 a 60 fps (con el mismo límite de tamaño que el 9:16) |
 | `RUMBO-cada-paso-cuenta-4x5.mp4` | La adaptación 4:5 a 1080 × 1350 y 30 fps |
 | `RUMBO-cada-paso-cuenta-voz-elevenlabs.wav` | Narración limpia de ElevenLabs, sin música ni efectos, alineada con el vídeo (48 kHz, 24 bits) |
 | `RUMBO-cada-paso-cuenta.es.srt` | Subtítulos en español (32 frases cortas, tiempos sacados de la propia voz) |
