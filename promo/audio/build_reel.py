@@ -325,7 +325,6 @@ PULSE = [[S['reveal'], S['privacy']], [C['fx.drop2'], FRAMES - 30]]
 
 # Keywords that slam onto the screen as the voice says them.
 KEYWORDS = [
-    (W('r1', 'siguiente'), 'SIGUIENTE PASO'),
     (W('r3', 'peso'), 'PESO'),
     (W('r3', 'IMC'), 'IMC'),
     (W('r3', 'calorias'), 'CALORÍAS'),
