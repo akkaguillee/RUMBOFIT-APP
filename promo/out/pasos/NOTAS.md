@@ -8,8 +8,7 @@ Anuncio vertical para Reels y TikTok (1:04) con adaptación 4:5 para el feed, en
 | --- | --- |
 | `RUMBO-cada-paso-cuenta-9x16-2k60.mp4` | Máster 2K: 1440 × 2560 a 60 fps, H.264 (High 5.1) + AAC 48 kHz, −14 LUFS, subtítulos incrustados. En el repositorio va una copia de menos de 100 MB (GitHub no admite archivos mayores), codificada en dos pasadas desde el render de alta calidad; la de más tasa, `…-2k60-master.mp4`, queda fuera del repositorio y se rehace con `npm run mux:pasos` |
 | `RUMBO-cada-paso-cuenta-9x16.mp4` | La misma pieza a 1080 × 1920 y 30 fps (de la misma renderización, un fotograma de cada dos) |
-| `RUMBO-cada-paso-cuenta-4x5-2k60.mp4` | Adaptación 4:5 con encuadre propio (no es un recorte): 1440 × 1800 a 60 fps, con el mismo límite de tamaño |
-| `RUMBO-cada-paso-cuenta-4x5.mp4` | La adaptación 4:5 a 1080 × 1350 y 30 fps |
+| `RUMBO-cada-paso-cuenta-4x5.mp4` | Adaptación 4:5 con encuadre propio (no es un recorte): 1080 × 1350 a 30 fps, renderizada directamente a ese tamaño (composición `RumboPasos45x30`). La versión 2K a 60 fps sale con `npm run render:pasos45 && npm run mux:pasos45` |
 | `RUMBO-cada-paso-cuenta-voz-elevenlabs.wav` | Narración limpia de ElevenLabs, sin música ni efectos, alineada con el vídeo (48 kHz, 24 bits) |
 | `RUMBO-cada-paso-cuenta.es.srt` | Subtítulos en español de toda la narración (25 frases cortas) |
 | `../../audio/voice-energia/l1…l9.wav` | Las tomas elegidas, recortadas; `takes/` guarda todas las tomas generadas |
@@ -53,7 +52,7 @@ Los bloques sin voz se quedaron así porque la cuenta de ElevenLabs agotó su cu
 - **Voz:** ElevenLabs, modelo `eleven_v4`, voz «Cristina» (femenina, español de España, voz publicitaria), con la dirección `[excited]` y signos de exclamación. Frente a la lectura anterior, el tono varía el doble o el triple (±3–4 semitonos frente a ±1,3) y el ritmo es un 25–35 % más rápido. Las tomas se colocan sin acelerar ni estirar.
 - **Tiempos de palabra:** sin créditos para Scribe, se calcularon en local con `audio/align.py` (eSpeak NG + DTW sobre MFCC, con anclaje en las pausas). Probado contra Scribe en la narración anterior (155 palabras): mediana de error 25 ms, percentil 90 de 75 ms. Las tomas nuevas no se transcribieron, así que conviene escucharlas una vez antes de publicar.
 - **Música:** original, sintetizada en el proyecto (`audio/build_pasos.py`, `audio/synth.py`): 120 BPM, si menor / re mayor (Bm – G – D – A), supersierras con bombeo de sidechain, bajo galopante, batería, subidas y dos drops. No usa grabaciones de terceros.
-- **Efectos:** golpes bajo las palabras grandes, barridos en las transiciones, ticks al iluminarse cada pesaje, la serie completada, el agua, cada color e impactos en los drops (`src/pasos/beats.json`). Bajan solos cuando habla la voz; la música se atenúa con sidechain. Normalizado a −14 LUFS y −1 dBTP (`audio/mux.sh`).
+- **Efectos:** golpes bajo las palabras grandes, barridos en las transiciones, ticks al iluminarse cada pesaje, la serie completada, el agua, cada color e impactos en los drops (`src/pasos/beats.json`). Bajan solos cuando habla la voz; la música se atenúa con sidechain. Normalizado a −14 LUFS; pico real de −1,2 dBFS tras codificar en AAC a 320 kbit/s (`audio/mux.sh`).
 - **Destellos:** solo dos, suaves, en los drops; los cortes rápidos de la subida usan pantallas oscuras para no producir parpadeos de luminancia.
 
 ## Otras notas
