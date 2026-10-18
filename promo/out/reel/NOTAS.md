@@ -1,25 +1,24 @@
-# RUMBO · Reel «Cada pequeño paso cuenta» — notas de entrega
+# RUMBO · Reel «Cada pequeño paso cuenta» — notas de entrega (versión enérgica)
 
 ## Archivos
 
 | Archivo | Qué es |
 | --- | --- |
-| `RUMBO-reel-9x16.mp4` | Máster vertical 1080 × 1920, 30 fps, H.264 + AAC 48 kHz, −14 LUFS, 1:46,5. Estilo cinematográfico (zooms, barridos, inmersión en la pantalla, destellos, flares, bandas de cine), música de tráiler original, efectos y subtítulos incrustados; **sin locución** (ver «Locución»). |
+| `RUMBO-reel-9x16.mp4` | Máster vertical 1080 × 1920, 30 fps, H.264 + AAC 48 kHz, −14 LUFS, 1:31,9. Versión enérgica: locución, música a 128 BPM, cortes al compás, palabras clave, efectos y subtítulos incrustados. |
 | `RUMBO-reel-4x5.mp4` | Adaptación 1080 × 1350 reencuadrada (mismas escenas, maquetación propia). |
-| `RUMBO-reel-9x16-voz-guia-provisional.mp4` | El máster con una voz guía local, solo para valorar ritmo y sincronía. **No publicar.** |
 | `RUMBO-reel.srt` | Subtítulos en español, sincronizados con la locución. |
-| `audio/locucion-guia.wav` | Voz guía provisional, limpia y colocada en su tiempo (mono, 48 kHz). |
-| `audio/musica-y-efectos.wav` | Música y efectos sin voz, para remezclar con la locución final. |
+| `LOCUCION.txt` | Texto final de la locución con la entrada de cada frase. |
+| `audio/locucion-local.wav` | La locución limpia, colocada en su tiempo (mono, 48 kHz). |
+| `audio/musica-y-efectos.wav` | Música y efectos sin voz, para remezclar con otra locución. |
 | `audio/elevenlabs-tomas/` | Las tomas que ElevenLabs llegó a generar (frase 1, tres tomas; frase 2, una toma). |
 | Fuente editable | `promo/src/reel/` (Remotion), `promo/audio/build_reel.py` y `mux_reel.sh` (audio), `promo/capture/` (capturas de la app). Ver `promo/README.md`. |
 
 ## Locución
 
 - Guion: exactamente el del encargo (`promo/src/reel/script.json`).
-- Voz elegida en ElevenLabs: «Sofia - Captivating Narration» (mujer joven adulta, español de España, cálida y natural), modelo `eleven_v4`.
-- **No hay locución final.** La cuenta de ElevenLabs conectada rechazó la generación después de las dos primeras frases: «Unusual activity has been detected on your account, so Free Tier access has been disabled… Please upgrade to a paid subscription». No se reintentó (cada intento cobra créditos y la cuenta está bloqueada).
-- Para completar: genera las 8 frases con esa voz, guárdalas como `promo/audio/voice-reel/elevenlabs/r1.mp3 … r8.mp3` y ejecuta `npm run build:reel` en `promo/`. Los tiempos de subtítulos, cortes y efectos se recalculan a partir de las tomas, y el máster pasa a llevar la voz por delante y la música debajo.
-- La voz guía (Kokoro-82M, licencia Apache-2.0, generada en local) no es la voz pedida; solo sirve para revisar.
+- Voz pedida: ElevenLabs. Elegida «Sofia - Captivating Narration» (mujer joven adulta, español de España), modelo `eleven_v4`. La cuenta conectada rechazó la generación después de las dos primeras frases («Unusual activity has been detected on your account, so Free Tier access has been disabled… Please upgrade to a paid subscription»); no se reintentó.
+- **El máster lleva una voz sintética local**, no la de ElevenLabs: Kokoro-82M (voz ef_dora, español, licencia Apache-2.0), a ritmo enérgico y tratada como locución de radio. Suena más artificial que una voz de ElevenLabs.
+- Para sustituirla: genera las 8 frases con ElevenLabs, guárdalas como `promo/audio/voice-reel/elevenlabs/r1.mp3 … r8.mp3` y ejecuta `npm run build:reel` en `promo/`. Subtítulos, cortes y efectos se recalculan a partir de las nuevas tomas.
 
 ## Afirmaciones comprobadas
 
@@ -41,6 +40,6 @@
 
 ## Limitaciones reales
 
-- Falta la locución final de ElevenLabs (ver arriba).
+- La locución es sintética local; la de ElevenLabs no se pudo generar (ver arriba).
 - La barra de estado del teléfono (9:41, cobertura, batería) es un marco genérico de iPhone; la app se capturó en un navegador móvil.
 - En las capturas a página completa, las barras superior e inferior de la app vienen de capturas en reposo; al desplazarse, su fondo translúcido no refleja exactamente el contenido que pasa por debajo.

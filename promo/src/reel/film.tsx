@@ -28,19 +28,13 @@ import {
 } from './kit';
 import { useLayout, type Layout } from './layout';
 import { ACCENT, V } from './theme';
-import { cue as c, cues, SCENES } from './timing';
+import { BEAT_F, cue as c, cues, inPulse, SCENES } from './timing';
 
 /* ── Interface state over time: accent and theme, as the app shows them ─── */
 export function accentAt(f: number): string {
-  const a = cues('sty.accents');
-  const order = ['cian', 'fucsia', 'naranja', 'volt', 'rojo'];
-  if (f >= c('sty.violet')) {
-    const l = cues('sty.light');
-    if (f >= l[0]! && f < l[1]!) return ACCENT.cian!;
-    if (f >= l[1]! && f < l[2]!) return ACCENT.fucsia!;
-    return ACCENT.violeta!;
-  }
-  for (let k = a.length - 1; k >= 0; k--) if (f >= a[k]!) return ACCENT[order[k]!]!;
+  const l = cues('sty.light');
+  if (f >= l[0]! && f < l[1]!) return ACCENT.cian!;
+  if (f >= l[1]! && f < l[2]!) return ACCENT.fucsia!;
   return ACCENT.violeta!;
 }
 export const isLight = (f: number) => f >= c('sty.theme') + 11 && f < c('sty.dark') + 10;
@@ -110,8 +104,8 @@ export function phonePose(f: number, L: Layout): Pose {
     // The colour sheet: up so its rows stay clear of the subtitles.
     [c('sty.accentTap') - 2, 1, base],
     [c('sty.sheet') + 8, 1, base - 170 * L.k],
-    [cues('sty.accents')[0]!, 1, base - 170 * L.k],
-    [cues('sty.accents')[0]! + 16, 1, base],
+    [c('sty.fan'), 1, base - 170 * L.k],
+    [c('sty.fanEnd'), 1, base],
     [SCENES.privacy[0], 1, base],
     [SCENES.privacy[0] + 40, 0.86, base + 30],
     [SCENES.finale[0], 0.86, base + 30],
@@ -134,8 +128,16 @@ export function phonePose(f: number, L: Layout): Pose {
     rx: (1 - enter) * 18 + Math.cos(t * 0.6) * 1.2,
     ry: (1 - enter) * -24 + Math.sin(t * 0.45) * 2.2 + flip,
     rz: (1 - enter) * -6,
-    opacity: 1 - prog(f, SCENES.finale[0] - 2, SCENES.finale[0] + 4, easeInOut),
+    // The phone gives way to the six-colour fan and to the light/dark split, then comes back.
+    opacity:
+      (1 - prog(f, SCENES.finale[0] - 2, SCENES.finale[0] + 4, easeInOut)) *
+      (1 - win2(f, c('sty.fan'), c('sty.fanEnd'), 4, 6)) *
+      (1 - win2(f, c('sty.split'), c('sty.splitEnd'), 4, 6)),
   };
+}
+
+function win2(f: number, a: number, b: number, fi: number, fo: number) {
+  return prog(f, a, a + fi) * (1 - prog(f, b - fo, b));
 }
 
 /** Frame position of a screen point (pt) on the phone at frame f. */
@@ -186,9 +188,31 @@ function ChartDraw({ f, at }: { f: number; at: number }) {
   );
 }
 
+/** Four screens cut on the beat, each entering a different way. */
+function burst(at: number, screens: string[]): Seg[] {
+  const kinds: Seg['trans'][] = [{ kind: 'slideL', dur: 5 }, { kind: 'lift', dur: 5 }, { kind: 'slideR', dur: 5 }, { kind: 'fade', dur: 4 }];
+  return screens.map((src, i) => ({ from: Math.round(at + i * BEAT_F), render: () => <Shot src={src} />, trans: kinds[i % kinds.length] }));
+}
+
+const MONTAGE = ['inicio', 'progreso', 'historial', 'agua-meta', 'pasos-meta', 'hitos', 'calendario', 'registros', 'rutinas', 'stats-marcas', 'imc', 'calorias', 'entreno', 'inicio-racha'];
+
+/** The build into the finale: a beat, then half beats, then quarter beats. */
+function buildMontage(): Seg[] {
+  const out: Seg[] = [];
+  const end = c('fx.dive2');
+  let f = c('priv.build');
+  let i = 0;
+  while (f < end - 2) {
+    const p = (f - c('priv.build')) / (end - c('priv.build'));
+    out.push({ from: Math.round(f), render: () => <Shot src={MONTAGE[i % MONTAGE.length]!} />, trans: { kind: 'cut' } });
+    i++;
+    f += p < 0.55 ? BEAT_F : p < 0.85 ? BEAT_F / 2 : BEAT_F / 4;
+  }
+  return out;
+}
+
 function segments(): Seg[] {
   const S = (src: string) => () => <Shot src={src} />;
-  const a = cues('sty.accents');
   const l = cues('sty.light');
   return [
     { from: PHONE_FROM, render: S('bienvenida'), trans: { kind: 'cut' } },
@@ -206,6 +230,7 @@ function segments(): Seg[] {
     { from: c('evo.back'), render: S('progreso-grafica'), trans: { kind: 'slideR', dur: 12 } },
     { from: c('evo.tip') + 3, render: S('progreso-tip'), trans: { kind: 'fade', dur: 8 } },
     { from: c('evo.list'), render: S('registros'), trans: { kind: 'slideL', dur: 12 } },
+    ...burst(c('evo.burst'), ['imc', 'calorias', 'progreso-tip', 'registros']),
     // Training
     { from: c('train.hist'), render: S('historial'), trans: { kind: 'fade', dur: 12 } },
     { from: c('train.rut'), render: S('rutinas'), trans: { kind: 'slideL', dur: 12 } },
@@ -213,6 +238,7 @@ function segments(): Seg[] {
     { from: c('train.ses'), render: S('sesion'), trans: { kind: 'lift', dur: 14 } },
     { from: c('train.check'), render: (f) => <Seq name="serie" from={c('train.check')} n={16} f={f} />, trans: { kind: 'cut' } },
     { from: c('train.check2') + 2, render: S('sesion-hecha2'), trans: { kind: 'fade', dur: 6 } },
+    ...burst(c('train.burst'), ['entreno', 'historial', 'stats-marcas', 'sesion-hecha2']),
     // Habits
     { from: SCENES.habits[0], render: S('inicio'), trans: { kind: 'lift', dur: 14 } },
     { from: c('hab.agua'), render: S('agua'), trans: { kind: 'lift', dur: 14 } },
@@ -222,20 +248,18 @@ function segments(): Seg[] {
     { from: c('hab.hito'), render: S('hito-celebracion'), trans: { kind: 'fade', dur: 12 } },
     { from: c('hab.racha'), render: S('inicio-racha'), trans: { kind: 'lift', dur: 14 } },
     { from: c('hab.cal'), render: S('calendario'), trans: { kind: 'page', dur: 18 } },
-    // Style
+    ...burst(c('hab.burst'), ['hitos', 'agua-meta', 'pasos-meta', 'inicio-racha']),
+    // Style: the real colour sheet, the six colours (fan), the real light/dark switch.
     { from: SCENES.style[0], render: S('inicio'), trans: { kind: 'cut' } },
-    { from: c('sty.sheet'), render: S('acento-selector'), trans: { kind: 'sheet', dur: 16, split: 330 } },
-    { from: a[0]!, render: S('inicio-cian'), trans: { kind: 'fade', dur: 10 } },
-    { from: a[1]!, render: S('inicio-fucsia'), trans: { kind: 'fade', dur: 6 } },
-    { from: a[2]!, render: S('inicio-naranja'), trans: { kind: 'fade', dur: 6 } },
-    { from: a[3]!, render: S('inicio-volt'), trans: { kind: 'fade', dur: 6 } },
-    { from: a[4]!, render: S('inicio-rojo'), trans: { kind: 'fade', dur: 6 } },
-    { from: c('sty.violet'), render: S('inicio'), trans: { kind: 'fade', dur: 6 } },
-    { from: c('sty.theme') + 2, render: S('inicio-claro'), trans: { kind: 'circle', dur: 22, x: 301, y: 30 } },
-    { from: l[0]!, render: S('inicio-claro-cian'), trans: { kind: 'fade', dur: 6 } },
-    { from: l[1]!, render: S('inicio-claro-fucsia'), trans: { kind: 'fade', dur: 6 } },
-    { from: l[2]!, render: S('inicio-claro'), trans: { kind: 'fade', dur: 6 } },
-    { from: c('sty.dark') + 2, render: S('inicio'), trans: { kind: 'circle', dur: 20, x: 301, y: 30 } },
+    { from: c('sty.sheet'), render: S('acento-selector'), trans: { kind: 'sheet', dur: 14, split: 330 } },
+    { from: c('sty.fanEnd') - 6, render: S('inicio'), trans: { kind: 'cut' } },
+    { from: c('sty.theme') + 2, render: S('inicio-claro'), trans: { kind: 'circle', dur: 18, x: 301, y: 30 } },
+    { from: l[0]!, render: S('inicio-claro-cian'), trans: { kind: 'fade', dur: 5 } },
+    { from: l[1]!, render: S('inicio-claro-fucsia'), trans: { kind: 'fade', dur: 5 } },
+    { from: l[2]!, render: S('inicio-claro'), trans: { kind: 'fade', dur: 5 } },
+    { from: c('sty.dark') + 2, render: S('inicio'), trans: { kind: 'circle', dur: 18, x: 301, y: 30 } },
+    // Privacy into the finale: the records that stay on the device, faster and faster.
+    ...buildMontage(),
   ];
 }
 
@@ -267,7 +291,6 @@ function InScreen({ f }: { f: number }) {
       <Spotlight x={262} y={370} w={44} h={44} r={22} color="#ffb347" opacity={win(f, c('hab.flame') - 2, c('hab.flame') + 26, 4, 10)} />
       <Spotlight x={26} y={645} w={340} h={52} r={14} opacity={win(f, c('hab.legend'), c('hab.legend') + 44, 6, 12)} />
       <Tap x={251} y={30} at={c('sty.accentTap')} />
-      <Tap x={195} y={685} at={c('sty.pick')} />
       <Tap x={301} y={30} at={c('sty.theme')} />
       <Tap x={301} y={30} at={c('sty.dark')} light={light} />
     </>
@@ -440,8 +463,10 @@ function rumbiEvents(L: Layout): RumbiEvent[] {
     { at: c('hab.title'), look: [0, 0] },
     { at: SCENES.style[0], expr: 'happy' },
     { at: c('sty.accentTap') - 6, look: [-0.6, -1] },
-    { at: cues('sty.accents')[0]!, tap: true },
-    { at: cues('sty.accents')[3]!, tap: true },
+    { at: c('sty.fan'), tap: true },
+    { at: c('sty.fan') + 14, expr: 'surprised' },
+    { at: c('sty.fanEnd'), expr: 'happy' },
+    { at: c('sty.split'), tap: true },
     { at: c('sty.theme'), expr: 'surprised' },
     { at: c('sty.theme') + 18, expr: 'happy' },
     { at: SCENES.privacy[0], expr: 'neutral' },
@@ -467,8 +492,24 @@ export function RumbiActor() {
   const appear = prog(f, 0, 10, easeOut);
   const lean = keys(f, [[c('hook.spark') - 6, 0], [c('hook.spark') + 4, -9], [c('hook.path') + 30, -4], [c('hook.title'), 0]], easeInOut);
   const size = Math.round(pos.s);
+  // Rumbi bounces to the kick where the music drives: a squash on every beat, a hop on the downbeat.
+  const phase = (f % BEAT_F) / BEAT_F;
+  const down = Math.floor(f / BEAT_F) % 4 === 0;
+  const hit = inPulse(f) ? Math.exp(-phase * 7) : 0;
+  const hop = inPulse(f) && down ? Math.sin(Math.min(1, phase * 1.6) * Math.PI) * size * 0.08 : 0;
   return (
-    <div style={{ position: 'absolute', left: pos.x - size / 2, top: pos.y - size / 2, width: size, height: size, opacity: appear, transform: `rotate(${lean}deg)` }}>
+    <div
+      style={{
+        position: 'absolute',
+        left: pos.x - size / 2,
+        top: pos.y - size / 2 - hop,
+        width: size,
+        height: size,
+        opacity: appear,
+        transformOrigin: '50% 90%',
+        transform: `rotate(${lean}deg) scale(${1 + 0.07 * hit}, ${1 - 0.07 * hit})`,
+      }}
+    >
       <Rumbi size={size} events={events} seed={7} accent={accentAt(f)} light={isLight(f)} />
     </div>
   );

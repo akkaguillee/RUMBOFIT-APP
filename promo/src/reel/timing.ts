@@ -5,6 +5,13 @@ import voiceJson from './voice.json';
 /** One clock for picture and sound: audio/build_reel.py writes these files from the voice takes. */
 export const FPS = cuesJson.fps;
 export const FRAMES = cuesJson.frames;
+export const BPM = cuesJson.bpm;
+/** Frames per beat of the score. */
+export const BEAT_F = (FPS * 60) / BPM;
+const PULSE = cuesJson.pulse as [number, number][];
+/** Where the music drives and the picture pulses with the kick. */
+export const inPulse = (f: number) => PULSE.some(([a, b]) => f >= a && f < b);
+export const KEYWORDS = cuesJson.keywords as { at: number; text: string }[];
 export type SceneId = 'hook' | 'reveal' | 'evolution' | 'training' | 'habits' | 'style' | 'privacy' | 'finale';
 export const SCENES = cuesJson.scenes as Record<SceneId, [number, number]>;
 const CUES = cuesJson.cues as Record<string, number | number[]>;

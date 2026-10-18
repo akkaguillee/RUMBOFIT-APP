@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 # Reel «Cada pequeño paso cuenta»: final mixes and encodes with FFmpeg.
 #
-#   RUMBO-reel-9x16.mp4 / RUMBO-reel-4x5.mp4   music + effects (+ voice when the
-#       final ElevenLabs takes are in audio/voice-reel/elevenlabs), -14 LUFS.
-#   RUMBO-reel-9x16-voz-guia-provisional.mp4   the same with the provisional
-#       local guide voice, only to judge rhythm and sync (not for publishing).
-#   audio/  voice stem, music + effects stem, the partial ElevenLabs takes.
+#   RUMBO-reel-9x16.mp4 / RUMBO-reel-4x5.mp4   voice in front, music and effects
+#       under it (sidechain), -14 LUFS. The voice is the local one in
+#       audio/voice-reel/local unless ElevenLabs takes are in .../elevenlabs.
+#   audio/  clean voice stem, music + effects stem, the partial ElevenLabs takes.
 #
 # Music ducks under the voice (sidechain); two-pass loudness normalisation
 # (-14 LUFS, -1 dBTP); H.264 High + AAC 48 kHz for Reels and TikTok.
@@ -38,12 +37,9 @@ encode() { # graph video out maxrate
   echo "Wrote $out"
 }
 
-if [ "$SOURCE" = "elevenlabs" ]; then MASTER=$WITH_VOICE; else MASTER=$NO_VOICE; fi
-encode "$MASTER" $OUT/reel-silent.mp4 $OUT/RUMBO-reel-9x16.mp4 7
-[ -f $OUT/reel45-silent.mp4 ] && encode "$MASTER" $OUT/reel45-silent.mp4 $OUT/RUMBO-reel-4x5.mp4 6
-if [ "$SOURCE" != "elevenlabs" ]; then
-  encode "$WITH_VOICE" $OUT/reel-silent.mp4 $OUT/RUMBO-reel-9x16-voz-guia-provisional.mp4 5
-fi
+ONLY=${ONLY:-all}
+if [ "$ONLY" != "45" ]; then encode "$WITH_VOICE" $OUT/reel-silent.mp4 $OUT/RUMBO-reel-9x16.mp4 7; fi
+if [ "$ONLY" != "916" ] && [ -f $OUT/reel45-silent.mp4 ]; then encode "$WITH_VOICE" $OUT/reel45-silent.mp4 $OUT/RUMBO-reel-4x5.mp4 6; fi
 
 # Stems: the clean voice on the timeline, and music + effects without it.
 ffmpeg -hide_banner -loglevel error -y -i $STEMS/voice.wav -af "pan=mono|c0=c0,atrim=0:$LEN,loudnorm=I=-16:TP=-1.5" -ar 48000 -c:a pcm_s16le \

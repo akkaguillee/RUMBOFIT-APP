@@ -1,136 +1,220 @@
 {
  "fps": 30,
- "frames": 3195,
- "bpm": 100,
+ "frames": 2756,
+ "bpm": 128,
  "scenes": {
   "hook": [
    0,
-   288
+   225
   ],
   "reveal": [
-   288,
-   648
+   225,
+   506
   ],
   "evolution": [
-   648,
-   1080
+   506,
+   844
   ],
   "training": [
-   1080,
-   1512
+   844,
+   1181
   ],
   "habits": [
-   1512,
-   1944
+   1181,
+   1575
   ],
   "style": [
-   1944,
-   2376
+   1575,
+   1969
   ],
   "privacy": [
-   2376,
-   2808
+   1969,
+   2250
   ],
   "finale": [
-   2808,
-   3195
+   2250,
+   2756
   ]
  },
  "cues": {
-  "hook.look": 16,
-  "hook.spark": 34,
-  "hook.dot": 46,
-  "hook.path": 54,
-  "hook.pathEnd": 228,
-  "hook.logo": 70,
-  "hook.title": 206,
-  "reveal.phone": 288,
-  "reveal.screen": 308,
-  "reveal.tap": 343,
-  "reveal.hl1": 355,
-  "reveal.hl2": 394,
-  "reveal.title": 473,
-  "evo.tab": 650,
-  "evo.scroll": 688,
-  "evo.draw": 704,
-  "evo.imc": 759,
-  "evo.cal": 777,
-  "evo.back": 813,
-  "evo.tip": 827,
-  "evo.list": 905,
-  "evo.title": 911,
-  "train.card": 1080,
-  "train.hist": 1114,
-  "train.rut": 1146,
-  "train.marcas": 1175,
-  "train.ses": 1213,
-  "train.check": 1276,
-  "train.check2": 1298,
-  "train.title": 1325,
-  "hab.icons": 1512,
-  "hab.cards": 1528,
-  "hab.agua": 1565,
-  "hab.aguaTap": 1603,
-  "hab.pasos": 1627,
-  "hab.pasosTap": 1639,
-  "hab.hito": 1667,
-  "hab.racha": 1714,
-  "hab.flame": 1740,
-  "hab.cal": 1758,
-  "hab.legend": 1772,
-  "hab.title": 1789,
-  "sty.accentTap": 2017,
-  "sty.sheet": 2021,
-  "sty.pick": 2041,
-  "sty.accents": [
-   2049,
-   2067,
-   2085,
-   2103,
-   2121
-  ],
-  "sty.violet": 2139,
-  "sty.theme": 2153,
+  "hook.look": 8,
+  "hook.spark": 18,
+  "hook.dot": 28,
+  "hook.path": 37,
+  "hook.pathEnd": 182,
+  "hook.logo": 40,
+  "hook.title": 120,
+  "reveal.phone": 225,
+  "reveal.screen": 231,
+  "reveal.tap": 265,
+  "reveal.hl1": 277,
+  "reveal.hl2": 311,
+  "reveal.title": 378,
+  "evo.tab": 508,
+  "evo.scroll": 534,
+  "evo.draw": 548,
+  "evo.imc": 599,
+  "evo.cal": 613,
+  "evo.back": 649,
+  "evo.tip": 661,
+  "evo.list": 733,
+  "evo.title": 737,
+  "evo.burst": 788,
+  "train.card": 844,
+  "train.hist": 867,
+  "train.rut": 896,
+  "train.marcas": 923,
+  "train.ses": 958,
+  "train.check": 1015,
+  "train.check2": 1031,
+  "train.title": 1058,
+  "train.burst": 1111,
+  "hab.icons": 1181,
+  "hab.cards": 1195,
+  "hab.agua": 1220,
+  "hab.aguaTap": 1255,
+  "hab.pasos": 1275,
+  "hab.pasosTap": 1285,
+  "hab.hito": 1309,
+  "hab.racha": 1356,
+  "hab.flame": 1378,
+  "hab.cal": 1392,
+  "hab.legend": 1404,
+  "hab.title": 1424,
+  "hab.burst": 1505,
+  "sty.accentTap": 1593,
+  "sty.sheet": 1597,
+  "sty.fan": 1644,
+  "sty.fanEnd": 1686,
+  "sty.theme": 1688,
+  "sty.split": 1716,
+  "sty.splitEnd": 1828,
   "sty.light": [
-   2189,
-   2207,
-   2225
+   1832,
+   1846,
+   1860
   ],
-  "sty.title": 2181,
-  "sty.dark": 2346,
-  "priv.in": 2376,
-  "priv.halo": 2446,
-  "priv.title": 2542,
-  "fin.out": 2808,
-  "fin.lines": 2826,
-  "fin.runner": 2848,
-  "fin.fill": 2886,
-  "fin.word": 2934,
-  "fin.slogan": 2960,
-  "fin.cta": 3017,
-  "fx.braam": 6,
-  "fx.drop1": 288,
-  "fx.dive": 634,
-  "fx.surface": 648,
-  "fx.whip": 1074,
-  "fx.punchOut": 1512,
-  "fx.flip": 1936,
-  "fx.calm": 2376,
-  "fx.build": 2700,
-  "fx.dive2": 2796,
-  "fx.flash": 2808,
-  "fx.drop2": 2886,
+  "sty.title": 1711,
+  "sty.dark": 1947,
+  "priv.in": 1969,
+  "priv.halo": 2005,
+  "priv.title": 2102,
+  "priv.build": 2095,
+  "fin.out": 2250,
+  "fin.lines": 2262,
+  "fin.runner": 2278,
+  "fin.fill": 2306,
+  "fin.word": 2407,
+  "fin.slogan": 2433,
+  "fin.cta": 2486,
+  "fx.braam": 0,
+  "fx.drop1": 225,
+  "fx.dive": 494,
+  "fx.surface": 506,
+  "fx.whip": 838,
+  "fx.punchOut": 1181,
+  "fx.flip": 1567,
+  "fx.calm": 1969,
+  "fx.build": 2095,
+  "fx.dive2": 2240,
+  "fx.flash": 2250,
+  "fx.drop2": 2306,
   "fx.punches": [
-   704,
-   827,
-   1276,
-   1607,
-   1667,
-   1740,
-   2157,
-   2934,
-   3017
+   548,
+   661,
+   1015,
+   1259,
+   1309,
+   1378,
+   1644,
+   1692,
+   1716,
+   2407,
+   2486
+  ],
+  "fx.speed": [
+   502,
+   788,
+   844,
+   1111,
+   1181,
+   1505,
+   1575,
+   1716,
+   1969
   ]
  },
- "voice": "guia"
+ "pulse": [
+  [
+   225,
+   1969
+  ],
+  [
+   2306,
+   2726
+  ]
+ ],
+ "keywords": [
+  {
+   "at": 148,
+   "text": "SIGUIENTE PASO"
+  },
+  {
+   "at": 593,
+   "text": "PESO"
+  },
+  {
+   "at": 602,
+   "text": "IMC"
+  },
+  {
+   "at": 612,
+   "text": "CALORÍAS"
+  },
+  {
+   "at": 900,
+   "text": "RUTINAS"
+  },
+  {
+   "at": 927,
+   "text": "MARCAS"
+  },
+  {
+   "at": 1261,
+   "text": "AGUA"
+  },
+  {
+   "at": 1278,
+   "text": "PASOS"
+  },
+  {
+   "at": 1364,
+   "text": "CONSTANCIA"
+  },
+  {
+   "at": 1648,
+   "text": "COLORES"
+  },
+  {
+   "at": 1681,
+   "text": "TEMA"
+  },
+  {
+   "at": 1991,
+   "text": "PRIVACIDAD"
+  },
+  {
+   "at": 2310,
+   "text": "ENTRENA"
+  },
+  {
+   "at": 2328,
+   "text": "REGISTRA"
+  },
+  {
+   "at": 2367,
+   "text": "CELEBRA"
+  }
+ ],
+ "voice": "local"
 }

@@ -2,10 +2,10 @@ import { Img, useCurrentFrame } from 'remotion';
 import { RUNNER_VIEWBOX, WORDMARK_TEXT_VIEWBOX, runnerPaths, wordmarkPaths } from '../../../src/brand/logoPaths';
 import { isLight, onBody, onScreen, phonePose } from './film';
 import { finaleGeo, hookGeo } from './geo';
-import { HandLine, IC, Ico, KTitle, PathLine, SansLine, TitleArea, clamp, easeInOut, easeOut, easeSoft, hexA, mix, prog, shotUrl, spr, SCREEN_H, SCREEN_W, phoneGeom } from './kit';
+import { HandLine, IC, Ico, KTitle, PathLine, Phone, SansLine, Shot, TitleArea, clamp, easeInOut, easeOut, easeSoft, hexA, mix, prog, shotUrl, spr, SCREEN_H, SCREEN_W, phoneGeom } from './kit';
 import { useLayout } from './layout';
-import { ACCENT, BUTTON, FONT, V } from './theme';
-import { cue as c, cues, SCENES } from './timing';
+import { BUTTON, FONT, V } from './theme';
+import { cue as c, KEYWORDS, SCENES } from './timing';
 
 /* ── 0:00 Hook ──────────────────────────────────────────────────────────── */
 export function Hook() {
@@ -229,61 +229,109 @@ export function Habits() {
 }
 
 /* ── 1:05 Style ─────────────────────────────────────────────────────────── */
-const ACCENT_NAMES: [string, string][] = [
-  ['cian', 'CIAN GLACIAR'],
-  ['fucsia', 'FUCSIA NEÓN'],
-  ['naranja', 'NARANJA BRASA'],
-  ['volt', 'LIMA VOLT'],
-  ['rojo', 'ROJO INTENSO'],
-  ['violeta', 'VIOLETA RUMBO'],
-];
+/** The six interface colours, as the app's own home screen shows them. */
+const FAN = ['inicio-rojo', 'inicio-naranja', 'inicio-volt', 'inicio', 'inicio-cian', 'inicio-fucsia'];
 
 export function Style() {
   const f = useCurrentFrame();
   const L = useLayout();
-  const a = cues('sty.accents');
-  const starts = [...a, c('sty.violet')];
-  const chipFrom = a[0]! + 18;
-  const chipTo = c('sty.violet') + 16;
   const titleAt = c('sty.title');
   const out = SCENES.privacy[0] - 12;
   const light = isLight(f);
   const els = [];
-  if (f >= chipFrom - 2 && f < chipTo + 12) {
-    let i = 0;
-    for (let k = 0; k < starts.length; k++) if (f >= starts[k]!) i = k;
-    const [id, name] = ACCENT_NAMES[i]!;
-    const pop = spr(f, starts[i]!, { damping: 14, stiffness: 260 });
-    const vis = prog(f, chipFrom - 2, chipFrom + 8) * (1 - prog(f, chipTo, chipTo + 12, easeInOut));
+  // Six phones burst out of the one in the hand, one per colour, and fold back.
+  const fan0 = c('sty.fan');
+  const fan1 = c('sty.fanEnd');
+  if (f >= fan0 - 2 && f < fan1 + 4) {
+    const pose = phonePose(fan0, L);
+    const w = L.phone.w * 0.5;
+    const close = prog(f, fan1 - 12, fan1, easeInOut);
+    FAN.forEach((src, i) => {
+      const k = i - (FAN.length - 1) / 2;
+      const o = spr(f, fan0 + i * 3, { damping: 14, stiffness: 170 }) * (1 - close);
+      const x = pose.x + k * L.W * 0.155 * o;
+      const y = pose.y - 40 * L.k + Math.abs(k) * 46 * L.k * o;
+      const rz = k * 9 * o;
+      els.push(
+        <Phone key={src} x={x} y={y} w={w} rz={rz} ry={-k * 8 * o} scale={0.9 + 0.1 * o} opacity={clamp(o * 3)} glow={FAN_GLOW[i]!}>
+          <Shot src={src} />
+        </Phone>,
+      );
+    });
+  }
+  // Light and dark side by side, the frame split down the middle.
+  const s0 = c('sty.split');
+  const s1 = c('sty.splitEnd');
+  if (f >= s0 - 2 && f < s1 + 4) {
+    const pose = phonePose(s0, L);
+    const o = spr(f, s0, { damping: 15, stiffness: 160 }) * (1 - prog(f, s1 - 10, s1, easeInOut));
+    const w = L.phone.w * 0.78;
+    const dx = L.W * 0.23 * o;
+    const cut = L.W / 2 + Math.sin(f / 9) * 6;
     els.push(
-      <TitleArea key="chip" opacity={vis}>
-        <div style={{ fontFamily: FONT.sans, fontSize: 24 * L.k, fontWeight: 600, letterSpacing: '0.14em', color: 'rgba(255,255,255,0.6)', marginBottom: 8 * L.k }}>COLOR DE LA INTERFAZ</div>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 18 * L.k,
-            padding: `${16 * L.k}px ${30 * L.k}px`,
-            borderRadius: 999,
-            background: 'rgba(16,13,26,0.8)',
-            boxShadow: `0 0 0 1.5px ${hexA(ACCENT[id]!, 0.7)}, 0 0 40px -6px ${hexA(ACCENT[id]!, 0.6)}`,
-            transform: `scale(${0.94 + 0.06 * pop})`,
-          }}
-        >
-          <span style={{ width: 30 * L.k, height: 30 * L.k, borderRadius: 99, background: ACCENT[id] }} />
-          <span style={{ fontFamily: FONT.sans, fontWeight: 800, fontSize: 36 * L.k, letterSpacing: '0.06em', color: '#fff' }}>{name}</span>
-        </div>
-      </TitleArea>,
+      <div key="split-dark" style={{ position: 'absolute', inset: 0, background: `radial-gradient(90% 70% at 30% 45%, #1a1530, ${V.bg} 60%, ${V.bgDeep})`, clipPath: `polygon(0 0, ${cut + 90 * o + (1 - o) * L.W / 2}px 0, ${cut - 90 * o + (1 - o) * L.W / 2}px ${L.H}px, 0 ${L.H}px)`, opacity: clamp(o * 2) }} />,
+      <div key="split-bg" style={{ position: 'absolute', inset: 0, background: `radial-gradient(90% 70% at 70% 45%, #ffffff, ${V.bgLight} 60%, #e2dcf3)`, clipPath: `polygon(${cut + 90 * o + (1 - o) * L.W / 2}px 0, ${L.W}px 0, ${L.W}px ${L.H}px, ${cut - 90 * o + (1 - o) * L.W / 2}px ${L.H}px)`, opacity: clamp(o * 2) }} />,
+      <div key="split-edge" style={{ position: 'absolute', left: cut - 4, top: -L.H * 0.1, width: 8, height: L.H * 1.2, transform: `rotate(${Math.atan2(180 * o, L.H) * (180 / Math.PI)}deg)`, background: `linear-gradient(180deg, transparent, ${V.lav}, #fff, ${V.lav}, transparent)`, filter: 'blur(2px)', opacity: clamp(o * 2) * 0.9 }} />,
+      <Phone key="dark" x={pose.x - dx} y={pose.y} w={w} rz={-4 * o} ry={10 * o} opacity={clamp(o * 3)}>
+        <Shot src="inicio" />
+      </Phone>,
+      <Phone key="light" x={pose.x + dx} y={pose.y} w={w} rz={4 * o} ry={-10 * o} light opacity={clamp(o * 3)}>
+        <Shot src="inicio-claro" />
+      </Phone>,
     );
   }
   if (f >= titleAt - 2 && f < out + 20) {
     els.push(
       <TitleArea key="title">
-        <KTitle text="A TU ESTILO." at={titleAt} out={out} size={96 * L.k} gradient={[2]} color={light ? V.ink : '#fff'} onLight={light} />
+        <KTitle text="A TU ESTILO." at={titleAt} out={out} size={96 * L.k} gradient={[2]} color={light && !(f >= s0 - 2 && f < s1 - 6) ? V.ink : '#fff'} onLight={light} />
       </TitleArea>,
     );
   }
   return <>{els}</>;
+}
+
+const FAN_GLOW = ['#e53945', '#ff6a1a', '#c8f53a', '#8b5cf6', '#22d3ee', '#f0287a'];
+
+/* ── Keywords: the words the voice is saying, slammed onto the screen ───── */
+export function KeyWords() {
+  const f = useCurrentFrame();
+  const L = useLayout();
+  const i = KEYWORDS.findIndex((k, j) => f >= k.at - 2 && f < Math.min(k.at + 22, (KEYWORDS[j + 1]?.at ?? 1e9) - 1));
+  if (i < 0) return null;
+  const kw = KEYWORDS[i]!;
+  const end = Math.min(kw.at + 22, (KEYWORDS[i + 1]?.at ?? 1e9) - 1);
+  const s = prog(f, kw.at - 2, kw.at + 5, easeOut);
+  const leave = prog(f, end - 5, end, easeInOut);
+  const krophed = /^[A-Z ]+$/.test(kw.text);
+  const maxW = L.textW * 1.05;
+  const size = Math.min(170 * L.k, maxW / (kw.text.length * (krophed ? 0.86 : 0.72)));
+  const finale = f >= SCENES.finale[0];
+  const y = finale ? (L.format === '9x16' ? 1040 : 760) : L.titleY + 40 * L.k;
+  const tilt = (i % 2 ? 1 : -1) * 3;
+  return (
+    <div style={{ position: 'absolute', left: 0, right: 0, top: y - size / 2, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
+      <div
+        style={{
+          fontFamily: krophed ? FONT.display : FONT.sans,
+          fontWeight: krophed ? 400 : 900,
+          fontStyle: krophed ? undefined : 'italic',
+          fontSize: size,
+          lineHeight: 1,
+          letterSpacing: krophed ? '0.03em' : '-0.02em',
+          color: 'transparent',
+          backgroundImage: `linear-gradient(100deg, #ffffff 0%, ${V.lav} 45%, ${V.accHi} 100%)`,
+          WebkitBackgroundClip: 'text',
+          backgroundClip: 'text',
+          filter: `drop-shadow(0 0 ${size * 0.25}px ${hexA(V.acc, 0.8)}) drop-shadow(0 6px 0 rgba(0,0,0,0.35))${s < 0.95 ? ` blur(${(1 - s) * 8}px)` : ''}`,
+          transform: `rotate(${tilt * (1 - leave)}deg) scale(${mix(1.8, 1, s) * (1 - leave * 0.25)}) translateY(${-leave * 40}px)`,
+          opacity: clamp(s * 2) * (1 - leave),
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {kw.text}
+      </div>
+    </div>
+  );
 }
 
 /* ── 1:19 Privacy ───────────────────────────────────────────────────────── */
@@ -431,6 +479,7 @@ export function Finale() {
       >
         Cada pequeño paso cuenta
       </div>
+      <Confetti at={c('fin.cta')} y={F.cta} />
       {f >= c('fin.cta') && (
         <div style={{ position: 'absolute', left: 0, right: 0, top: F.cta - 52 * k, display: 'flex', justifyContent: 'center' }}>
           <div
@@ -452,6 +501,34 @@ export function Finale() {
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+/* ── Confetti on the call to action, in the brand's colours ─────────────── */
+const CONFETTI = Array.from({ length: 70 }, (_, i) => {
+  const r = (n: number) => {
+    const x = Math.sin(i * 91.7 + n * 13.3) * 43758.5453;
+    return x - Math.floor(x);
+  };
+  const colors = ['#ffffff', '#c9b8ff', '#9f7aff', '#8b5cf6', '#ff9e8a', '#ffd166'];
+  return { ang: -Math.PI / 2 + (r(1) - 0.5) * 2.4, speed: 18 + r(2) * 26, spin: (r(3) - 0.5) * 30, w: 10 + r(4) * 12, h: 6 + r(5) * 10, color: colors[i % colors.length]!, delay: Math.floor(r(6) * 6) };
+});
+
+function Confetti({ at, y }: { at: number; y: number }) {
+  const f = useCurrentFrame();
+  const L = useLayout();
+  if (f < at || f > at + 90) return null;
+  return (
+    <>
+      {CONFETTI.map((p, i) => {
+        const t = Math.max(0, f - at - p.delay);
+        if (t <= 0) return null;
+        const x = L.W / 2 + Math.cos(p.ang) * p.speed * t * L.k * 1.1;
+        const yy = y + Math.sin(p.ang) * p.speed * t * L.k + 0.55 * t * t * L.k;
+        const a = 1 - prog(t, 50, 84);
+        return <div key={i} style={{ position: 'absolute', left: x, top: yy, width: p.w * L.k, height: p.h * L.k, borderRadius: 2, background: p.color, opacity: a, transform: `rotate(${p.spin * t}deg) scaleX(${Math.cos(t / 4 + i)})` }} />;
+      })}
     </>
   );
 }

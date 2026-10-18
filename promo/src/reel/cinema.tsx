@@ -4,7 +4,7 @@ import { phonePose } from './film';
 import { easeInOut, easeOut, hexA, keys, mix, phoneGeom, prog } from './kit';
 import { useLayout, type Layout } from './layout';
 import { V } from './theme';
-import { cue as c, cues, FRAMES, SCENES } from './timing';
+import { BEAT_F, cue as c, cues, FRAMES, inPulse, SCENES } from './timing';
 
 /*
  * The cinematic layer: a camera over the whole picture (slams, dives, whips,
@@ -135,6 +135,29 @@ export function cameraAt(f: number, L: Layout): Cam {
     if (f >= at && f < at + 14) s *= 1 + 0.025 * (1 - prog(f, at, at + 12, easeOut)) * prog(f, at, at + 2);
   }
 
+  // The camera pulses with the kick where the music drives.
+  if (inPulse(f)) {
+    const phase = (f % BEAT_F) / BEAT_F;
+    const down = Math.floor(f / BEAT_F) % 4 === 0;
+    s *= 1 + (down ? 0.028 : 0.013) * Math.exp(-phase * 6);
+  }
+  // A punch on every cut of the beat montages.
+  for (const k of ['evo.burst', 'train.burst', 'hab.burst']) {
+    for (let i = 0; i < 4; i++) {
+      const at = Math.round(c(k) + i * BEAT_F);
+      if (f >= at && f < at + 10) s *= 1 + 0.05 * (1 - prog(f, at, at + 9, easeOut));
+    }
+  }
+  // The build into the finale: the camera creeps in and starts to shake.
+  const b0 = c('fx.build');
+  const b1 = c('fx.dive2');
+  if (f >= b0 && f < b1) {
+    const p = prog(f, b0, b1, (q) => q * q);
+    s *= 1 + 0.12 * p;
+    x += noise(f * 2.5, 21) * 7 * p;
+    y += noise(f * 2.5, 23) * 7 * p;
+  }
+
   // Shake on impacts.
   for (const k of [...IMPACTS_BIG, ...IMPACTS]) {
     const at = c(k);
@@ -243,6 +266,47 @@ function LightLeaks() {
     <>
       <div style={{ position: 'absolute', left: x1 - L.W * 0.7, top: -L.H * 0.25, width: L.W * 1.4, height: L.H * 0.7, borderRadius: '50%', background: `radial-gradient(closest-side, rgba(255,158,138,${a * 0.55}), rgba(255,120,170,${a * 0.25}) 50%, transparent 75%)`, mixBlendMode: 'screen' }} />
       <div style={{ position: 'absolute', left: x2 - L.W * 0.6, top: L.H * 0.55, width: L.W * 1.2, height: L.H * 0.7, borderRadius: '50%', background: `radial-gradient(closest-side, ${hexA(V.accHi, a * 0.6)}, ${hexA(V.acc, a * 0.25)} 50%, transparent 75%)`, mixBlendMode: 'screen' }} />
+    </>
+  );
+}
+
+/** The logo's speed lines, streaking across the frame on the fast cuts. */
+const STREAKS = Array.from({ length: 6 }, (_, i) => {
+  const r = (n: number) => {
+    const x = Math.sin(i * 33.1 + n * 7.7) * 43758.5453;
+    return x - Math.floor(x);
+  };
+  return { y: 0.18 + r(1) * 0.64, len: 0.35 + r(2) * 0.45, h: 10 + r(3) * 18, delay: Math.floor(r(4) * 4) };
+});
+
+function SpeedLines({ at }: { at: number }) {
+  const f = useCurrentFrame();
+  const L = useLayout();
+  if (f < at - 2 || f > at + 16) return null;
+  return (
+    <>
+      {STREAKS.map((st, i) => {
+        const p = prog(f, at - 2 + st.delay, at + 10 + st.delay, (q) => q);
+        if (p <= 0 || p >= 1) return null;
+        const len = L.W * st.len;
+        const x = -len + (L.W + 2 * len) * p;
+        return (
+          <div
+            key={i}
+            style={{
+              position: 'absolute',
+              left: x - len / 2,
+              top: L.H * st.y,
+              width: len,
+              height: st.h * L.k,
+              borderRadius: 999,
+              background: `linear-gradient(90deg, transparent, ${hexA(V.lav, 0.55)} 40%, #ffffff 92%, transparent)`,
+              filter: 'blur(1px)',
+              mixBlendMode: 'screen',
+            }}
+          />
+        );
+      })}
     </>
   );
 }
@@ -363,6 +427,9 @@ export function Optics() {
       <Flare at={c('fin.cta')} y={finaleCtaY(L)} len={26} width={0.8} />
       {cues('fx.punches').map((at) => (
         <Flare key={at} at={at} y={pose.y} len={18} width={0.7} />
+      ))}
+      {cues('fx.speed').map((at) => (
+        <SpeedLines key={`s${at}`} at={at} />
       ))}
       <Letterbox />
       <Grade />

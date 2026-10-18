@@ -3,7 +3,7 @@ import { Camera, Motes, Optics, Rays } from './cinema';
 import { accentAt, lightAmount, PhoneTrack, RumbiActor } from './film';
 import { Stage, Subtitles } from './kit';
 import { L45, L916, LayoutCtx } from './layout';
-import { Evolution, Finale, Habits, Hook, Privacy, PrivacyBack, Reveal, Style, Training } from './scenes';
+import { Evolution, Finale, Habits, Hook, KeyWords, Privacy, PrivacyBack, Reveal, Style, Training } from './scenes';
 import { FONT } from './theme';
 
 /**
@@ -33,6 +33,7 @@ export function Reel({ format }: { format: '9x16' | '4x5' }) {
           <Privacy />
           <Finale />
           <RumbiActor />
+          <KeyWords />
         </Camera>
         <Optics />
         <Subtitles />
