@@ -4,7 +4,7 @@
 
 | Archivo | Qué es |
 | --- | --- |
-| `RUMBO-reel-9x16.mp4` | Máster vertical 1080 × 1920, 30 fps, H.264 + AAC 48 kHz, −14 LUFS, 1:46,5. Música, efectos y subtítulos incrustados; **sin locución** (ver «Locución»). |
+| `RUMBO-reel-9x16.mp4` | Máster vertical 1080 × 1920, 30 fps, H.264 + AAC 48 kHz, −14 LUFS, 1:46,5. Estilo cinematográfico (zooms, barridos, inmersión en la pantalla, destellos, flares, bandas de cine), música de tráiler original, efectos y subtítulos incrustados; **sin locución** (ver «Locución»). |
 | `RUMBO-reel-4x5.mp4` | Adaptación 1080 × 1350 reencuadrada (mismas escenas, maquetación propia). |
 | `RUMBO-reel-9x16-voz-guia-provisional.mp4` | El máster con una voz guía local, solo para valorar ritmo y sincronía. **No publicar.** |
 | `RUMBO-reel.srt` | Subtítulos en español, sincronizados con la locución. |
@@ -25,7 +25,7 @@
 
 - **Mascota:** Rumbi existe en la app (asistente flotante y tarjeta «Tu consejo de hoy»). En el vídeo se dibuja con el motor de animación de la propia app (`src/features/mascot/rig.ts`) y sus expresiones reales; mantiene silueta, colores y personalidad.
 - **Logotipo, colores y tipografía:** trazados reales del logotipo (`src/brand/logoPaths.ts`); violeta `#8b5cf6` y su gama, lavanda `#c4b5fd`; Krophed (títulos de la app), Inter (interfaz) y 212 Baby Girl (frases manuscritas de la app). El lema del cierre usa el mismo tratamiento que la pantalla de inicio de la app.
-- **Pantallas:** todas son capturas de la app actual con datos de ejemplo («Alex»). Las animaciones del contador de pasos, el agua y la serie completada están grabadas de la app fotograma a fotograma. La línea de la gráfica se dibuja de izquierda a derecha sobre la propia gráfica sin trazos, como la anima la app al cargarse.
+- **Pantallas:** todas son capturas de la app actual con datos ficticios («Alex»), sin ningún dato personal real. A petición del cliente, el vídeo no lleva el rótulo «Datos de ejemplo». Las animaciones del contador de pasos, el agua y la serie completada están grabadas de la app fotograma a fotograma. La línea de la gráfica se dibuja de izquierda a derecha sobre la propia gráfica sin trazos, como la anima la app al cargarse.
 - **Peso, IMC y calorías:** pantallas reales de Progreso (Evolución, IMC, Calorías, Registros) y el detalle de un registro tras tocar la gráfica. La evolución de ejemplo sube y baja («Estable»); no se presenta como un cambio físico.
 - **Entrenamiento:** Historial, Plantillas (rutinas), Marcas personales y una sesión con una serie completada con un toque real.
 - **Hábitos:** agua y pasos reales; el hito «Mes de Progreso Personal» y la racha de 17 días aparecieron en la app con los datos de ejemplo; el calendario muestra su propio texto «Un día sin registros no es un día fallido».

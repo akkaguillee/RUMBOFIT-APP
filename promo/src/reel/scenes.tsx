@@ -303,7 +303,7 @@ export function PrivacyBack() {
   const g = phoneGeom(pose.w);
   const halo = prog(f, c('priv.halo'), c('priv.halo') + 40, easeOut);
   const breathe = 1 + Math.sin((f - c('priv.halo')) / 22) * 0.012;
-  const out = 1 - prog(f, SCENES.finale[0] - 6, SCENES.finale[0] + 18, easeInOut);
+  const out = 1 - prog(f, SCENES.finale[0] - 8, SCENES.finale[0] + 1, easeInOut);
   const w = pose.w * pose.scale * (1.08 + 0.04 * (1 - halo)) * breathe;
   const h = g.h * pose.scale * (1.05 + 0.04 * (1 - halo)) * breathe;
   return (
@@ -455,35 +455,3 @@ export function Finale() {
     </>
   );
 }
-
-/* ── Example-data note, attached to the phone ───────────────────────────── */
-export function DemoTag() {
-  const f = useCurrentFrame();
-  const L = useLayout();
-  if (f < SCENES.reveal[0] + 30 || f > SCENES.finale[0]) return null;
-  const pose = phonePose(f, L);
-  const p = onBody(f, L, 0, 0);
-  const zoomed = clamp((pose.scale - 1.02) / 0.08);
-  const vis = prog(f, SCENES.reveal[0] + 30, SCENES.reveal[0] + 50) * (1 - prog(f, SCENES.finale[0] - 20, SCENES.finale[0])) * (1 - zoomed);
-  const light = isLight(f);
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        left: p.x + 24 * L.k,
-        width: 360 * L.k,
-        top: p.y - 34 * L.k,
-        textAlign: 'left',
-        fontFamily: FONT.sans,
-        fontSize: 19 * L.k,
-        fontWeight: 600,
-        letterSpacing: '0.1em',
-        color: light ? 'rgba(21,18,26,0.55)' : 'rgba(255,255,255,0.5)',
-        opacity: vis,
-      }}
-    >
-      DATOS DE EJEMPLO
-    </div>
-  );
-}
-

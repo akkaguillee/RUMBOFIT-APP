@@ -13,11 +13,15 @@ voice placement.
 - Cues: every moment the picture hangs on (screen changes, taps, titles) is a
   frame in src/reel/cues.json, derived from the scene grid and the voice words.
   The Remotion scenes read it, and the effects below are placed on it.
-- Score (synthesised with audio/synth.py, original, so free to use): 100 BPM in
-  D major, warm and hopeful. Felt piano and a soft pad for the hook, a gentle
-  pulse when the phone appears, a light groove for evolution and training, a
-  lift for habits, bright plucks for «a tu estilo», drums out for privacy, then
-  the pulse returns and resolves on the logo. Scene cuts sit on bar lines.
+- Score (synthesised with audio/synth.py, original, so free to use): a hybrid
+  cinematic trailer at 100 BPM in D major. A braam, a heartbeat and an emotional
+  piano motif for the hook; a drop with impact and sub when the phone slams in;
+  string ostinato, toms and taiko driving evolution and training; a euphoric
+  lift for habits, bright plucks for «a tu estilo»; a breakdown for privacy
+  where the motif returns; a snare roll into the light, and the big drop on the
+  logo. Risers, reversed cymbals and impacts sit on every cinematic transition
+  (the fx.* cues), and a breath of silence before each drop. Scene cuts sit on
+  bar lines.
 - Stems (48 kHz) go to audio/stems-reel/; audio/mux_reel.sh mixes and encodes.
 """
 
@@ -281,6 +285,21 @@ C['fin.slogan'] = max(W('r8', 9), C['fin.word'] + 18)
 C['fin.cta'] = max(W('r8', 13) - 2, C['fin.slogan'] + 20)
 assert C['fin.cta'] <= FRAMES - 60, 'the call to action must stay on screen for at least 2 s'
 
+# Cinematic beats shared by picture and sound: drops, dives, whips, flips, punches.
+C['fx.braam'] = 6
+C['fx.drop1'] = S['reveal']                      # the phone slams in; letterbox opens
+C['fx.dive'] = S['evolution'] - 14               # the camera dives into the screen…
+C['fx.surface'] = S['evolution']                 # …and surfaces in Progreso
+C['fx.whip'] = S['training'] - 6                 # whip pan out and back in
+C['fx.punchOut'] = S['habits']                   # zoom punch out
+C['fx.flip'] = S['style'] - 8                    # the phone flips to the style scene
+C['fx.calm'] = S['privacy']                      # the music breaks down
+C['fx.build'] = S['finale'] - 108                # snare roll and riser into the finale
+C['fx.dive2'] = S['finale'] - 12                 # into the light
+C['fx.flash'] = S['finale']                      # white-violet flash
+C['fx.drop2'] = C['fin.fill']                    # the logo lands: the big drop
+C['fx.punches'] = sorted({C['evo.draw'], C['evo.tip'], C['train.check'], C['hab.aguaTap'] + 4, C['hab.hito'], C['hab.flame'], C['sty.theme'] + 4, C['fin.word'], C['fin.cta']})
+
 json.dump({'fps': FPS, 'frames': FRAMES, 'bpm': BPM, 'scenes': SCENES, 'cues': C, 'voice': VOICE_SOURCE}, open(os.path.join(REEL, 'cues.json'), 'w'), indent=1)
 
 # ── Subtitles ────────────────────────────────────────────────────────────
@@ -312,9 +331,13 @@ with open(os.path.join(OUT, 'RUMBO-reel.srt'), 'w', encoding='utf-8') as f:
 print('cues, subtitles and SRT written')
 
 
-# ── Score ────────────────────────────────────────────────────────────────
+# ── Score: hybrid cinematic trailer, 100 BPM, D major ────────────────────
 def fs(frame):
     return frame / FPS
+
+
+def T(name):
+    return fs(C[name])
 
 
 CHORDS = {  # pad voicing, bass root
@@ -338,137 +361,258 @@ BARS = (
     + ['G', 'D/F#', 'Em7', 'D/F#', 'G', 'Asus']        # privacy
     + ['D', 'A/C#', 'Bm', 'G', 'D', 'D']               # finale (the last D rings out)
 )
+n_bars = len(BARS)
 
 
 def chord(bar):
-    return CHORDS[BARS[min(bar, len(BARS) - 1)]]
+    return CHORDS[BARS[min(bar, n_bars - 1)]]
 
 
 def section(t):
     name = 'hook'
-    for k, s in sorted(SCENE_S.items(), key=lambda kv: kv[1]):
-        if t + 1e-6 >= s:
+    for k, s0 in sorted(SCENE_S.items(), key=lambda kv: kv[1]):
+        if t + 1e-6 >= s0:
             name = k
     return name
 
 
-tonal = np.zeros((N, 2))
+def upper(b):
+    return [nm[:-1] + str(int(nm[-1]) + 1) for nm in sorted(chord(b)[0], key=hz)]
+
+
+DROP1, SURFACE, WHIP, PUNCH, FLIP, CALM, BUILD, FLASH, DROP2, CTA = (
+    T('fx.drop1'), T('fx.surface'), T('fx.whip'), T('fx.punchOut'), T('fx.flip'), T('fx.calm'), T('fx.build'), T('fx.flash'), T('fx.drop2'), T('fin.cta'))
+# The finale's groove runs from the logo drop to the call to action.
+GROOVE_END = CTA
+
+tonal = np.zeros((N, 2))   # chords, keys, strings, bass: breathe with the kick
 drums = np.zeros((N, 2))
+wash = np.zeros((N, 2))    # braams, risers, impacts: never pumped
 kicks = []
-n_bars = len(BARS)
-END_T = n_bars * BAR
+
+
+def braam(dur=3.2, root='D1', bright=2200):
+    """The big cinematic horn: a stack of detuned saws whose filter opens and closes."""
+    n = int(dur * SR)
+    x = np.zeros(n)
+    for nm, g in ((root, 1.0), (root[:-1] + str(int(root[-1]) + 1), 0.8), ('A' + str(int(root[-1]) + 1), 0.5)):
+        for d in (-0.008, -0.003, 0.0, 0.004, 0.009):
+            x += saw(hz(nm) * (1 + d), n, synth.rng.random()) * g
+    x = np.tanh(x / 4)
+    y = synth.sweep(x, 160, bright, 'low')
+    e = env(n, 0.04, 0.5, 0.75, 1.6)
+    return verb(synth.st(y * e * 0.5, 0, 220), HALL, 0.45)
+
+
+def hit_chord(name='D', dur=2.8):
+    """A short orchestral stab of the chord with a long tail."""
+    n = int(dur * SR)
+    x = np.zeros(n)
+    for nm in chord_names(name):
+        for d in (-0.006, 0.0, 0.006):
+            x += saw(hz(nm) * (1 + d), n, synth.rng.random())
+    x = lp(x / 10, 4200) * env(n, 0.006, 0.35, 0.3, 1.8)
+    return verb(synth.st(x, 0, 160), HALL, 0.5)
+
+
+def chord_names(name):
+    v = CHORDS[name][0]
+    return v + [nm[:-1] + str(int(nm[-1]) + 1) for nm in v] + [CHORDS[name][1][:-1] + '2']
+
+
+def sub_drop(dur=1.6):
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    f = 30 + 55 * np.exp(-t * 2.5)
+    return synth.st(np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 1.6) * 0.9)
+
+
+def taiko():
+    n = int(1.2 * SR)
+    t = np.arange(n) / SR
+    body = np.sin(2 * np.pi * np.cumsum(62 * (1 + 0.5 * np.exp(-t * 20))) / SR) * np.exp(-t * 3.2)
+    skin = lp(synth.rng.standard_normal(n), 1200) * np.exp(-t * 25) * 0.35
+    return verb(synth.st(np.tanh((body + skin) * 1.6) * 0.8), HALL, 0.25)
+
+
+def spiccato(f, dur=0.16):
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    x = saw(f, n, synth.rng.random()) * 0.7 + saw(f * 1.003, n, synth.rng.random()) * 0.5
+    return lp(x, 2600) * np.exp(-t * 16) * (1 - np.exp(-t * 300))
+
 
 # Pad: wide detuned saws; the filter opens as the story gains energy.
-CUT = {'hook': 900, 'reveal': 1300, 'evolution': 1600, 'training': 1900, 'habits': 2200, 'style': 2600, 'privacy': 1200, 'finale': 2000}
-LEVEL = {'hook': 0.75, 'reveal': 0.8, 'evolution': 0.75, 'training': 0.7, 'habits': 0.8, 'style': 0.65, 'privacy': 0.9, 'finale': 0.85}
+CUT = {'hook': 700, 'reveal': 1700, 'evolution': 2000, 'training': 2300, 'habits': 2700, 'style': 2600, 'privacy': 1100, 'finale': 2400}
+LEVEL = {'hook': 0.8, 'reveal': 0.75, 'evolution': 0.7, 'training': 0.65, 'habits': 0.8, 'style': 0.6, 'privacy': 0.95, 'finale': 0.9}
 for b in range(n_bars):
     t0 = b * BAR
     sec = section(t0)
     last = b == n_bars - 1
-    dur = BAR + (3.5 if last else 0.9)
-    n = int(dur * SR)
+    n = int((BAR + (3.8 if last else 0.9)) * SR)
     voicing = chord(b)[0]
     x = np.zeros(n)
     for nm in voicing + [voicing[-1][:-1] + str(int(voicing[-1][-1]) + 1)]:
         for d in (-0.005, 0.0, 0.0055):
             x += saw(hz(nm) * (1 + d), n, synth.rng.random())
-    attack = 1.8 if b == 0 else 0.6
-    x = lp(x / 16 * env(n, attack, 0.4, 0.85, 0.9 if not last else 3.4), CUT[sec]) * LEVEL[sec]
+    x = lp(x / 16 * env(n, 1.8 if b == 0 else 0.5, 0.4, 0.85, 3.6 if last else 0.9), CUT[sec]) * LEVEL[sec]
     add(tonal, x, t0 - (0.0 if b == 0 else 0.15), 0.8, -0.25)
     add(tonal, np.roll(x, 300), t0 - (0.0 if b == 0 else 0.15), 0.8, 0.25)
 
-# Felt piano: sparse in the hook and privacy, flowing eighths elsewhere.
-PATTERN = [0, 2, 1, 3, 2, 1, 3, 2]  # indexes into the upper chord tones
-
-
-def piano_tones(b):
-    v = sorted(chord(b)[0], key=hz)
-    return [nm[:-1] + str(int(nm[-1]) + 1) for nm in v]
-
-
+# Piano: an emotional motif in the hook and again in privacy; flowing eighths in between.
+MOTIF = [  # (bar offset, beat, note, length)
+    (0, 0, 'D5', 1.4), (0, 1.5, 'B4', 0.8), (0, 2, 'D5', 0.8), (0, 3, 'E5', 1.2),
+    (1, 0, 'F#5', 1.6), (1, 1.5, 'E5', 0.8), (1, 2, 'D5', 0.8), (1, 3, 'A4', 1.2),
+    (2, 0, 'B4', 1.4), (2, 1.5, 'D5', 0.8), (2, 2, 'E5', 0.8), (2, 3, 'G5', 1.4),
+    (3, 0, 'F#5', 2.2), (3, 2.5, 'E5', 1.6),
+]
+for start in (0.0, CALM):
+    for bar, beat, nm, ln in MOTIF:
+        if start == 0.0 and bar == 0 and beat == 0:
+            continue
+        add(tonal, keys(hz(nm), ln + 1.4, 1.0), start + bar * BAR + beat * BEAT, 0.3, 0.1)
+    if start == CALM:  # second half of the breakdown: the motif an octave down, softer
+        for bar, beat, nm, ln in MOTIF:
+            add(tonal, keys(hz(nm) / 2, ln + 1.6, 0.8), start + (bar + 4) * BAR + beat * BEAT, 0.2, -0.1)
+PATTERN = [0, 2, 1, 3, 2, 1, 3, 2]
 for b in range(n_bars):
     t0 = b * BAR
     sec = section(t0)
-    tones = piano_tones(b)
-    if sec in ('hook', 'privacy'):
-        hits = [(0, tones[0], 0.32), (2 * BEAT, tones[2], 0.22), (3 * BEAT, tones[3], 0.18)]
-        if sec == 'hook' and b == 0:
-            hits = [(0.4, tones[1], 0.22), (2 * BEAT, tones[2], 0.2)]
-    elif sec == 'finale' and b >= n_bars - 2:
-        hits = [(0, tones[0], 0.3), (BEAT, tones[2], 0.2)] if b == n_bars - 2 else [(0, tones[0], 0.32), (0.04, tones[2], 0.24), (0.08, tones[3], 0.2)]
-    else:
-        hits = [(k * BEAT / 2, tones[PATTERN[k]], 0.2 if k % 2 == 0 else 0.13) for k in range(8)]
-    for at, nm, g in hits:
-        x = keys(hz(nm), 2.6 if sec in ('hook', 'privacy', 'finale') else 1.5, 0.9)
-        add(tonal, x, t0 + at, g, 0.15)
+    if sec in ('hook', 'privacy') or (sec == 'finale' and t0 < DROP2 - 0.1) or t0 >= GROOVE_END:
+        continue
+    tones = upper(b)
+    for k in range(8):
+        add(tonal, keys(hz(tones[PATTERN[k]]), 1.3, 0.9), t0 + k * BEAT / 2, 0.17 if k % 2 == 0 else 0.11, 0.15)
 
-# A short motif on top at the openings of evolution, habits and the finale.
-MOTIF = [('F#5', 0), ('E5', 1), ('D5', 1.5), ('A5', 3)]
-for start in (SCENE_S['evolution'], SCENE_S['habits'], SCENE_S['finale']):
-    for nm, beat in MOTIF:
-        add(tonal, keys(hz(nm), 2.2, 1.1), start + beat * BEAT, 0.22, -0.1)
-
-# Bass: from evolution on (out for privacy), round and low.
+# Strings: a driving spiccato ostinato in sixteenths while the story moves.
 for b in range(n_bars):
     t0 = b * BAR
     sec = section(t0)
-    if sec in ('hook', 'reveal', 'privacy') or b == n_bars - 1:
+    if sec in ('hook', 'privacy', 'style') or (sec == 'finale' and t0 < DROP2 - 0.1) or t0 >= GROOVE_END:
+        continue
+    root = hz(chord(b)[1]) * (4 if hz(chord(b)[1]) < 60 else 2)
+    fifth = root * 1.5
+    seq = [root, fifth, root * 2, fifth]
+    for s16 in range(16):
+        add(tonal, spiccato(seq[s16 % 4]), t0 + s16 * BEAT / 4, 0.085 if s16 % 4 == 0 else 0.06, -0.5 if s16 % 2 else 0.5)
+
+# Bass: round and low, out for the hook and the breakdown.
+for b in range(n_bars):
+    t0 = b * BAR
+    sec = section(t0)
+    if sec in ('hook', 'privacy') or (sec == 'finale' and t0 < DROP2 - 0.1) or t0 >= GROOVE_END:
         continue
     root = hz(chord(b)[1])
-    for at, ln in ((0, 1.1), (1.5 * BEAT, 0.5), (2 * BEAT, 1.1), (3.5 * BEAT, 0.35)):
+    for at_, ln in ((0, 1.1), (1.5 * BEAT, 0.5), (2 * BEAT, 1.1), (3.5 * BEAT, 0.35)):
         n = int(ln * SR)
-        x = (sine(root, n) * 0.8 + lp(saw(root, n), 400) * 0.25) * env(n, 0.01, 0.2, 0.7, 0.12)
-        add(tonal, x, t0 + at, 0.34)
+        x = (sine(root, n) * 0.8 + lp(saw(root, n), 420) * 0.3) * env(n, 0.01, 0.2, 0.7, 0.12)
+        add(tonal, x, t0 + at_, 0.36)
 
-# Plucks: bright and playful for «a tu estilo», softer in habits.
+# Plucks: bright and playful for «a tu estilo».
 for b in range(n_bars):
     t0 = b * BAR
-    sec = section(t0)
-    if sec not in ('style', 'habits'):
+    if section(t0) != 'style':
         continue
-    tones = piano_tones(b)
+    tones = upper(b)
     for k in range(8):
-        if sec == 'habits' and k % 2:
-            continue
-        nm = tones[(k * 3) % len(tones)]
-        f = hz(nm) * (2 if k in (3, 7) else 1)
-        add(tonal, pluck(f, 0.3, 3800 if sec == 'style' else 2600), t0 + k * BEAT / 2, 0.16 if sec == 'style' else 0.11, (-0.4 if k % 2 else 0.4))
+        f = hz(tones[(k * 3) % len(tones)]) * (2 if k in (3, 7) else 1)
+        add(tonal, pluck(f, 0.3, 4200), t0 + k * BEAT / 2, 0.17, (-0.4 if k % 2 else 0.4))
 
-# Drums: a soft pulse that grows and steps back.
+# Drums: the pulse grows section by section, drops out for privacy, returns bigger.
+def kick_at(t, g=0.55):
+    add(drums, kick(0.8), t, g)
+    kicks.append(t)
+
+
 for b in range(n_bars):
     t0 = b * BAR
     sec = section(t0)
-    if sec in ('hook', 'privacy') or b >= n_bars - 2:
+    if sec in ('hook', 'privacy'):
         continue
+    if sec == 'finale' and (t0 < DROP2 - 0.1 or t0 >= GROOVE_END):
+        continue
+    last_of_phrase = (b - SCENE_BARS[[s for s, _ in SCENE_BARS].index(sec)][1]) % 4 == 3
     for q in range(4):
         t = t0 + q * BEAT
-        if q in (0, 2):
-            add(drums, kick(0.6), t, 0.42 if sec == 'reveal' else 0.5)
-            kicks.append(t)
-        if sec not in ('reveal',) and q in (1, 3):
-            add(drums, clap(), t, 0.11, 0.1)
-    if sec != 'reveal':
+        if sec == 'style':
+            kick_at(t, 0.5)
+        elif q in (0, 2):
+            kick_at(t, 0.58)
+        if sec == 'training' and q == 1:
+            kick_at(t + BEAT / 2, 0.42)
+        if q in (1, 3):
+            add(drums, synth.snare(), t, 0.3 if sec in ('training', 'finale') else 0.22, 0.05)
+            add(drums, clap(), t, 0.14, -0.05)
+        if sec in ('training', 'finale') and q in (0, 2):
+            add(drums, taiko(), t, 0.5)
+    if sec in ('reveal', 'evolution', 'habits'):
         for e in range(8):
-            add(drums, shaker(), t0 + e * BEAT / 2, 0.16 if e % 2 else 0.1, 0.3)
-    if sec in ('training', 'style'):
+            add(drums, hat(open_=(sec == 'habits' and e % 2 == 1)), t0 + e * BEAT / 2, 0.16 if e % 2 else 0.1, 0.3)
+    if sec in ('training', 'finale', 'style'):
         for s16 in range(16):
-            if s16 % 2:
-                add(drums, hat(), t0 + s16 * BEAT / 4, 0.12, -0.3)
-# The finale's pulse stops two bars before the end; the logo lands on the last chord.
+            add(drums, hat(), t0 + s16 * BEAT / 4, 0.13 if s16 % 2 else 0.07, -0.3)
+    if sec in ('evolution', 'habits'):
+        for e in range(16):
+            add(drums, shaker(), t0 + e * BEAT / 4, 0.08, 0.35)
+    if last_of_phrase and sec != 'style':  # tom fill into the next phrase
+        for k, f in enumerate((140, 120, 100, 85, 72, 62)):
+            add(drums, synth.tom(f), t0 + 2 * BEAT + k * BEAT / 3, 0.38, -0.6 + 0.24 * k)
+
+# The build into the finale: a snare roll that tightens, toms and kicks underneath.
+t = BUILD
+while t < FLASH - 0.14:
+    p = (t - BUILD) / (FLASH - BUILD)
+    step = BEAT / (2 if p < 0.35 else 4 if p < 0.7 else 8)
+    add(drums, synth.snare(), t, 0.08 + 0.3 * p ** 1.5, 0.0)
+    t += step
+for k in range(8):
+    add(drums, taiko(), BUILD + k * BEAT, 0.25 + 0.05 * k)
+    kicks.append(BUILD + k * BEAT)
+
+# Heartbeat under the hook and the breakdown.
+for t0 in [0.6 + k * 1.2 for k in range(7)] + [CALM + 0.6 + k * 1.2 for k in range(8)]:
+    add(wash, synth.fx_heart(True), t0, 0.32)
+    add(wash, synth.fx_heart(False), t0 + 0.32, 0.24)
+
+# Braams, impacts, sub drops, risers and reversed cymbals on the cinematic beats.
+add(wash, braam(3.6, 'D1', 1500), T('fx.braam'), 0.7)
+for at_, big in ((DROP1, True), (SURFACE, False), (WHIP + 0.2, False), (PUNCH, False), (FLIP + fs(8), False), (FLASH, True), (DROP2, True)):
+    add(wash, synth.fx_impact(2.4 if big else 1.6, 34 if big else 42), at_, 0.9 if big else 0.55)
+    add(wash, synth.fx_reverse(1.4 if big else 1.0), at_ - (1.4 if big else 1.0), 0.6 if big else 0.4)
+    add(wash, synth.cymbal(3.0 if big else 2.0), at_, 0.55 if big else 0.35)
+for at_ in (DROP1, DROP2):
+    add(wash, braam(3.2, 'D1', 2600), at_, 0.75)
+    add(wash, sub_drop(1.8), at_, 0.9)
+    add(tonal, hit_chord('D', 3.0), at_, 0.5)
+add(wash, synth.fx_impact(3.0, 30), CALM, 0.35)
+for a, b_ in ((5.6, DROP1), (SURFACE - 1.9, SURFACE), (WHIP - 1.4, WHIP + 0.2), (PUNCH - 1.6, PUNCH), (FLIP - 1.2, FLIP + fs(8)), (BUILD, FLASH), (FLASH + 0.3, DROP2)):
+    add(wash, synth.fx_riser(b_ - a, 300, 9000), a, 0.5)
+# Final sting on the call to action, then the last chord rings out.
+add(tonal, hit_chord('D', 4.5), CTA, 0.42)
+add(wash, synth.fx_shimmer(('D6', 'F#6', 'A6', 'D7', 'F#7', 'A7'), 0.06, 3.0), CTA, 0.3)
+add(wash, synth.fx_impact(3.0, 36), CTA, 0.45)
+
+# Tension: a breath of silence right before each drop.
+gate = np.ones(N)
+for at_ in (DROP1, FLASH, DROP2):
+    i0, i1 = int((at_ - 0.16) * SR), int(at_ * SR)
+    gate[i0:i1] = np.linspace(1, 0, max(1, i1 - i0)) ** 3
+tonal *= gate[:, None]
+drums *= gate[:, None]
 
 # Sidechain: the tonal bed breathes with the kick.
 duck = np.ones(N)
 for t in kicks:
     i = int(t * SR)
     n = int(0.32 * SR)
-    shape = 1 - 0.28 * np.exp(-np.arange(n) / (0.09 * SR))
-    duck[i:i + n] = np.minimum(duck[i:i + n], shape[: max(0, min(n, N - i))])
+    shape = 1 - 0.32 * np.exp(-np.arange(n) / (0.09 * SR))
+    if i < N:
+        duck[i:i + n] = np.minimum(duck[i:i + n], shape[: max(0, min(n, N - i))])
 tonal *= duck[:, None]
-music = verb(tonal, HALL, 0.22) + verb(drums, ROOM, 0.12)
-fade_in = np.minimum(1, np.arange(N) / (1.2 * SR))
-music *= fade_in[:, None]
+music = verb(tonal, HALL, 0.24) + verb(drums, ROOM, 0.14) + wash * 0.8
+music *= np.minimum(1, np.arange(N) / (0.05 * SR))[:, None]
 
-# ── Sound design ─────────────────────────────────────────────────────────
+# ── Sound design (picture events) ────────────────────────────────────────
 sfx = np.zeros((N, 2))
 
 
@@ -476,88 +620,88 @@ def at(key, offset=0):
     return fs(C[key] + offset)
 
 
+# Opening: the spark, the dot, the little steps, the logo, the title slam.
 add(sfx, fx_glow(1320, 1.2), at('hook.spark'), 0.5)
-add(sfx, fx_bell('A6', 1.2), at('hook.dot'), 0.18)
+add(sfx, fx_bell('A6', 1.2), at('hook.dot'), 0.22)
 steps_n = 9
-for k in range(steps_n):  # the little steps of the path
+for k in range(steps_n):
     t = fs(C['hook.path']) + (fs(C['hook.pathEnd']) - fs(C['hook.path'])) * (k + 0.5) / steps_n
-    add(sfx, fx_tick(2400 + 120 * (k % 3)), t, 0.35, -0.6 + 1.2 * k / (steps_n - 1))
-add(sfx, fx_swell(2.0, 200, 1800), at('hook.path'), 0.18)
-add(sfx, fx_glow(660, 1.6), at('hook.logo'), 0.55)
-add(sfx, fx_whoosh(0.5, 300, 5000), at('hook.title', -6), 0.12)
+    add(sfx, fx_tick(2400 + 120 * (k % 3)), t, 0.4, -0.6 + 1.2 * k / (steps_n - 1))
+add(sfx, fx_glow(660, 1.6), at('hook.logo'), 0.6)
+add(sfx, fx_whoosh(0.5, 300, 6000), at('hook.title', -8), 0.3)
+add(sfx, synth.fx_thud(), at('hook.title'), 0.5)
+add(sfx, fx_whoosh(0.4, 300, 6000), at('hook.title', 0), 0.2)
 
-add(sfx, fx_swell(1.0, 250, 2600), at('reveal.phone'), 0.3)
+# Transitions: whooshes that follow the camera.
+for key, ln, g in (('fx.drop1', 0.7, 0.5), ('fx.dive', 0.6, 0.55), ('fx.surface', 0.5, 0.35), ('fx.whip', 0.45, 0.6), ('fx.punchOut', 0.6, 0.45), ('fx.flip', 0.55, 0.5), ('fx.dive2', 0.5, 0.5)):
+    add(sfx, fx_whoosh(ln, 220, 8000), at(key, -int(ln * FPS * 0.6)), g)
+add(sfx, fx_whoosh(0.45, 260, 8000), at('fx.whip', 6), 0.5)
+for f in C['fx.punches']:
+    add(sfx, synth.fx_thud(), fs(f), 0.45)
+    add(sfx, fx_whoosh(0.3, 400, 7000), fs(f) - 0.12, 0.18)
+
+# Titles slam in.
+for key, off in (('reveal.title', 0), ('reveal.title', 32), ('evo.title', 0), ('train.title', 0), ('hab.title', 0), ('sty.title', 0), ('priv.title', 0)):
+    add(sfx, fx_whoosh(0.35, 400, 7000), at(key, off - 6), 0.22)
+    add(sfx, synth.fx_thud(), at(key, off), 0.3)
+
+# Interface: taps, pages, values.
 add(sfx, fx_click(), at('reveal.tap'), 0.5)
 add(sfx, fx_pop(), at('reveal.tap', 2), 0.25)
-for k in range(3):
-    add(sfx, fx_tick(2800 + 300 * k), fs(C['reveal.title'] + 16 * k), 0.4)
-
 add(sfx, fx_click(), at('evo.tab'), 0.45)
-add(sfx, fx_whoosh(0.45, 400, 4500), at('evo.scroll'), 0.1)
-add(sfx, fx_swell(1.5, 300, 3000), at('evo.draw'), 0.22)
-add(sfx, fx_tick(2600), at('evo.imc'), 0.4)
-add(sfx, fx_tick(2900), at('evo.cal'), 0.4)
-add(sfx, fx_tick(2600), at('evo.back'), 0.3)
-add(sfx, fx_click(), at('evo.tip'), 0.45)
-add(sfx, fx_pop(), at('evo.tip', 3), 0.22)
-for k in range(6):
-    add(sfx, fx_tick(3000), fs(C['evo.list'] + 8 + 5 * k), 0.16)
-
-add(sfx, fx_whoosh(0.7, 250, 6000), at('train.card', -4), 0.2)
-add(sfx, fx_swell(0.8, 300, 2400), at('train.hist', -8), 0.2)
-add(sfx, fx_tick(2600), at('train.rut'), 0.4)
-add(sfx, fx_tick(2900), at('train.marcas'), 0.4)
-add(sfx, fx_tick(2600), at('train.ses'), 0.35)
-add(sfx, fx_click(), at('train.check'), 0.5)
-add(sfx, fx_check(), at('train.check', 1), 0.55)
-add(sfx, fx_shimmer(('E6', 'A6', 'C#7', 'E7'), 0.045, 1.6), at('train.check', 3), 0.32)
-add(sfx, fx_boop(), at('train.check', 8), 0.22)
-add(sfx, fx_click(), at('train.check2'), 0.4)
-add(sfx, fx_check(), at('train.check2', 1), 0.35)
-
-add(sfx, fx_pop(), at('hab.icons'), 0.25)
-add(sfx, fx_pop(), at('hab.icons', 5), 0.2)
-add(sfx, fx_swell(0.7, 300, 2400), at('hab.cards'), 0.2)
-add(sfx, fx_click(), at('hab.aguaTap'), 0.45)
+add(sfx, fx_swell(1.2, 300, 3200), at('evo.draw'), 0.3)
+add(sfx, fx_tick(2600), at('evo.imc'), 0.45)
+add(sfx, fx_tick(2900), at('evo.cal'), 0.45)
+add(sfx, fx_click(), at('evo.tip'), 0.5)
+add(sfx, fx_pop(), at('evo.tip', 3), 0.25)
 for k in range(5):
-    add(sfx, fx_bubble(420 + 90 * k, 1100 + 120 * k), fs(C['hab.aguaTap'] + 3 + 3 * k), 0.4, -0.3 + 0.15 * k)
-add(sfx, fx_click(), at('hab.pasosTap'), 0.45)
-for k in range(6):
-    add(sfx, fx_tick(2200 + 160 * k), fs(C['hab.pasosTap'] + 2 + 3 * k), 0.28)
-add(sfx, fx_shimmer(('D6', 'F#6', 'A6', 'D7', 'F#7'), 0.05, 1.8), at('hab.hito'), 0.36)
-add(sfx, fx_bell('D6', 1.4), at('hab.hito'), 0.2)
-add(sfx, fx_boop(), at('hab.racha', 10), 0.25)
-add(sfx, fx_glow(990, 1.0), at('hab.flame'), 0.45)
-add(sfx, fx_whoosh(0.5, 300, 3500), at('hab.cal', -6), 0.12)
-
-add(sfx, fx_click(), at('sty.accentTap'), 0.45)
-add(sfx, fx_whoosh(0.35, 500, 5000), at('sty.sheet'), 0.1)
-add(sfx, fx_click(), at('sty.pick'), 0.45)
-for k, f in enumerate(C['sty.accents'] + [C['sty.violet']]):
-    add(sfx, fx_tick(2400 + 220 * k), fs(f), 0.38, -0.5 + 0.2 * k)
-add(sfx, fx_click(), at('sty.theme'), 0.45)
-add(sfx, fx_swell(0.9, 400, 4000), at('sty.theme', 1), 0.25)
-add(sfx, fx_glow(1100, 1.0), at('sty.theme', 4), 0.3)
-for k, f in enumerate(C['sty.light']):
-    add(sfx, fx_tick(2700 + 200 * k), fs(f), 0.32)
-add(sfx, fx_whoosh(0.5, 300, 5000), at('sty.title', -6), 0.1)
-add(sfx, fx_click(), at('sty.dark'), 0.35)
-
-PENTA = ['D6', 'E6', 'F#6', 'A6', 'B6', 'D7']
+    add(sfx, fx_tick(3000 + 80 * k), fs(C['evo.list'] + 14 + 9 * k), 0.22)
+add(sfx, fx_whoosh(0.7, 250, 6000), at('train.card', -2), 0.3)
+add(sfx, synth.fx_thud(), at('train.card', 22), 0.35)
+add(sfx, fx_tick(2600), at('train.rut'), 0.45)
+add(sfx, fx_tick(2900), at('train.marcas'), 0.45)
+add(sfx, fx_click(), at('train.check'), 0.55)
+add(sfx, fx_check(), at('train.check', 1), 0.6)
+add(sfx, fx_shimmer(('E6', 'A6', 'C#7', 'E7'), 0.045, 1.6), at('train.check', 3), 0.38)
+add(sfx, fx_click(), at('train.check2'), 0.45)
+add(sfx, fx_check(), at('train.check2', 1), 0.4)
+add(sfx, fx_pop(), at('hab.icons'), 0.3)
+add(sfx, fx_pop(), at('hab.icons', 5), 0.25)
+add(sfx, fx_whoosh(0.5, 300, 5000), at('hab.cards'), 0.25)
+add(sfx, fx_click(), at('hab.aguaTap'), 0.5)
+for k in range(5):
+    add(sfx, fx_bubble(420 + 90 * k, 1100 + 120 * k), fs(C['hab.aguaTap'] + 3 + 3 * k), 0.45, -0.3 + 0.15 * k)
+add(sfx, fx_click(), at('hab.pasosTap'), 0.5)
 for k in range(8):
-    add(sfx, fx_bell(PENTA[k % len(PENTA)], 1.2), fs(C['priv.in'] + 20 + 7 * k), 0.08, -0.6 + 0.17 * k)
-add(sfx, fx_glow(587, 2.0), at('priv.halo'), 0.4)
-
-add(sfx, fx_whoosh(0.6, 300, 5000), at('fin.out'), 0.14)
+    add(sfx, fx_tick(2200 + 140 * k), fs(C['hab.pasosTap'] + 2 + 2 * k), 0.3)
+add(sfx, fx_shimmer(('D6', 'F#6', 'A6', 'D7', 'F#7'), 0.05, 1.8), at('hab.hito'), 0.42)
+add(sfx, fx_boop(), at('hab.racha', 10), 0.3)
+add(sfx, fx_glow(990, 1.0), at('hab.flame'), 0.5)
+add(sfx, fx_whoosh(0.5, 300, 3500), at('hab.cal', -6), 0.2)
+add(sfx, fx_click(), at('sty.accentTap'), 0.5)
+add(sfx, fx_whoosh(0.35, 500, 5000), at('sty.sheet'), 0.15)
+add(sfx, fx_click(), at('sty.pick'), 0.5)
+for k, f in enumerate(C['sty.accents'] + [C['sty.violet']]):
+    add(sfx, fx_tick(2400 + 220 * k), fs(f), 0.42, -0.5 + 0.2 * k)
+    add(sfx, fx_whoosh(0.25, 600, 8000), fs(f) - 0.08, 0.12)
+add(sfx, fx_click(), at('sty.theme'), 0.5)
+add(sfx, fx_swell(0.9, 400, 4000), at('sty.theme', 1), 0.3)
+add(sfx, fx_glow(1100, 1.0), at('sty.theme', 4), 0.35)
+for k, f in enumerate(C['sty.light']):
+    add(sfx, fx_tick(2700 + 200 * k), fs(f), 0.36)
+add(sfx, fx_click(), at('sty.dark'), 0.4)
+PENTA = ['D6', 'E6', 'F#6', 'A6', 'B6', 'D7']
+for k in range(12):
+    add(sfx, fx_bell(PENTA[k % len(PENTA)], 1.4), fs(C['priv.in'] + 14 + 5 * k), 0.09, -0.6 + 0.11 * k)
+add(sfx, fx_glow(587, 2.2), at('priv.halo'), 0.45)
 for k in range(3):
-    add(sfx, fx_tick(2600 + 200 * k), fs(C['fin.lines'] + 6 * k), 0.3)
-add(sfx, fx_swell(1.3, 250, 3000), at('fin.runner'), 0.25)
-add(sfx, fx_glow(440, 2.2), at('fin.fill'), 0.6)
-add(sfx, fx_shimmer(('A6', 'D7', 'F#7', 'A7'), 0.05, 2.0), at('fin.word'), 0.3)
-add(sfx, fx_whoosh(0.5, 400, 5000), at('fin.slogan', -4), 0.08)
-add(sfx, fx_pop(), at('fin.cta'), 0.3)
-add(sfx, fx_glow(880, 1.4), at('fin.cta', 2), 0.3)
-
+    add(sfx, fx_tick(2600 + 200 * k), fs(C['fin.lines'] + 6 * k), 0.35)
+add(sfx, fx_swell(1.3, 250, 3000), at('fin.runner'), 0.3)
+add(sfx, fx_glow(440, 2.4), at('fin.fill'), 0.6)
+add(sfx, fx_shimmer(('A6', 'D7', 'F#7', 'A7'), 0.05, 2.0), at('fin.word'), 0.35)
+add(sfx, fx_whoosh(0.5, 400, 5000), at('fin.slogan', -4), 0.15)
+add(sfx, fx_pop(), at('fin.cta'), 0.35)
+add(sfx, fx_glow(880, 1.6), at('fin.cta', 2), 0.35)
 
 def write(name, x):
     x = np.asarray(x, dtype=np.float64)
@@ -566,7 +710,7 @@ def write(name, x):
     sf.write(os.path.join(STEMS, name), x[: int((LENGTH + 0.5) * SR)].astype(np.float32), SR, subtype='FLOAT')
 
 
-write('music.wav', music * 0.9)
+write('music.wav', music * 0.55)
 write('sfx.wav', sfx)
 write('voice.wav', voice)
 print(f'stems written to {STEMS} (voice: {VOICE_SOURCE})')

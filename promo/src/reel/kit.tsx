@@ -53,8 +53,8 @@ export function Stage({ light = 0, accent = V.acc, glow = 1 }: { light?: number;
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: V.bg }}>
       <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(120% 70% at 50% 0%, #17132a 0%, ${V.bg} 55%, ${V.bgDeep} 100%)` }} />
       <div style={{ position: 'absolute', inset: 0, opacity: light, background: `radial-gradient(120% 80% at 50% 0%, #ffffff 0%, ${V.bgLight} 55%, #e6e1f4 100%)` }} />
-      <Blob x={a.x} y={a.y} r={W * 0.95} color={accent} alpha={(0.3 - light * 0.12) * glow} />
-      <Blob x={b.x} y={b.y} r={W * 0.85} color={light > 0.5 ? '#c9b8ff' : '#6c3be8'} alpha={(0.22 - light * 0.06) * glow} />
+      <Blob x={a.x} y={a.y} r={W * 0.85} color={accent} alpha={(0.2 - light * 0.06) * glow} />
+      <Blob x={b.x} y={b.y} r={W * 0.75} color={light > 0.5 ? '#c9b8ff' : '#6c3be8'} alpha={(0.14 - light * 0.03) * glow} />
       <div style={{ position: 'absolute', inset: 0, opacity: 1 - light, background: 'radial-gradient(120% 85% at 50% 48%, transparent 45%, rgba(3,2,8,0.75) 100%)' }} />
       <div
         style={{
@@ -478,33 +478,69 @@ function hash(s: string) {
 }
 
 /* ── Type ───────────────────────────────────────────────────────────────── */
-/** Krophed headline (the wordmark's face; only A–Z, digits and basic punctuation). */
+/** Krophed headline (the wordmark's face; only A–Z, digits and basic punctuation): words slam in, then a light sweeps across. */
 export function KTitle({ text, at, out, size = 96, gradient = [], color = '#fff', stagger = 4, onLight = false }: { text: string; at: number; out?: number; size?: number; gradient?: number[]; color?: string; stagger?: number; onLight?: boolean }) {
   const f = useCurrentFrame();
   const words = text.split(' ');
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', columnGap: size * 0.3, rowGap: size * 0.05 }}>
       {words.map((w, i) => {
-        const s = prog(f, at + i * stagger, at + i * stagger + 18, easeOut);
-        const leave = out === undefined ? 0 : prog(f, out + i * 2, out + 14 + i * 2, easeInOut);
+        const t0 = at + i * stagger;
+        const s = prog(f, t0, t0 + 11, easeOut);
+        const leave = out === undefined ? 0 : prog(f, out + i * 2, out + 12 + i * 2, easeInOut);
         const g = gradient.includes(i);
+        const shine = prog(f, t0 + 10, t0 + 34, easeInOut);
+        const fill = g ? (onLight ? `linear-gradient(100deg, ${V.accLo}, ${V.deep})` : `linear-gradient(100deg, ${V.lav}, ${V.accHi} 60%, ${V.accLo})`) : undefined;
         return (
-          <span key={i} style={{ display: 'inline-block', overflow: 'hidden', paddingTop: size * 0.08, paddingBottom: size * 0.04, lineHeight: 1 }}>
+          <span
+            key={i}
+            style={{
+              position: 'relative',
+              display: 'inline-block',
+              paddingTop: size * 0.08,
+              paddingBottom: size * 0.04,
+              lineHeight: 1,
+              opacity: clamp(s * 1.6) * (1 - leave),
+              transform: `scale(${mix(1.55, 1, s) * (1 + leave * 0.12)})`,
+              filter: s < 0.98 || leave > 0.02 ? `blur(${(1 - s) * 12 + leave * 10}px)` : undefined,
+            }}
+          >
             <span
               style={{
                 display: 'inline-block',
                 fontFamily: FONT.display,
                 fontSize: size,
-                letterSpacing: '0.02em',
-                transform: `translateY(${(1 - s) * 105 - leave * 105}%)`,
+                letterSpacing: `${mix(0.18, 0.02, s)}em`,
                 color: g ? 'transparent' : color,
-                backgroundImage: g ? (onLight ? `linear-gradient(100deg, ${V.accLo}, ${V.deep})` : `linear-gradient(100deg, ${V.lav}, ${V.accHi} 60%, ${V.accLo})`) : undefined,
+                backgroundImage: fill,
                 WebkitBackgroundClip: g ? 'text' : undefined,
                 backgroundClip: g ? 'text' : undefined,
+                textShadow: g || onLight ? undefined : `0 0 ${size * 0.4}px ${hexA(V.acc, 0.55)}`,
               }}
             >
               {w}
             </span>
+            {shine > 0 && shine < 1 && (
+              <span
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: size * 0.08,
+                  fontFamily: FONT.display,
+                  fontSize: size,
+                  letterSpacing: '0.02em',
+                  color: 'transparent',
+                  backgroundImage: 'linear-gradient(100deg, transparent 40%, rgba(255,255,255,0.95) 50%, transparent 60%)',
+                  backgroundSize: '300% 100%',
+                  backgroundPosition: `${(1 - shine) * 100}% 0`,
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                }}
+              >
+                {w}
+              </span>
+            )}
           </span>
         );
       })}
@@ -512,18 +548,35 @@ export function KTitle({ text, at, out, size = 96, gradient = [], color = '#fff'
   );
 }
 
-/** Inter heavy line, words rising from a mask. */
+/** Inter heavy line: words slam in with a glow. */
 export function SansLine({ text, at, out, size = 64, color = '#fff', weight = 800, stagger = 3 }: { text: string; at: number; out?: number; size?: number; color?: string; weight?: number; stagger?: number }) {
   const f = useCurrentFrame();
   const words = text.split(' ');
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', columnGap: size * 0.26 }}>
       {words.map((w, i) => {
-        const s = prog(f, at + i * stagger, at + i * stagger + 16, easeOut);
+        const t0 = at + i * stagger;
+        const s = prog(f, t0, t0 + 10, easeOut);
         const leave = out === undefined ? 0 : prog(f, out + i, out + 12 + i, easeInOut);
         return (
-          <span key={i} style={{ display: 'inline-block', overflow: 'hidden', lineHeight: 1.12, paddingBottom: size * 0.06 }}>
-            <span style={{ display: 'inline-block', fontFamily: FONT.sans, fontWeight: weight, fontSize: size, letterSpacing: '-0.02em', color, transform: `translateY(${(1 - s) * 105 - leave * 105}%)` }}>{w}</span>
+          <span
+            key={i}
+            style={{
+              display: 'inline-block',
+              lineHeight: 1.12,
+              paddingBottom: size * 0.06,
+              fontFamily: FONT.sans,
+              fontWeight: weight,
+              fontSize: size,
+              letterSpacing: '-0.02em',
+              color,
+              opacity: clamp(s * 1.6) * (1 - leave),
+              transform: `scale(${mix(1.4, 1, s)}) translateY(${-leave * 20}px)`,
+              filter: s < 0.98 || leave > 0.02 ? `blur(${(1 - s) * 10 + leave * 8}px)` : undefined,
+              textShadow: `0 0 ${size * 0.45}px ${hexA(V.acc, 0.5)}`,
+            }}
+          >
+            {w}
           </span>
         );
       })}
@@ -542,6 +595,7 @@ export function HandLine({ text, at, out, size = 70, color = V.lavText }: { text
         fontFamily: FONT.hand,
         fontSize: size,
         color,
+        textShadow: `0 0 ${size * 0.4}px ${hexA(V.acc, 0.6)}`,
         lineHeight: 1.1,
         textAlign: 'center',
         clipPath: `inset(-20% ${(1 - p) * 100}% -20% 0)`,
@@ -603,29 +657,6 @@ export function Subtitles() {
           ),
         )}
       </div>
-    </div>
-  );
-}
-
-/** Discreet note on every scene with app screens: the data is an example. */
-export function DemoNote({ opacity = 1, light = false }: { opacity?: number; light?: boolean }) {
-  const L = useLayout();
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        right: L.format === '9x16' ? 150 : 48,
-        top: L.format === '9x16' ? 236 - 52 : 30,
-        fontFamily: FONT.sans,
-        fontSize: 20 * L.k,
-        fontWeight: 600,
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase',
-        color: light ? 'rgba(21,18,26,0.5)' : 'rgba(255,255,255,0.45)',
-        opacity,
-      }}
-    >
-      Datos de ejemplo
     </div>
   );
 }

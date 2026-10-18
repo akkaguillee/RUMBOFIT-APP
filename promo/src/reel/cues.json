@@ -107,7 +107,30 @@
   "fin.fill": 2886,
   "fin.word": 2934,
   "fin.slogan": 2960,
-  "fin.cta": 3017
+  "fin.cta": 3017,
+  "fx.braam": 6,
+  "fx.drop1": 288,
+  "fx.dive": 634,
+  "fx.surface": 648,
+  "fx.whip": 1074,
+  "fx.punchOut": 1512,
+  "fx.flip": 1936,
+  "fx.calm": 2376,
+  "fx.build": 2700,
+  "fx.dive2": 2796,
+  "fx.flash": 2808,
+  "fx.drop2": 2886,
+  "fx.punches": [
+   704,
+   827,
+   1276,
+   1607,
+   1667,
+   1740,
+   2157,
+   2934,
+   3017
+  ]
  },
  "voice": "guia"
 }

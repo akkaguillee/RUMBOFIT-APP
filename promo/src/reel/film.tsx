@@ -121,17 +121,20 @@ export function phonePose(f: number, L: Layout): Pose {
   for (let i = 1; i < Z.length; i++) if (Z[i]![0] <= Z[i - 1]![0]) Z[i] = [Z[i - 1]![0] + 1, Z[i]![1], Z[i]![2]];
   const z = keys(f, Z.map((k) => [k[0], k[1]]), easeInOut);
   const y = keys(f, Z.map((k) => [k[0], k[2]]), easeInOut);
-  const enter = prog(f, PHONE_FROM, PHONE_FROM + 44, easeOut);
+  const enter = prog(f, PHONE_FROM, PHONE_FROM + 22, easeOut);
   const t = f / 30;
+  // The flip into «a tu estilo»: a half turn out, the screen changes edge-on, a half turn in.
+  const fl = SCENES.style[0];
+  const flip = f < fl ? 90 * prog(f, fl - 10, fl, (q) => q * q * q) : -90 * (1 - prog(f, fl, fl + 16, easeOut));
   return {
     x: L.phone.x,
     y,
     w: L.phone.w,
     scale: z,
-    rx: (1 - enter) * 12 + Math.cos(t * 0.6) * 1.2,
-    ry: (1 - enter) * -16 + Math.sin(t * 0.45) * 2.2,
-    rz: 0,
-    opacity: 1 - prog(f, SCENES.finale[0] + 6, SCENES.finale[0] + 30, easeInOut),
+    rx: (1 - enter) * 18 + Math.cos(t * 0.6) * 1.2,
+    ry: (1 - enter) * -24 + Math.sin(t * 0.45) * 2.2 + flip,
+    rz: (1 - enter) * -6,
+    opacity: 1 - prog(f, SCENES.finale[0] - 2, SCENES.finale[0] + 4, easeInOut),
   };
 }
 
@@ -220,7 +223,7 @@ function segments(): Seg[] {
     { from: c('hab.racha'), render: S('inicio-racha'), trans: { kind: 'lift', dur: 14 } },
     { from: c('hab.cal'), render: S('calendario'), trans: { kind: 'page', dur: 18 } },
     // Style
-    { from: SCENES.style[0], render: S('inicio'), trans: { kind: 'lift', dur: 14 } },
+    { from: SCENES.style[0], render: S('inicio'), trans: { kind: 'cut' } },
     { from: c('sty.sheet'), render: S('acento-selector'), trans: { kind: 'sheet', dur: 16, split: 330 } },
     { from: a[0]!, render: S('inicio-cian'), trans: { kind: 'fade', dur: 10 } },
     { from: a[1]!, render: S('inicio-fucsia'), trans: { kind: 'fade', dur: 6 } },
@@ -277,8 +280,9 @@ function win(f: number, a: number, b: number, fi = 8, fo = 10) {
 
 /** The light that becomes the phone's edge, as the phone appears. */
 function EdgeTrace({ f, w, h }: { f: number; w: number; h: number }) {
-  const p = prog(f, PHONE_FROM - 4, PHONE_FROM + 26, easeInOut);
-  const fade = 1 - prog(f, PHONE_FROM + 24, PHONE_FROM + 44, easeInOut);
+  // The light draws the phone's edge in the last beats before the drop.
+  const p = prog(f, PHONE_FROM - 20, PHONE_FROM - 1, easeInOut);
+  const fade = 1 - prog(f, PHONE_FROM + 2, PHONE_FROM + 18, easeInOut);
   if (fade <= 0) return null;
   const r = w * 0.155;
   const d = `M ${r} ${h} L ${w - r} ${h} A ${r} ${r} 0 0 0 ${w} ${h - r} L ${w} ${r} A ${r} ${r} 0 0 0 ${w - r} 0 L ${r} 0 A ${r} ${r} 0 0 0 0 ${r} L 0 ${h - r} A ${r} ${r} 0 0 0 ${r} ${h} Z`;
@@ -295,11 +299,12 @@ export function PhoneTrack() {
   const f = useCurrentFrame();
   const L = useLayout();
   const segs = useMemo(() => segments(), []);
-  if (f < PHONE_FROM - 4 || f > PHONE_TO) return null;
+  if (f < PHONE_FROM - 22 || f > PHONE_TO) return null;
   const pose = phonePose(f, L);
   const g = phoneGeom(pose.w);
-  const body = prog(f, PHONE_FROM + 8, PHONE_FROM + 26, easeOut);
-  const screen = prog(f, PHONE_FROM + 18, PHONE_FROM + 34, easeOut);
+  // On the drop the phone lands whole: body and screen in a few frames.
+  const body = prog(f, PHONE_FROM - 1, PHONE_FROM + 4, easeOut);
+  const screen = prog(f, PHONE_FROM, PHONE_FROM + 6, easeOut);
   // The screen dims while the training card comes in front of it.
   const dim = win(f, SCENES.training[0] - 2, c('train.hist') + 6, 10, 8) * 0.55;
   return (

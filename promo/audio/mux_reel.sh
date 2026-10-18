@@ -18,8 +18,8 @@ FADE=$(python3 -c "print($LEN - 0.8)")
 SOURCE=$(python3 -c "import json; print(json.load(open('src/reel/voice.json'))['source'])")
 mkdir -p "$OUT/audio"
 
-WITH_VOICE="[0:a]volume=0.62[m];[2:a]asplit=2[vk][vo];[m][vk]sidechaincompress=threshold=0.02:ratio=6:attack=15:release=350:makeup=1[md];[1:a]volume=0.6[s];[vo]acompressor=threshold=0.12:ratio=2.5:attack=8:release=140:makeup=1.5,alimiter=limit=0.95:attack=2:release=40[v];[md][s][v]amix=inputs=3:normalize=0,atrim=0:$LEN,afade=t=out:st=$FADE:d=0.8"
-NO_VOICE="[0:a]volume=0.8[m];[1:a]volume=0.6[s];[m][s]amix=inputs=2:normalize=0,atrim=0:$LEN,afade=t=out:st=$FADE:d=0.8"
+WITH_VOICE="[0:a]volume=0.95,alimiter=limit=0.9:attack=3:release=80[m];[2:a]asplit=2[vk][vo];[m][vk]sidechaincompress=threshold=0.02:ratio=6:attack=15:release=350:makeup=1[md];[1:a]volume=0.6[s];[vo]acompressor=threshold=0.12:ratio=2.5:attack=8:release=140:makeup=1.5,alimiter=limit=0.95:attack=2:release=40[v];[md][s][v]amix=inputs=3:normalize=0,atrim=0:$LEN,afade=t=out:st=$FADE:d=0.8"
+NO_VOICE="[0:a]volume=1.2,alimiter=limit=0.9:attack=3:release=80[m];[1:a]volume=0.6[s];[m][s]amix=inputs=2:normalize=0,atrim=0:$LEN,afade=t=out:st=$FADE:d=0.8"
 
 encode() { # graph video out maxrate
   local graph=$1 video=$2 out=$3 maxrate=$4
