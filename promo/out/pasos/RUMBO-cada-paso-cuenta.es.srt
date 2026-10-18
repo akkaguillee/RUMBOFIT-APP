@@ -1,127 +1,99 @@
 1
-00:00:01,867 --> 00:00:03,467
-No hace falta cambiarlo todo
+00:00:00,567 --> 00:00:01,133
+No hace falta
 
 2
-00:00:03,467 --> 00:00:05,200
-de un día para otro.
+00:00:01,133 --> 00:00:01,767
+cambiarlo todo
 
 3
-00:00:05,433 --> 00:00:08,067
-Basta con dar el siguiente paso.
+00:00:01,767 --> 00:00:03,133
+de un día para otro.
 
 4
-00:00:10,467 --> 00:00:14,000
-RUMBO te ayuda a registrar lo que haces
+00:00:03,133 --> 00:00:03,800
+Basta con dar
 
 5
-00:00:14,000 --> 00:00:16,533
-y a ver cómo avanza tu proceso,
+00:00:03,800 --> 00:00:05,500
+el siguiente paso.
 
 6
-00:00:16,533 --> 00:00:17,867
-a tu manera.
+00:00:08,133 --> 00:00:08,867
+RUMBO te ayuda
 
 7
-00:00:21,233 --> 00:00:23,033
-Anota tu evolución
+00:00:08,867 --> 00:00:09,967
+a registrar lo que haces
 
 8
-00:00:23,033 --> 00:00:27,700
-y consulta tus datos de peso, IMC y calorías
+00:00:09,967 --> 00:00:11,033
+y a ver cómo avanza
 
 9
-00:00:27,700 --> 00:00:29,400
-en un mismo lugar.
+00:00:11,033 --> 00:00:11,833
+tu proceso,
 
 10
-00:00:29,667 --> 00:00:31,667
-Cada registro cuenta
+00:00:11,833 --> 00:00:13,200
+a tu manera.
 
 11
-00:00:31,667 --> 00:00:33,967
-una parte de tu historia.
+00:00:16,033 --> 00:00:16,967
+Anota tu evolución
 
 12
-00:00:36,233 --> 00:00:38,333
-Guarda tus entrenamientos,
+00:00:16,967 --> 00:00:18,033
+y consulta tus datos
 
 13
-00:00:38,333 --> 00:00:40,733
-tus rutinas y tus marcas.
+00:00:18,033 --> 00:00:19,300
+de peso, IMC
 
 14
-00:00:40,733 --> 00:00:42,633
-Así puedes volver a ellos
+00:00:19,300 --> 00:00:19,900
+y calorías
 
 15
-00:00:42,633 --> 00:00:44,533
-y reconocer todo el trabajo
+00:00:19,900 --> 00:00:21,200
+en un mismo lugar.
 
 16
-00:00:44,533 --> 00:00:46,100
-que ya has hecho.
+00:00:21,200 --> 00:00:22,367
+Cada registro cuenta
 
 17
-00:00:51,133 --> 00:00:53,933
-Registra también tus hábitos diarios,
+00:00:22,367 --> 00:00:23,967
+una parte de tu historia.
 
 18
-00:00:53,933 --> 00:00:56,533
-como el agua y los pasos.
+00:00:23,967 --> 00:00:25,233
+Guarda tus entrenamientos,
 
 19
-00:00:56,733 --> 00:00:58,900
-Celebra los pequeños avances
+00:00:25,233 --> 00:00:26,700
+tus rutinas y tus marcas.
 
 20
-00:00:58,900 --> 00:01:00,833
-y construye constancia
+00:00:26,700 --> 00:00:28,133
+Así puedes volver a ellos
 
 21
-00:01:00,833 --> 00:01:03,133
-sin exigirte perfección.
+00:00:28,133 --> 00:00:29,500
+y reconocer todo el trabajo
 
 22
-00:01:05,067 --> 00:01:07,533
-Y adapta la experiencia a ti:
+00:00:29,500 --> 00:00:30,933
+que ya has hecho.
 
 23
-00:01:07,533 --> 00:01:08,933
-cambia los colores
-
-24
-00:01:08,933 --> 00:01:11,433
-y elige el tema que prefieras.
-
-25
-00:01:18,233 --> 00:01:20,733
-Y tu privacidad importa:
-
-26
-00:01:20,733 --> 00:01:22,933
-lo que registras se guarda
-
-27
-00:01:22,933 --> 00:01:25,167
-en tu propio dispositivo.
-
-28
-00:01:30,033 --> 00:01:33,167
-Entrena, registra tu progreso
-
-29
-00:01:33,167 --> 00:01:35,500
-y celebra cada paso.
-
-30
-00:01:35,867 --> 00:01:36,967
+00:00:55,900 --> 00:00:57,067
 RUMBO.
 
-31
-00:01:37,533 --> 00:01:40,300
+24
+00:00:57,067 --> 00:00:58,867
 Cada pequeño paso cuenta.
 
-32
-00:01:40,833 --> 00:01:42,833
+25
+00:00:58,867 --> 00:01:00,467
 Empieza hoy.

@@ -149,6 +149,7 @@ export function Phone({
   glowColor = C.violet,
   children,
   outline,
+  blur = 0,
 }: {
   width: number;
   x: number;
@@ -164,6 +165,8 @@ export function Phone({
   children?: ReactNode;
   /** 0–1: draw only the outline of the phone (the path turning into a phone). */
   outline?: number;
+  /** Motion blur (px) for whips. */
+  blur?: number;
 }) {
   const frame = useT();
   const g = phoneGeom(width);
@@ -179,6 +182,7 @@ export function Phone({
         height: g.height,
         opacity,
         transform: `perspective(2600px) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${scale})`,
+        filter: blur > 0.3 ? `blur(${blur.toFixed(1)}px)` : undefined,
       }}
     >
       {body > 0 && (

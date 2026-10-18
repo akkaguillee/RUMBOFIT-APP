@@ -1,108 +1,90 @@
 {
- "wake": 18,
- "light": 2095,
- "trail": [
-  96,
-  222
+ "wake": 6,
+ "slam": [
+  20,
+  29,
+  37,
+  51,
+  56,
+  97,
+  108,
+  117
  ],
- "logo": 222,
- "outline": [
-  256,
-  302
+ "step": 137,
+ "dash": [
+  150,
+  174
  ],
- "phoneIn": [
-  290,
-  318
+ "camino": 180,
+ "rumbo": 195,
+ "drop1": 240,
+ "regis": 390,
+ "observa": 420,
+ "sigue": 450,
+ "whip1": [
+  462,
+  482
  ],
- "scroll1": [
-  423,
-  467
+ "chart": [
+  489,
+  522
  ],
- "scroll2": [
-  493,
-  528
- ],
- "toProgress": [
-  604,
-  622
- ],
- "chartDraw": [
-  698,
-  772
- ],
- "imc": 766,
- "kcal": 808,
- "zoomChart": [
-  885,
-  905
- ],
+ "imc": 565,
+ "kcal": 586,
  "markers": [
-  902,
-  991
+  639,
+  703
  ],
- "toTemplates": [
-  1052,
-  1068
+ "whip2": [
+  700,
+  722
  ],
- "cardIn": [
-  1058,
-  1084
- ],
- "toSession": [
-  1090,
-  1104
- ],
- "setDone": 1174,
- "records": 1190,
+ "rutinas": 765,
+ "session": 774,
+ "setDone": 780,
+ "marcas": 785,
  "history": [
-  1225,
-  1339
+  804,
+  849
  ],
- "stats": 1286,
- "proud": 1354,
- "toHoy": [
-  1502,
-  1520
+ "stats": 865,
+ "proud": 900,
+ "wipe": [
+  942,
+  962
  ],
- "icons": 1537,
- "iconsWater": 1633,
- "iconsSteps": 1664,
- "water": 1691,
- "streak": 1705,
- "calendar": 1774,
- "toStyle": [
-  1924,
-  1940
+ "agua": 960,
+ "tap250": 990,
+ "pasos": 1020,
+ "racha": 1080,
+ "constancia": 1140,
+ "estilo": 1200,
+ "colours": [
+  1215,
+  1230,
+  1245,
+  1260,
+  1275
  ],
- "sheetUp": 2007,
- "cyan": 2048,
- "sheetDown": 2069,
+ "light": 1290,
  "fan": [
-  2140,
-  2250
+  1305,
+  1350
  ],
- "backViolet": 2258,
- "chipsIn": [
-  2362,
-  2400
- ],
+ "dark": 1350,
+ "privacy": 1380,
  "chipsHome": [
-  2435,
-  2479
+  1440,
+  1470
  ],
- "saved": 2481,
- "phoneOut": [
-  2658,
-  2696
- ],
- "cardA": 2704,
- "cardB": 2740,
- "cardC": 2803,
- "closeTrail": [
-  2846,
-  2874
- ],
- "logoEnd": 2860,
- "tagline": 2929,
- "cta": 3028
+ "saved": 1470,
+ "build": 1560,
+ "entrena": 1560,
+ "registra": 1590,
+ "celebra": 1620,
+ "flash": 1676,
+ "drop2": 1680,
+ "tagline": 1715,
+ "cta": 1769,
+ "end": 1920
 }

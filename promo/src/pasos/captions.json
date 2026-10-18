@@ -1,83 +1,123 @@
 [
  {
   "line": "l1",
-  "text": "No hace falta cambiarlo todo",
+  "text": "No hace falta",
   "key": [],
-  "start": 56,
-  "end": 104,
+  "start": 17,
+  "end": 34,
   "words": [
-   59,
-   62,
-   71,
-   83,
-   99
+   20,
+   21,
+   29
+  ]
+ },
+ {
+  "line": "l1",
+  "text": "cambiarlo todo",
+  "key": [],
+  "start": 34,
+  "end": 53,
+  "words": [
+   37,
+   51
   ]
  },
  {
   "line": "l1",
   "text": "de un día para otro.",
   "key": [],
-  "start": 104,
-  "end": 156,
+  "start": 53,
+  "end": 94,
   "words": [
-   107,
-   110,
-   113,
-   121,
-   129
+   56,
+   59,
+   62,
+   67,
+   74
   ]
  },
  {
   "line": "l1",
-  "text": "Basta con dar el siguiente paso.",
-  "key": [
-   4,
-   5
-  ],
-  "start": 163,
-  "end": 242,
+  "text": "Basta con dar",
+  "key": [],
+  "start": 94,
+  "end": 114,
   "words": [
-   166,
-   181,
-   187,
-   193,
-   199,
-   214
+   97,
+   108,
+   113
+  ]
+ },
+ {
+  "line": "l1",
+  "text": "el siguiente paso.",
+  "key": [
+   1,
+   2
+  ],
+  "start": 114,
+  "end": 165,
+  "words": [
+   117,
+   121,
+   137
   ]
  },
  {
   "line": "l2",
-  "text": "RUMBO te ayuda a registrar lo que haces",
+  "text": "RUMBO te ayuda",
   "key": [
    0
   ],
-  "start": 314,
-  "end": 420,
+  "start": 244,
+  "end": 266,
   "words": [
-   317,
-   343,
-   347,
-   360,
-   365,
-   388,
-   392,
-   395
+   247,
+   258,
+   260
   ]
  },
  {
   "line": "l2",
-  "text": "y a ver cómo avanza tu proceso,",
-  "key": [],
-  "start": 420,
-  "end": 496,
+  "text": "a registrar lo que haces",
+  "key": [
+   1
+  ],
+  "start": 266,
+  "end": 299,
   "words": [
-   423,
-   425,
-   428,
-   436,
-   445,
-   459,
-   463
+   269,
+   270,
+   285,
+   288,
+   293
+  ]
+ },
+ {
+  "line": "l2",
+  "text": "y a ver cómo avanza",
+  "key": [
+   4
+  ],
+  "start": 299,
+  "end": 331,
+  "words": [
+   302,
+   305,
+   306,
+   318,
+   324
+  ]
+ },
+ {
+  "line": "l2",
+  "text": "tu proceso,",
+  "key": [],
+  "start": 331,
+  "end": 355,
+  "words": [
+   334,
+   338
   ]
  },
  {
@@ -88,12 +128,12 @@
    1,
    2
   ],
-  "start": 496,
-  "end": 536,
+  "start": 355,
+  "end": 396,
   "words": [
-   499,
-   502,
-   506
+   358,
+   361,
+   366
   ]
  },
  {
@@ -102,86 +142,107 @@
   "key": [
    2
   ],
-  "start": 637,
-  "end": 691,
+  "start": 481,
+  "end": 509,
   "words": [
-   640,
-   655,
-   661
+   484,
+   489,
+   495
   ]
  },
  {
   "line": "l3",
-  "text": "y consulta tus datos de peso, IMC y calorías",
-  "key": [
-   5,
-   6,
-   7,
-   8
-  ],
-  "start": 691,
-  "end": 831,
+  "text": "y consulta tus datos",
+  "key": [],
+  "start": 509,
+  "end": 541,
   "words": [
-   694,
-   698,
-   720,
-   728,
-   740,
-   745,
-   766,
-   803,
-   808
+   512,
+   516,
+   529,
+   535
+  ]
+ },
+ {
+  "line": "l3",
+  "text": "de peso, IMC",
+  "key": [
+   1,
+   2
+  ],
+  "start": 541,
+  "end": 579,
+  "words": [
+   544,
+   550,
+   565
+  ]
+ },
+ {
+  "line": "l3",
+  "text": "y calorías",
+  "key": [
+   0,
+   1
+  ],
+  "start": 579,
+  "end": 597,
+  "words": [
+   582,
+   586
   ]
  },
  {
   "line": "l3",
   "text": "en un mismo lugar.",
   "key": [],
-  "start": 831,
-  "end": 882,
+  "start": 597,
+  "end": 636,
   "words": [
-   834,
-   838,
-   842,
-   853
+   600,
+   603,
+   607,
+   619
   ]
  },
  {
   "line": "l3",
   "text": "Cada registro cuenta",
   "key": [],
-  "start": 890,
-  "end": 950,
+  "start": 636,
+  "end": 671,
   "words": [
-   893,
-   902,
-   935
+   639,
+   645,
+   664
   ]
  },
  {
   "line": "l3",
   "text": "una parte de tu historia.",
   "key": [],
-  "start": 950,
-  "end": 1019,
+  "start": 671,
+  "end": 719,
   "words": [
-   953,
-   960,
-   972,
-   976,
-   981
+   674,
+   679,
+   689,
+   692,
+   696
   ]
  },
  {
   "line": "l4",
   "text": "Guarda tus entrenamientos,",
-  "key": [],
-  "start": 1087,
-  "end": 1150,
+  "key": [
+   2
+  ],
+  "start": 719,
+  "end": 757,
   "words": [
-   1090,
-   1104,
-   1111
+   722,
+   730,
+   733
   ]
  },
  {
@@ -191,245 +252,55 @@
    1,
    4
   ],
-  "start": 1150,
-  "end": 1222,
+  "start": 757,
+  "end": 801,
   "words": [
-   1153,
-   1159,
-   1180,
-   1183,
-   1190
+   760,
+   765,
+   778,
+   780,
+   785
   ]
  },
  {
   "line": "l4",
   "text": "Así puedes volver a ellos",
   "key": [],
-  "start": 1222,
-  "end": 1279,
+  "start": 801,
+  "end": 844,
   "words": [
-   1225,
-   1234,
-   1245,
-   1255,
-   1259
+   804,
+   818,
+   828,
+   836,
+   837
   ]
  },
  {
   "line": "l4",
   "text": "y reconocer todo el trabajo",
   "key": [],
-  "start": 1279,
-  "end": 1336,
+  "start": 844,
+  "end": 885,
   "words": [
-   1282,
-   1286,
-   1308,
-   1316,
-   1321
+   847,
+   849,
+   865,
+   872,
+   876
   ]
  },
  {
   "line": "l4",
   "text": "que ya has hecho.",
   "key": [],
-  "start": 1336,
-  "end": 1383,
+  "start": 885,
+  "end": 928,
   "words": [
-   1339,
-   1344,
-   1349,
-   1354
-  ]
- },
- {
-  "line": "l5",
-  "text": "Registra también tus hábitos diarios,",
-  "key": [],
-  "start": 1534,
-  "end": 1618,
-  "words": [
-   1537,
-   1556,
-   1569,
-   1576,
-   1589
-  ]
- },
- {
-  "line": "l5",
-  "text": "como el agua y los pasos.",
-  "key": [
-   2,
-   5
-  ],
-  "start": 1618,
-  "end": 1696,
-  "words": [
-   1621,
-   1628,
-   1633,
-   1654,
-   1657,
-   1664
-  ]
- },
- {
-  "line": "l5",
-  "text": "Celebra los pequeños avances",
-  "key": [],
-  "start": 1702,
-  "end": 1767,
-  "words": [
-   1705,
-   1718,
-   1725,
-   1738
-  ]
- },
- {
-  "line": "l5",
-  "text": "y construye constancia",
-  "key": [
-   2
-  ],
-  "start": 1767,
-  "end": 1825,
-  "words": [
-   1770,
-   1774,
-   1792
-  ]
- },
- {
-  "line": "l5",
-  "text": "sin exigirte perfección.",
-  "key": [],
-  "start": 1825,
-  "end": 1894,
-  "words": [
-   1828,
-   1834,
-   1855
-  ]
- },
- {
-  "line": "l6",
-  "text": "Y adapta la experiencia a ti:",
-  "key": [],
-  "start": 1952,
-  "end": 2026,
-  "words": [
-   1955,
-   1960,
-   1974,
-   1977,
-   1999,
-   2003
-  ]
- },
- {
-  "line": "l6",
-  "text": "cambia los colores",
-  "key": [
-   2
-  ],
-  "start": 2026,
-  "end": 2068,
-  "words": [
-   2029,
-   2042,
-   2050
-  ]
- },
- {
-  "line": "l6",
-  "text": "y elige el tema que prefieras.",
-  "key": [
-   3
-  ],
-  "start": 2068,
-  "end": 2143,
-  "words": [
-   2071,
-   2074,
-   2086,
-   2093,
-   2102,
-   2105
-  ]
- },
- {
-  "line": "l7",
-  "text": "Y tu privacidad importa:",
-  "key": [],
-  "start": 2347,
-  "end": 2422,
-  "words": [
-   2350,
-   2354,
-   2359,
-   2386
-  ]
- },
- {
-  "line": "l7",
-  "text": "lo que registras se guarda",
-  "key": [],
-  "start": 2422,
-  "end": 2488,
-  "words": [
-   2425,
-   2430,
-   2435,
-   2468,
-   2473
-  ]
- },
- {
-  "line": "l7",
-  "text": "en tu propio dispositivo.",
-  "key": [
-   1,
-   2,
-   3
-  ],
-  "start": 2488,
-  "end": 2555,
-  "words": [
-   2491,
-   2497,
-   2501,
-   2513
-  ]
- },
- {
-  "line": "l8",
-  "text": "Entrena, registra tu progreso",
-  "key": [],
-  "start": 2701,
-  "end": 2795,
-  "words": [
-   2704,
-   2740,
-   2763,
-   2767
-  ]
- },
- {
-  "line": "l8",
-  "text": "y celebra cada paso.",
-  "key": [
-   2,
-   3
-  ],
-  "start": 2795,
-  "end": 2865,
-  "words": [
-   2798,
-   2803,
-   2825,
-   2836
+   888,
+   891,
+   895,
+   900
   ]
  },
  {
@@ -438,34 +309,34 @@
   "key": [
    0
   ],
-  "start": 2876,
-  "end": 2909,
+  "start": 1677,
+  "end": 1712,
   "words": [
-   2879
+   1680
   ]
  },
  {
   "line": "l9",
   "text": "Cada pequeño paso cuenta.",
   "key": [],
-  "start": 2926,
-  "end": 3009,
+  "start": 1712,
+  "end": 1766,
   "words": [
-   2929,
-   2938,
-   2953,
-   2978
+   1715,
+   1723,
+   1734,
+   1742
   ]
  },
  {
   "line": "l9",
   "text": "Empieza hoy.",
   "key": [],
-  "start": 3025,
-  "end": 3085,
+  "start": 1766,
+  "end": 1814,
   "words": [
-   3028,
-   3059
+   1769,
+   1786
   ]
  }
 ]

@@ -5,8 +5,7 @@
  * the same numbers, so a tap always lands on the real control.
  */
 import boxes from '../../public/pasos/app/boxes.json';
-import { phoneGeom, phonePt } from './kit';
-import type { Layout } from './theme';
+import { phonePt } from './kit';
 
 type Rect = { x: number; y: number; w: number; h: number };
 const centre = (b: Rect) => ({ x: b.x + b.w / 2, y: b.y + b.h / 2 });
@@ -64,30 +63,8 @@ export interface PhonePlace {
   w: number;
 }
 
-/** Where the phone sits in each block. */
-export function places(L: Layout) {
-  const s = L.format === 'story';
-  return {
-    app: s ? { x: 420, y: 1012, w: 520 } : { x: 390, y: 716, w: 380 },
-    evolution: s ? { x: 300, y: 1000, w: 470 } : { x: 290, y: 716, w: 370 },
-    training: s ? { x: 300, y: 1000, w: 470 } : { x: 290, y: 716, w: 370 },
-    habits: s ? { x: 320, y: 1000, w: 490 } : { x: 300, y: 716, w: 380 },
-    style: s ? { x: 460, y: 1000, w: 500 } : { x: 460, y: 716, w: 380 },
-    privacy: s ? { x: 490, y: 1020, w: 450 } : { x: 540, y: 744, w: 340 },
-  } satisfies Record<string, PhonePlace>;
-}
-
-/** Right-hand column for lifted cards and Rumbi. */
-export function column(L: Layout) {
-  return L.format === 'story' ? { x: 765, w: 430 } : { x: 795, w: 350 };
-}
-
 /** Absolute position of a screen point (pt) on a flat phone, optionally scaled by the camera (s). */
 export function onScreen(p: PhonePlace, px: number, py: number, s = 1) {
   const o = phonePt(p.w, px, py);
   return { x: p.x + o.x * s, y: p.y + o.y * s };
-}
-
-export function phoneTop(p: PhonePlace) {
-  return p.y - phoneGeom(p.w).height / 2;
 }

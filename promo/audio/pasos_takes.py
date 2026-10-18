@@ -1,8 +1,12 @@
 """Analyses the ElevenLabs takes of «Cada pequeño paso cuenta» and helps pick one per line.
 
-    python3 audio/pasos_takes.py analyse     # metrics per take + takes-all.wav for transcription
-    python3 audio/pasos_takes.py pick l1=ID l2=ID …   # writes voice-pasos/l1.wav … (trimmed, 48 kHz)
-    python3 audio/pasos_takes.py timeline   # word frames (src/pasos/voice.json), subtitles (captions.json + SRT)
+    python3 audio/pasos_takes.py analyse     # metrics per take + takes-all.wav to review them
+    python3 audio/pasos_takes.py pick l1=ID l2=ID …   # writes voice-energia/l1.wav … (trimmed, 48 kHz)
+    python3 audio/pasos_takes.py timeline   # word frames (src/pasos/voice.json), subtitles (captions.json + SRT), beats
+
+Word timings come from audio/align.py (eSpeak NG + dynamic time warping, run
+locally); against Scribe on the earlier narration it lands within 25 ms
+(median) and 75 ms (90th percentile) of each word.
 
 Metrics: speech length without the leading/trailing silence, syllables per second
 (from the script text), pitch spread in semitones (a rough measure of how
@@ -18,8 +22,8 @@ import numpy as np
 import soundfile as sf
 
 ROOT = Path(__file__).resolve().parent
-TAKES = ROOT / 'voice-pasos' / 'takes'
-OUT = ROOT / 'voice-pasos'
+TAKES = ROOT / 'voice-energia' / 'takes'
+OUT = ROOT / 'voice-energia'
 SR = 48000
 
 LINES = {
@@ -143,14 +147,10 @@ def pick(choices: dict[str, str]) -> None:
 # Subtitle cues, split by hand into short phrases. «*» marks the key terms the
 # video highlights. Each cue must match the next words of its line exactly.
 CUES = {
-    'l1': ['No hace falta cambiarlo todo', 'de un día para otro.', 'Basta con dar el *siguiente *paso.'],
-    'l2': ['*RUMBO te ayuda a registrar lo que haces', 'y a ver cómo avanza tu proceso,', '*a *tu *manera.'],
-    'l3': ['Anota tu *evolución', 'y consulta tus datos de *peso, *IMC *y *calorías', 'en un mismo lugar.', 'Cada registro cuenta', 'una parte de tu historia.'],
-    'l4': ['Guarda tus entrenamientos,', 'tus *rutinas y tus *marcas.', 'Así puedes volver a ellos', 'y reconocer todo el trabajo', 'que ya has hecho.'],
-    'l5': ['Registra también tus hábitos diarios,', 'como el *agua y los *pasos.', 'Celebra los pequeños avances', 'y construye *constancia', 'sin exigirte perfección.'],
-    'l6': ['Y adapta la experiencia a ti:', 'cambia los *colores', 'y elige el *tema que prefieras.'],
-    'l7': ['Y tu privacidad importa:', 'lo que registras se guarda', 'en *tu *propio *dispositivo.'],
-    'l8': ['Entrena, registra tu progreso', 'y celebra *cada *paso.'],
+    'l1': ['No hace falta', 'cambiarlo todo', 'de un día para otro.', 'Basta con dar', 'el *siguiente *paso.'],
+    'l2': ['*RUMBO te ayuda', 'a *registrar lo que haces', 'y a ver cómo *avanza', 'tu proceso,', '*a *tu *manera.'],
+    'l3': ['Anota tu *evolución', 'y consulta tus datos', 'de *peso, *IMC', '*y *calorías', 'en un mismo lugar.', 'Cada registro cuenta', 'una parte de tu historia.'],
+    'l4': ['Guarda tus *entrenamientos,', 'tus *rutinas y tus *marcas.', 'Así puedes volver a ellos', 'y reconocer todo el trabajo', 'que ya has hecho.'],
     'l9': ['*RUMBO.', 'Cada pequeño paso cuenta.', 'Empieza hoy.'],
 }
 
@@ -159,13 +159,12 @@ def norm(w: str) -> str:
     return ''.join(c for c in w.lower() if c.isalnum())
 
 
-def take_words(line: str, take: str) -> list[dict]:
-    """Scribe word timings of a picked take, relative to its trimmed start (s)."""
-    words = json.loads((OUT / 'takes-all.words.json').read_text())['words']
-    offs = json.loads((OUT / 'takes-all.json').read_text())
-    o = next(x for x in offs if x['take'] == f'{line}-{take}')
-    ws = [w for w in words if w['type'] == 'word' and o['start'] - 0.05 <= w['start'] <= o['end'] + 0.05]
-    return [{'w': w['text'], 's': w['start'] - o['start'], 'e': w['end'] - o['start']} for w in ws]
+def take_words(line: str) -> list[dict]:
+    """Word timings of the picked take of a line, relative to its trimmed start (s)."""
+    from align import align
+
+    y, _ = sf.read(OUT / f'{line}.wav')
+    return [{'w': w['w'], 's': w['s'], 'e': w['e']} for w in align(y, LINES[line])]
 
 
 def srt_time(frame: int, fps: int) -> str:
@@ -177,26 +176,32 @@ def srt_time(frame: int, fps: int) -> str:
 
 
 def beats(voice: list[dict]) -> dict:
-    """Moments shared by picture and sound (absolute frames), most of them tied to a word."""
+    """Moments shared by picture and sound (absolute frames at 30 fps, 120 BPM: a beat is 15 frames)."""
     lines = {v['id']: v['words'] for v in voice}
 
     def W(line: str, i: int) -> int:
         return lines[line][i]['f']
 
     return {
-        'wake': 18, 'light': 66, 'trail': [96, 222], 'logo': 222, 'outline': [256, 302], 'phoneIn': [290, 318],
-        'scroll1': [W('l2', 8), W('l2', 14) + 4], 'scroll2': [W('l2', 15) - 6, W('l2', 17) + 22],
-        'toProgress': [604, 622], 'chartDraw': [W('l3', 4), W('l3', 9) + 6], 'imc': W('l3', 9), 'kcal': W('l3', 11),
-        'zoomChart': [W('l3', 16) - 8, W('l3', 16) + 12], 'markers': [W('l3', 17), W('l3', 23) + 10],
-        'toTemplates': [1052, 1068], 'cardIn': [1058, 1084], 'toSession': [1090, 1104], 'setDone': W('l4', 5) - 6,
-        'records': W('l4', 7), 'history': [W('l4', 8), W('l4', 18)], 'stats': W('l4', 14), 'proud': W('l4', 21),
-        'toHoy': [1502, 1520], 'icons': W('l5', 0), 'iconsWater': W('l5', 7), 'iconsSteps': W('l5', 10),
-        'water': W('l5', 11) - 14, 'streak': W('l5', 11), 'calendar': W('l5', 16),
-        'toStyle': [1924, 1940], 'sheetUp': W('l6', 6) - 22, 'cyan': W('l6', 8) - 2, 'sheetDown': W('l6', 9) - 2,
-        'light': W('l6', 12) + 2, 'fan': [2140, 2250], 'backViolet': 2258,
-        'chipsIn': [2362, 2400], 'chipsHome': [W('l7', 6), W('l7', 8) + 6], 'saved': W('l7', 8) + 8, 'phoneOut': [2658, 2696],
-        'cardA': W('l8', 0), 'cardB': W('l8', 1), 'cardC': W('l8', 5), 'closeTrail': [2846, 2874], 'logoEnd': 2860,
-        'tagline': W('l9', 1), 'cta': W('l9', 5),
+        # Hook: Rumbi wakes, the narration lands as big type, a dash of light, the drop.
+        'wake': 6, 'slam': [W('l1', i) for i in (0, 2, 3, 4, 5, 10, 11, 13)], 'step': W('l1', 15),
+        'dash': [150, 174], 'camino': 180, 'rumbo': 195, 'drop1': 240,
+        # App: the phone lands on the drop; three words on the beat, then a whip.
+        'regis': 390, 'observa': 420, 'sigue': 450, 'whip1': [462, 482],
+        # Evolution.
+        'chart': [W('l3', 1), W('l3', 4) + 6], 'imc': W('l3', 9), 'kcal': W('l3', 11), 'markers': [W('l3', 16), W('l3', 16) + 64], 'whip2': [700, 722],
+        # Training.
+        'rutinas': W('l4', 4), 'session': W('l4', 5) - 4, 'setDone': W('l4', 6), 'marcas': W('l4', 7), 'history': [W('l4', 8), W('l4', 14)],
+        'stats': W('l4', 15), 'proud': W('l4', 21), 'wipe': [942, 962],
+        # Habits (no narration): water, steps, streak, consistency.
+        'agua': 960, 'tap250': 990, 'pasos': 1020, 'racha': 1080, 'constancia': 1140,
+        # Style: the five real accent colours on the beat, the theme, a fan of phones.
+        'estilo': 1200, 'colours': [1215, 1230, 1245, 1260, 1275], 'light': 1290, 'fan': [1305, 1350], 'dark': 1350,
+        # Privacy: a breath before the build.
+        'privacy': 1380, 'chipsHome': [1440, 1470], 'saved': 1470,
+        # Build and final drop.
+        'build': 1560, 'entrena': 1560, 'registra': 1590, 'celebra': 1620, 'flash': 1676, 'drop2': 1680,
+        'tagline': W('l9', 1), 'cta': W('l9', 5), 'end': 1920,
     }
 
 
@@ -207,7 +212,7 @@ def timeline() -> None:
     picks = json.loads((OUT / 'takes.json').read_text())
     voice, cues = [], []
     for line, at in tl['voice'].items():
-        words = take_words(line, picks[line])
+        words = take_words(line)
         script = LINES[line].split()
         assert [norm(w['w']) for w in words] == [norm(w) for w in script], (line, [w['w'] for w in words])
         dur = round(len(sf.read(OUT / f'{line}.wav')[0]) / SR * fps)

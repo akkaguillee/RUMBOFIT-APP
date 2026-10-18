@@ -1,27 +1,31 @@
 # RUMBO · vídeos promocionales (9:16)
 
-Tres piezas: «Cada pequeño paso cuenta» (1:44,5, la más reciente, justo debajo), el anuncio cinematográfico de 84 s y el de 40 s para Reels, TikTok y Shorts.
+Tres piezas: «Cada pequeño paso cuenta» (1:04, la más reciente, justo debajo), el anuncio cinematográfico de 84 s y el de 40 s para Reels, TikTok y Shorts.
 
-## «Cada pequeño paso cuenta» (1:44,5)
+## «Cada pequeño paso cuenta» (1:04)
 
-Resultado en `out/pasos/`: el máster 2K a 60 fps, `RUMBO-cada-paso-cuenta-9x16-2k60.mp4` (1440 × 2560; la copia del repositorio está ajustada a menos de 100 MB con `audio/fit.sh`, y la de más tasa, `…-master.mp4`, no se sube), y su versión a 1080 × 1920 y 30 fps; además, la adaptación 4:5 con encuadre propio (1440 × 1800 a 60 fps, y 1080 × 1350 a 30 fps). Todos son H.264 + AAC 48 kHz, −14 LUFS, con subtítulos incrustados. La línea de tiempo está escrita en fotogramas de 30 fps, pero cada animación lee el tiempo (`useT()`), así que a 60 fps el movimiento es real. Además: la narración limpia (`…-voz-elevenlabs.wav`), el `.srt` y `NOTAS.md`, con las afirmaciones verificadas y las omitidas.
+Versión enérgica, a 120 BPM: cada tiempo dura 15 fotogramas y cada compás 2 s, y todo cae sobre esa rejilla (cortes, golpes de texto, cámara, efectos y el baile de Rumbi).
 
-- `capture/capture-pasos.mjs` + `capture/seed.mjs` — capturas reales de la app (390 × 844 pt a 3×) con un usuario ficticio, «Alex», cargado en la IndexedDB del navegador de captura. Incluye pulsaciones reales («+ 250», «Completar serie 1», color y tema) y el registro de red (`out/pasos/red-captura.json`). Las capturas van a `public/pasos/app/`.
+Resultado en `out/pasos/`: el máster 2K a 60 fps, `RUMBO-cada-paso-cuenta-9x16-2k60.mp4` (1440 × 2560), y su versión a 1080 × 1920 y 30 fps; además, la adaptación 4:5 con encuadre propio (1440 × 1800 a 60 fps, y 1080 × 1350 a 30 fps). Todos son H.264 + AAC 48 kHz, −14 LUFS, con subtítulos incrustados. Las copias 2K del repositorio se ajustan a menos de 100 MB con `audio/fit.sh`; la de más tasa (`…-master.mp4`) no se sube. La línea de tiempo está escrita en fotogramas de 30 fps, pero cada animación lee el tiempo (`useT()`), así que a 60 fps el movimiento es real. Además: la narración limpia (`…-voz-elevenlabs.wav`), el `.srt` y `NOTAS.md`, con las afirmaciones verificadas y las omitidas.
+
+- `capture/capture-pasos.mjs` + `capture/seed.mjs` — capturas reales de la app (390 × 844 pt a 3×) con un usuario ficticio, «Alex», cargado en la IndexedDB del navegador de captura. Incluye pulsaciones reales («+ 250», «Completar serie 1», colores y tema) y el registro de red (`out/pasos/red-captura.json`). Las capturas van a `public/pasos/app/`.
 - `src/pasos/` — composiciones `RumboPasos` y `RumboPasos45`:
   - `theme.ts` — identidad violeta de la app y maqueta por formato.
   - `geo.ts` — medidas tomadas de las capturas.
-  - `choreo.ts` — pistas del móvil y de Rumbi a lo largo de toda la pieza.
-  - `scenes.tsx` — los ocho bloques.
+  - `choreo.ts` — la rejilla del bombo, la cámara y las pistas del móvil, el color de acento y Rumbi.
+  - `scenes.tsx` — los bloques: gancho, app, evolución, entrenamiento, hábitos, estilo, privacidad, subida y cierre.
+  - `fx.tsx` — texto que golpea, ondas, rayos, partículas, confeti y destellos.
   - `Rumbi.tsx` — la mascota de la app, movida por su propio `rig.ts`.
-  - `kit.tsx` — teléfono, recortes, titulares y subtítulos.
-- `src/pasos/timeline.json` — bloques y entrada de cada frase. `audio/pasos_takes.py timeline` genera `voice.json` (fotograma de cada palabra, según la transcripción de Scribe), `captions.json`, el `.srt` y `beats.json` (los momentos que comparten imagen y sonido).
-- **Voz:** ElevenLabs (`eleven_v4`, voz «Marina»). Tomas en `audio/voice-pasos/takes/`, las elegidas en `audio/voice-pasos/l1…l9.wav` (`audio/pasos_takes.py pick`).
-- `audio/build_pasos.py` — música original (100 BPM, re mayor), efectos y voz; `audio/mux.sh` hace la mezcla y la codificación.
+  - `kit.tsx` — teléfono, recortes, logotipo y subtítulos.
+- `src/pasos/timeline.json` — bloques y entrada de cada frase. `audio/pasos_takes.py timeline` genera `voice.json` (fotograma de cada palabra), `captions.json`, el `.srt` y `beats.json` (los momentos que comparten imagen y sonido).
+- `audio/align.py` — alineación forzada local (eSpeak NG + DTW) para los tiempos de cada palabra; contra Scribe, en la narración anterior, la mediana de error es 25 ms y el percentil 90, 75 ms.
+- **Voz:** ElevenLabs (`eleven_v4`, voz «Cristina», con dirección `[excited]`). Tomas en `audio/voice-energia/takes/`, las elegidas en `audio/voice-energia/l1…l9.wav` (`audio/pasos_takes.py pick`).
+- `audio/build_pasos.py` — música original (120 BPM, si menor / re mayor), efectos y voz; `audio/mux.sh` hace la mezcla y la codificación.
 
 ```bash
-npm install && pip install numpy scipy soundfile
+npm install && pip install numpy scipy soundfile espeakng-loader
 npm run build:pasos        # tiempos → audio → render 9:16 → mezcla → render 4:5 → mezcla
-npm run stills -- RumboPasos out/stills 400 1178 2104
+npm run stills -- RumboPasos out/stills 240 660 1290 1700
 ```
 
 ## Anuncio de 40 s

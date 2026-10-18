@@ -30,7 +30,9 @@ __pycache__/
 # «Cada pequeño paso cuenta»: silent renders, stems and the combined take file (rebuilt by the scripts)
 promo/out/pasos/*-silent.mp4
 promo/audio/stems-pasos
-promo/audio/voice-pasos/takes-all.wav
-promo/audio/voice-pasos/takes-all.mp3
+promo/audio/voice-energia/takes-all.wav
+promo/audio/voice-energia/takes-all.mp3
+promo/audio/voice-energia/picks-all.wav
+promo/audio/voice-energia/picks-all.mp3
 # Full-bitrate 2K masters (over GitHub's 100 MB limit; the repo keeps size-fitted copies)
 promo/out/pasos/*-master.mp4

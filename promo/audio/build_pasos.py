@@ -1,16 +1,17 @@
 """
-RUMBO · «Cada pequeño paso cuenta» (1:44.5): original score, sound design and voice.
+RUMBO · «Cada pequeño paso cuenta» (1:04): original score, sound design and voice.
 
-- Score, synthesised here (audio/synth.py): 100 BPM, D major, warm and calm.
-  At this tempo the bar lines fall on «RUMBO» (96.0 s) and «Empieza hoy»
-  (100.8 s). Air and a lone piano for the hook, a soft pulse when the phone
-  appears, a gentle groove from «evolución» to «a tu estilo», drums out for
-  privacy, then a lift into the logo and a resolved last chord.
-- Sound design: short and delicate, on the beats of the picture
-  (src/pasos/beats.json): the light, the path, ticks as each weigh-in lights
-  up, the completed set, the water, the colour and theme changes, the save.
-- Voice: the picked ElevenLabs takes in audio/voice-pasos/l1…l9.wav (already
-  trimmed; their word timings drive the picture), placed at the frames of
+- Score, synthesised here (audio/synth.py): 120 BPM, so a beat is exactly 15
+  frames and a bar 2 s; B minor / D major, Bm – G – D – A. An anthem built
+  for energy: a pulsing intro that builds under the hook, a drop on the phone
+  (8 s), a driving groove under the narration, the full chorus with the lead
+  hook while the screens speak for themselves (habits, style), a breakdown
+  for privacy, a build, and the final drop on «¡RUMBO!» (56 s).
+- Sound design on the beats of the picture (src/pasos/beats.json): hits under
+  the big words, whooshes on the whips, ticks as weigh-ins light up, the set,
+  the water, each colour, the impacts on the drops.
+- Voice: the picked ElevenLabs takes in audio/voice-energia/ (already trimmed;
+  their word timings drive the picture), placed at the frames of
   src/pasos/timeline.json, dry.
 
 Writes 48 kHz stems to audio/stems-pasos/ (music, sfx, voice) and the clean,
@@ -23,12 +24,13 @@ import os
 
 import numpy as np
 import soundfile as sf
+from scipy.ndimage import maximum_filter1d
 
 import synth
 from synth import (
-    HALL, ROOM, SR, add, clap, curve, env, fx_bell, fx_boop, fx_bubble, fx_check, fx_click, fx_glow, fx_pop,
-    fx_riser, fx_shimmer, fx_swell, fx_tick, fx_whoosh, hat, hp, hz, keys, kick, lp, peaking, pluck, saw, shaker,
-    sine, verb,
+    HALL, ROOM, SR, add, clap, curve, cymbal, env, fx_bell, fx_boop, fx_bubble, fx_check, fx_click, fx_glow, fx_ignite,
+    fx_impact, fx_pop, fx_reverse, fx_riser, fx_shimmer, fx_swell, fx_thud, fx_tick, fx_whoosh, hat, hp, hz, kick, lp,
+    peaking, pluck, saw, snare, sine, st, sweep, tom, verb,
 )
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -38,350 +40,370 @@ TL = json.load(open(os.path.join(SRC, 'timeline.json')))
 VOICE = json.load(open(os.path.join(SRC, 'voice.json')))
 B = json.load(open(os.path.join(SRC, 'beats.json')))
 FPS = TL['fps']
-FRAMES = TL['frames']
-END = FRAMES / FPS
+END = TL['frames'] / FPS
 LENGTH = END + 1.0
 N = int(LENGTH * SR)
-BEAT = 0.6
+BEAT = 60 / TL['bpm']
 BAR = 4 * BEAT
 STEMS = os.path.join(HERE, 'stems-pasos')
 OUT = os.path.join(ROOT, 'out', 'pasos')
 os.makedirs(STEMS, exist_ok=True)
 os.makedirs(OUT, exist_ok=True)
-synth.seed(105)
+synth.seed(120)
+rng = np.random.default_rng(120)
 
 
 def fs(frame):
     return frame / FPS
 
 
-def ws(line, i):
-    words = next(v for v in VOICE if v['id'] == line)['words']
-    return fs(words[min(i, len(words) - 1)]['f'])
-
-
 def bar(n):
     return n * BAR
-
-
-# Sections on bar lines (scene cuts are at 9, 20, 35, 50, 64, 77, 89 s).
-APP, EVOL, TRAIN, HABITS, STYLE, PRIV, CLOSE, LOGO, CTA = (bar(n) for n in (4, 8, 15, 21, 27, 32, 37, 40, 42))
-
-# ── Harmony ──────────────────────────────────────────────────────────────
-CHORDS = {  # pad voicing (low → high), bass root
-    'D': (['D3', 'A3', 'F#4', 'E5'], 'D2'),
-    'A/C#': (['C#3', 'A3', 'E4', 'B4'], 'C#2'),
-    'Bm': (['B2', 'F#3', 'D4', 'A4'], 'B1'),
-    'G': (['G2', 'D3', 'B3', 'F#4'], 'G1'),
-    'Em7': (['E3', 'B3', 'D4', 'G4'], 'E2'),
-    'A': (['A2', 'E3', 'C#4', 'B4'], 'A1'),
-    'Asus': (['A2', 'E3', 'D4', 'B4'], 'A1'),
-    'D/F#': (['F#3', 'A3', 'D4', 'E5'], 'F#1'),
-}
-BARS = [
-    'D', 'D', 'Bm', 'G',                                  # hook
-    'D', 'A/C#', 'Bm', 'G',                               # a companion
-    'D', 'A/C#', 'Bm', 'G', 'Em7', 'A', 'Asus',           # evolution
-    'G', 'D/F#', 'Em7', 'D', 'G', 'A',                    # training
-    'D', 'A/C#', 'Bm', 'G', 'Em7', 'A',                   # habits
-    'G', 'A', 'D', 'Bm', 'A',                             # style
-    'Bm', 'G', 'D', 'A', 'Asus',                          # privacy
-    'G', 'A', 'Asus',                                     # the close builds
-    'D', 'G',                                             # logo, tagline
-    'D',                                                  # «Empieza hoy», rings out
-]
-
-
-def chord_at(t):
-    return CHORDS[BARS[min(len(BARS) - 1, max(0, int(t // BAR)))]]
-
-
-def notes(t):
-    return sorted(chord_at(t)[0], key=hz)
 
 
 def grid(t0, t1, step):
     return [t0 + k * step for k in range(int(round((t1 - t0) / step)))]
 
 
-tonal = np.zeros((N, 2))   # pumped by the kick
+# Sections, in bars (scene cuts sit on bar lines: see src/pasos/timeline.json).
+DROP1, EVOL, TRAIN, CHORUS, STYLE, BREAK, BUILD, DROP2, LAST = (bar(n) for n in (4, 8, 12, 16, 20, 23, 26, 28, 31))
+
+# ── Harmony ──────────────────────────────────────────────────────────────
+CHORDS = {  # voicing (low → high), bass root
+    'Bm': (['B3', 'D4', 'F#4', 'B4'], 'B1'),
+    'G': (['G3', 'B3', 'D4', 'G4'], 'G1'),
+    'D': (['A3', 'D4', 'F#4', 'A4'], 'D2'),
+    'A': (['A3', 'C#4', 'E4', 'A4'], 'A1'),
+    'Em': (['G3', 'B3', 'E4', 'G4'], 'E2'),
+}
+LOOP = ['Bm', 'G', 'D', 'A']
+
+
+def chord(t):
+    b = int(t // BAR)
+    if b >= 31:
+        return CHORDS['D']
+    return CHORDS[LOOP[b % 4]]
+
+
+tonal = np.zeros((N, 2))    # pumped by the kick
 drums = np.zeros((N, 2))
-wash = np.zeros((N, 2))    # air and risers, never pumped
+wash = np.zeros((N, 2))     # risers and air, never pumped
 kicks = []
 
-# Pad: soft detuned saws, low-passed; it opens with the story and breathes for privacy.
-CUT = [(0, 600), (APP, 1100), (EVOL, 1500), (TRAIN, 1900), (HABITS, 1800), (STYLE, 2200), (PRIV, 1200), (CLOSE, 1500), (LOGO, 2400), (END, 2000)]
-for b, name in enumerate(BARS):
+
+def supersaw(f, n, voices=7, spread=0.011):
+    out = np.zeros((n, 2))
+    for v in range(voices):
+        d = (v - (voices - 1) / 2) / ((voices - 1) / 2) * spread
+        x = saw(f * (1 + d), n, rng.random())
+        pan = (v / (voices - 1)) * 2 - 1
+        out[:, 0] += x * np.cos((pan * 0.8 + 1) * np.pi / 4)
+        out[:, 1] += x * np.sin((pan * 0.8 + 1) * np.pi / 4)
+    return out / voices
+
+
+# Chords: wide supersaws. Filter and level follow the song; they pump with the kick.
+CUT = [(0, 350), (bar(2), 900), (DROP1 - 0.01, 2200), (DROP1, 2600), (EVOL, 2400), (TRAIN, 2800), (CHORUS, 5200), (BREAK, 2000), (BUILD, 1800),
+       (DROP2 - 0.01, 6000), (DROP2, 5600), (LAST, 4200), (END, 2400)]
+LEVEL = [(0, 0.55), (DROP1, 0.75), (EVOL, 0.7), (TRAIN, 0.75), (CHORUS, 1.0), (BREAK, 0.95), (BUILD, 0.9), (DROP2, 1.0), (LENGTH, 1.0)]
+for b in range(32):
     t0 = bar(b)
-    if t0 >= END:
-        break
-    length = BAR if b < len(BARS) - 1 else END - t0 + 1.0
-    n = int((length + 0.9) * SR)
-    x = np.zeros(n)
-    voicing = CHORDS[name][0]
-    for nm in voicing:
-        for d in (-0.005, 0.0, 0.0055):
-            x += saw(hz(nm) * (1 + d), n, synth.rng.random())
-    attack = 2.4 if b == 0 else 0.6
-    x = lp(x / 14 * env(n, attack, 0.3, 0.85, 0.9), float(np.interp(t0, *zip(*CUT))))
-    add(tonal, np.stack([x, np.roll(x, 380)], 1), t0, 1.0)
-tonal *= curve(N, [(0, 0), (0.4, 0), (5, 0.8), (APP, 1.1), (EVOL, 1.0), (PRIV, 0.9), (CLOSE, 1.0), (END, 1.0), (LENGTH, 1.0)])[:, None] * 0.15
+    length = BAR if b < 31 else END - t0 + 1.0
+    n = int((length + 0.3) * SR)
+    x = np.zeros((n, 2))
+    for nm in chord(t0)[0]:
+        x += supersaw(hz(nm), n)
+    cut = float(np.interp(t0 + 0.2, *zip(*CUT)))
+    x = sweep(x, cut * 0.8, cut * 1.15) if b in (2, 3, 26, 27) else lp(x, cut)
+    attack = 1.6 if b == 0 else 0.01
+    x *= env(n, attack, 0.2, 0.85, 0.3)[:, None]
+    add(tonal, x * float(np.interp(t0, *zip(*LEVEL))), t0, 0.11)
 
-# Air: a soft noise bed (the «ambient» of the hook) that thins out as the music arrives.
-air = lp(hp(synth.rng.standard_normal(N), 300), 3800) * 0.05
-air *= curve(N, [(0, 0), (0.6, 0.8), (6, 1.0), (APP, 0.5), (EVOL, 0.15), (PRIV, 0.3), (CLOSE, 0.1), (LENGTH, 0.05)])
-add(wash, np.stack([air, np.roll(air, 2200)], 1), 0, 1.0)
-
-# Hook: a low drone under the first light.
-n = int((APP + 0.5) * SR)
-t = np.arange(n) / SR
-drone = (sine(hz('D2'), n) + 0.3 * sine(hz('A2'), n)) * np.minimum(1, t / 4.0) * np.minimum(1, (n - np.arange(n)) / (0.5 * SR))
-add(tonal, drone, 0, 0.05)
+# Bass: off-beat in the intro, galloping eighths under the narration, rolling sixteenths in the chorus.
+def bass_note(f, length, cutoff=900):
+    n = int(length * SR)
+    x = sine(f, n) * 0.8 + lp(saw(f, n, rng.random()) + saw(f * 1.005, n, rng.random()), cutoff) * 0.35
+    return x * env(n, 0.004, 0.08, 0.75, 0.04)
 
 
-def piano(t0, t1, step, pattern, gain, octave=1, dur=1.4, bright=1.0):
-    for k, tt in enumerate(grid(t0, t1, step)):
-        nm = notes(tt)[pattern[k % len(pattern)]]
-        add(tonal, keys(hz(nm) * 2 ** octave, dur, bright), tt, gain, -0.25 if k % 2 else 0.25)
-
-
-# Piano: a few notes for the hook, flowing eighths from the phone on, sparse for privacy.
-for tt, nm in ((2.2, 'A5'), (3.6, 'F#5'), (4.8, 'D5'), (6.0, 'B4'), (7.2, 'D5'), (8.4, 'E5')):
-    add(tonal, keys(hz(nm), 2.2), tt, 0.075, 0.2)
-piano(APP, EVOL, BEAT / 2, [0, 1, 2, 3, 2, 1, 3, 2], 0.075)
-piano(EVOL, TRAIN, BEAT / 2, [0, 2, 1, 3, 2, 1, 3, 2], 0.04)
-piano(HABITS, STYLE, BEAT, [0, 2, 3, 1], 0.05)
-piano(PRIV, CLOSE, BEAT, [0, 2, 1, 3], 0.07, dur=1.8)
-piano(CLOSE, LOGO, BEAT / 2, [0, 1, 2, 3, 2, 1, 2, 3], 0.045)
-for i, nm in enumerate(['D4', 'A4', 'D5', 'F#5', 'A5', 'E6']):  # «Empieza hoy»: the last chord, rolled
-    add(tonal, keys(hz(nm), 4.0), CTA + 0.08 * i, 0.07, -0.4 + 0.16 * i)
-
-# The phone: a muted pulse on the root.
-for k, tt in enumerate(grid(APP, EVOL, BEAT / 2)):
-    f = hz(chord_at(tt)[1]) * 2
-    n = int(0.2 * SR)
-    x = lp(saw(f, n) * 0.6 + sine(f, n), 300 + 600 * (tt - APP) / (EVOL - APP)) * env(n, 0.003, 0.06, 0.5, 0.05)
-    add(tonal, x, tt, 0.13 * (1.0 if k % 2 == 0 else 0.6))
-
-
-def bass(t0, t1, pattern, gain, step=BEAT / 2):
+def bassline(t0, t1, step, pattern, gain, cutoff=900, octave=0):
     for k, tt in enumerate(grid(t0, t1, step)):
         v = pattern[k % len(pattern)]
-        if not v:
-            continue
-        j = 1
-        while j < len(pattern) and not pattern[(k + j) % len(pattern)]:
-            j += 1
-        n = int(min(j * step, t1 - tt) * 0.92 * SR)
-        f = hz(chord_at(tt)[1])
-        x = sine(f, n) * 0.7 + lp(saw(f, n), 500) * 0.35
-        add(tonal, x * env(n, 0.005, 0.1, 0.8, 0.06), tt, gain * v)
+        if v:
+            f = hz(chord(tt)[1]) * 2 ** octave * (2 if v == 2 else 1)
+            add(tonal, bass_note(f, step * 0.9, cutoff), tt, gain)
 
 
-bass(EVOL, TRAIN, [1, 0, 0, 0.6, 0, 0, 0.8, 0], 0.22)
-bass(TRAIN, HABITS, [1, 0, 0.6, 0, 1, 0, 0.6, 0.5], 0.24)
-bass(HABITS, STYLE, [1, 0, 0, 0.6, 0, 0, 0.8, 0], 0.22)
-bass(STYLE, PRIV, [1, 0, 0.6, 0.8, 0, 0.6, 1, 0], 0.22)
-bass(PRIV, CLOSE, [1, 0, 0, 0, 0, 0, 0, 0], 0.16, step=BEAT)
-bass(CLOSE + BAR, LOGO, [1, 0, 0.6, 0, 1, 0, 0.6, 0.5], 0.22)
-bass(LOGO, CTA, [1, 0, 0, 0.6, 0, 0, 0.8, 0], 0.24)
-n = int(3.8 * SR)
-add(tonal, sine(hz('D2'), n) * env(n, 0.01, 0.6, 0.7, 2.4), CTA, 0.24)
+bassline(bar(2), DROP1 - BEAT / 2, BEAT / 2, [0, 1], 0.2, 500)
+bassline(DROP1, CHORUS, BEAT / 2, [1, 1, 1, 2, 1, 1, 2, 1], 0.2, 800)
+bassline(CHORUS, BREAK, BEAT / 4, [1, 0, 1, 1, 2, 0, 1, 1], 0.2, 1100)
+bassline(BREAK, BUILD, BEAT / 2, [1, 0, 1, 1], 0.12, 450)
+bassline(BUILD, DROP2 - BEAT / 2, BEAT / 2, [1, 1], 0.17, 600)
+bassline(DROP2, LAST, BEAT / 4, [1, 0, 1, 1, 2, 0, 1, 1], 0.21, 1200)
+for t0, t1 in ((DROP1, CHORUS), (CHORUS, BREAK), (DROP2, LAST)):  # sub on every beat
+    for tt in grid(t0, t1, BEAT):
+        n = int(BEAT * 0.95 * SR)
+        add(tonal, sine(hz(chord(tt)[1]), n) * env(n, 0.005, 0.1, 0.8, 0.05), tt, 0.16)
+n = int(3.2 * SR)
+add(tonal, sine(hz('D2'), n) * env(n, 0.005, 0.5, 0.8, 2.0), LAST, 0.28)
 
-
-def arp(t0, t1, step, octave, gain, cutoff, pattern=(0, 1, 2, 3, 2, 1, 2, 3), dur=0.22):
-    for k, tt in enumerate(grid(t0, t1, step)):
-        nm = notes(tt)[pattern[k % len(pattern)]]
+# Arp: sixteenth plucks under the narration, opening as the sections go.
+def arp(t0, t1, gain, cutoff, octave=1, pattern=(0, 1, 2, 3, 2, 1, 3, 2)):
+    for k, tt in enumerate(grid(t0, t1, BEAT / 4)):
+        nm = chord(tt)[0][pattern[k % len(pattern)]]
         c = cutoff(tt) if callable(cutoff) else cutoff
-        add(tonal, pluck(hz(nm) * 2 ** octave, dur, c), tt, gain, 0.4 if k % 2 else -0.4)
+        add(tonal, pluck(hz(nm) * 2 ** octave, 0.18, c), tt, gain, 0.45 if k % 2 else -0.45)
 
 
-arp(TRAIN, HABITS, BEAT / 4, 1, 0.045, 2600)
-arp(STYLE, PRIV, BEAT / 2, 2, 0.05, 5000, pattern=(0, 2, 1, 3, 2, 0, 3, 1), dur=0.3)
-arp(CLOSE, LOGO, BEAT / 4, 1, 0.05, lambda tt: 1400 * (4800 / 1400) ** ((tt - CLOSE) / (LOGO - CLOSE)))
-arp(LOGO, CTA, BEAT / 4, 1, 0.035, 3000)
+arp(bar(1), DROP1, 0.05, lambda tt: 700 + 2600 * (tt - bar(1)) / (DROP1 - bar(1)))
+arp(DROP1, CHORUS, 0.045, 3200)
+arp(CHORUS, BREAK, 0.04, 5000, 2)
+arp(BREAK, BUILD, 0.065, 2600)
+arp(BUILD, DROP2, 0.05, lambda tt: 1500 + 5000 * (tt - BUILD) / (DROP2 - BUILD))
+arp(DROP2, LAST, 0.035, 5000, 2)
 
-# A short, singing line over «a tu estilo».
-for beat, nm, length in ((0, 'F#5', 1), (1, 'A5', 1), (2, 'B5', 2), (4, 'A5', 1), (5, 'F#5', 1), (6, 'E5', 2), (8, 'D5', 1), (9, 'E5', 1), (10, 'F#5', 2), (12, 'E5', 3)):
-    n = int(length * BEAT * SR)
-    tt = np.arange(n) / SR
-    x = lp(saw(hz(nm), n) * 0.35 + sine(hz(nm), n), 2400) * env(n, 0.03, 0.1, 0.8, 0.2)
-    x = x * (1 + 0.04 * np.sin(2 * np.pi * 5.0 * tt) * np.clip(tt * 3, 0, 1))
-    add(tonal, np.stack([x, np.roll(x, 420)], 1), STYLE + bar(2) + beat * BEAT, 0.03)
-
-# ── Drums: soft, never in the way of the voice ───────────────────────────
-KICK, CLAP, HC, SHK = kick(0.5), clap(), hat(), shaker()
+# Lead: the hook of the anthem, only where nobody speaks (habits, style) and on the last chorus.
+MELODY = [  # (beat in the 4-bar loop, note, beats)
+    (0, 'F#5', 0.5), (0.5, 'F#5', 0.5), (1, 'E5', 0.5), (1.5, 'F#5', 0.5), (2, 'D5', 1), (3, 'B4', 1),
+    (4, 'D5', 0.5), (4.5, 'E5', 0.5), (5, 'F#5', 0.5), (5.5, 'A5', 0.5), (6, 'B5', 1), (7, 'A5', 1),
+    (8, 'F#5', 0.5), (8.5, 'F#5', 0.5), (9, 'E5', 0.5), (9.5, 'F#5', 0.5), (10, 'A5', 1), (11, 'F#5', 1),
+    (12, 'E5', 0.5), (12.5, 'F#5', 0.5), (13, 'E5', 0.5), (13.5, 'C#5', 0.5), (14, 'A4', 2),
+]
+lead = np.zeros((N, 2))
 
 
-def k(tt, g=0.7):
-    add(drums, KICK, tt, g * 0.42)
+def lead_line(t0, t1, gain):
+    for loop in grid(t0, t1, bar(4)):
+        for beat, nm, length in MELODY:
+            tt = loop + beat * BEAT
+            if tt >= t1:
+                break
+            n = int(length * BEAT * 0.95 * SR)
+            x = supersaw(hz(nm), n, 5, 0.008) + st(np.sign(sine(hz(nm) / 2, n)) * 0.2)
+            t = np.arange(n) / SR
+            x *= (1 + 0.03 * np.sin(2 * np.pi * 5.5 * t) * np.clip(t * 4, 0, 1))[:, None]
+            add(lead, lp(x, 5200) * env(n, 0.01, 0.12, 0.8, 0.08)[:, None], tt, gain)
+
+
+lead_line(CHORUS, BREAK, 0.16)
+lead_line(DROP2 + bar(2), LAST, 0.14)  # after «¡Empieza hoy!»
+# Eighth-note ping-pong delay (dotted) and a wide hall.
+delay = int(BEAT * 0.75 * SR)
+echo = np.zeros_like(lead)
+echo[delay:, 0] = lead[:-delay, 1] * 0.35
+echo[2 * delay:, 1] = lead[:-2 * delay, 0] * 0.25
+tonal += lead + lp(echo, 4000)
+
+# ── Drums ────────────────────────────────────────────────────────────────
+KICK, CLAP, SNARE, HC, HO = kick(1.2), clap(), snare(), hat(), hat(True)
+
+
+def k(tt, g=1.0):
+    add(drums, KICK, tt, 0.55 * g)
     kicks.append((tt, g))
 
 
-for b, tt in enumerate(grid(EVOL, TRAIN, BEAT)):     # evolution: one and three, shaker
-    if b % 2 == 0:
-        k(tt, 0.6)
-    add(drums, SHK, tt + BEAT / 2, 0.08, 0.3)
-for b, tt in enumerate(grid(TRAIN, HABITS, BEAT)):   # training: four on the floor, claps on two and four
-    k(tt, 0.7)
-    if b % 4 in (1, 3):
-        add(drums, CLAP, tt, 0.22)
-    add(drums, HC, tt + BEAT / 2, 0.1, 0.25)
-for b, tt in enumerate(grid(HABITS, STYLE, BEAT)):   # habits: lighter
-    if b % 2 == 0:
-        k(tt, 0.6)
-    if b % 4 == 2:
-        add(drums, CLAP, tt, 0.16)
-    for s in (0, BEAT / 4, BEAT / 2, 3 * BEAT / 4):
-        add(drums, SHK, tt + s, 0.07 if s else 0.1, 0.3)
-for b, tt in enumerate(grid(STYLE, PRIV - BEAT, BEAT)):  # style: bouncy
-    k(tt, 0.62)
-    if b % 4 in (1, 3):
-        add(drums, CLAP, tt, 0.2)
-    add(drums, SHK, tt + BEAT / 2, 0.1, 0.3)
-for b, tt in enumerate(grid(CLOSE + BAR, LOGO, BEAT)):  # the close builds back
-    k(tt, 0.55 + 0.2 * (tt - CLOSE) / (LOGO - CLOSE))
-    if tt >= CLOSE + bar(2):
-        add(drums, HC, tt + BEAT / 2, 0.1, 0.25)
-for b, tt in enumerate(grid(LOGO, CTA, BEAT)):       # logo and tagline
-    k(tt, 0.7)
-    if b % 4 in (1, 3):
-        add(drums, CLAP, tt, 0.18)
-    add(drums, HC, tt + BEAT / 2, 0.09, 0.25)
-k(CTA, 0.6)
+def groove(t0, t1, kick_g=1.0, clap_g=0.32, hats=True, open_hats=True, sixteenths=False):
+    for b, tt in enumerate(grid(t0, t1, BEAT)):
+        k(tt, kick_g)
+        if b % 4 in (1, 3):
+            add(drums, CLAP, tt, clap_g)
+            add(drums, SNARE, tt, clap_g * 0.5)
+        if open_hats:
+            add(drums, HO, tt + BEAT / 2, 0.16, 0.2)
+        if hats:
+            for s in ((0.25, 0.75) if sixteenths else ()):
+                add(drums, HC, tt + s * BEAT, 0.12, -0.3)
 
-# Risers into the bigger moments.
-for start, end, g in ((APP - 1.6, APP, 0.05), (TRAIN - 1.6, TRAIN, 0.05), (LOGO - 2.4, LOGO, 0.08), (CTA - 1.2, CTA, 0.05)):
-    add(wash, fx_riser(end - start, 400, 7000), start, g)
+
+# Intro: a heartbeat, then the floor, filtered, and a snare roll into the drop.
+for tt in grid(0, bar(2), BEAT * 2):
+    k(tt + 0.0, 0.55)
+for tt in grid(bar(2), DROP1 - BEAT / 2, BEAT):
+    k(tt, 0.75)
+roll = [bar(3) + i * BEAT / 2 for i in range(4)] + [bar(3) + 2 * BEAT + i * BEAT / 4 for i in range(6)]
+for i, tt in enumerate(roll):
+    add(drums, SNARE, tt, 0.12 + 0.2 * i / len(roll))
+groove(DROP1, EVOL, sixteenths=True)
+groove(EVOL, TRAIN, sixteenths=True)
+groove(TRAIN, CHORUS, sixteenths=True)
+groove(CHORUS, BREAK, kick_g=1.1, clap_g=0.38, sixteenths=True)
+# Fills into the sections.
+for t1 in (EVOL, TRAIN, CHORUS, STYLE):
+    for i, f in enumerate((140, 120, 100, 85)):
+        add(drums, st(tom(f), (-0.5 + i / 3)), t1 - BEAT + i * BEAT / 4, 0.25)
+# Breakdown: a soft kick on one, then the build doubles up to the drop.
+for tt in grid(BREAK, BUILD, BAR):
+    k(tt, 0.5)
+for i, tt in enumerate(grid(BUILD, DROP2 - BEAT / 2, BEAT)):
+    k(tt, 0.7 + 0.3 * i / 7)
+build_roll = grid(BUILD, BUILD + BAR, BEAT / 2) + grid(BUILD + BAR, DROP2 - BEAT, BEAT / 4) + grid(DROP2 - BEAT, DROP2 - BEAT / 8, BEAT / 8)
+for i, tt in enumerate(build_roll):
+    add(drums, SNARE, tt, 0.08 + 0.26 * i / len(build_roll))
+groove(DROP2, LAST, kick_g=1.1, clap_g=0.38, sixteenths=True)
+k(LAST, 1.2)
+# Crashes on the section downbeats.
+for tt, g in ((DROP1, 0.5), (EVOL, 0.3), (TRAIN, 0.3), (CHORUS, 0.45), (STYLE, 0.3), (DROP2, 0.55), (LAST, 0.5)):
+    add(drums, cymbal(2.6), tt, g)
+
+# Risers and reverse cymbals into the drops; a sweep down after them.
+for start, end, g in ((bar(2), DROP1, 0.1), (TRAIN - BAR, TRAIN, 0.05), (CHORUS - BAR, CHORUS, 0.06), (BUILD, DROP2, 0.12)):
+    add(wash, fx_riser(end - start, 300, 9000), start, g)
+for tt in (DROP1, CHORUS, DROP2):
+    add(wash, fx_reverse(1.0), tt - 1.0, 0.5)
+    add(wash, st(sweep(rng.standard_normal(int(1.6 * SR)), 9000, 300) * np.linspace(1, 0, int(1.6 * SR)) ** 2) * 0.3, tt, 0.25)
+
+# Silence the music for the last eighth before each drop: the hit lands in the gap.
+gate = np.ones(N)
+for tt in (DROP1, DROP2):
+    i0, i1 = int((tt - BEAT / 2) * SR), int(tt * SR)
+    gate[i0:i1] = np.linspace(1, 0.05, i1 - i0) ** 0.3
+    gate[i1 - 200:i1] = np.linspace(0.05, 1, 200)
 
 pump = np.ones(N)
 for kt, g in kicks:
     i = int(kt * SR)
-    n = int(0.3 * SR)
-    c = 1 - 0.3 * g * np.exp(-np.arange(n) / SR * 12)
+    n = int(0.42 * SR)
+    c = 1 - min(0.62, 0.55 * g) * np.exp(-np.arange(n) / SR * 9)
     pump[i:i + n] = np.minimum(pump[i:i + n], c[: len(pump[i:i + n])])
-music = verb(tonal * pump[:, None], HALL, 0.2) + verb(drums, ROOM, 0.12) + verb(wash, HALL, 0.25)
-music = hp(lp(music, 13000, 1), 32, 2)
-music *= curve(N, [(0, 1), (END - 1.2, 1), (END, 0), (LENGTH, 0)])[:, None]
+# The last drop leaves room for «¡RUMBO! Cada pequeño paso cuenta. ¡Empieza hoy!».
+close_room = curve(N, [(0, 1), (DROP2 + 0.15, 1), (DROP2 + 0.4, 0.6), (DROP2 + 3.9, 0.6), (DROP2 + 4.5, 1), (LENGTH, 1)])[:, None]
+tonal *= close_room
+drums *= 0.4 + 0.6 * close_room
+music = (verb(tonal * pump[:, None], HALL, 0.16) + verb(drums, ROOM, 0.08)) * gate[:, None] + verb(wash, HALL, 0.2)
+music = hp(lp(music, 15000, 1), 28, 2)
+music = np.tanh(music / np.max(np.abs(music)) * 1.4)  # glue: a little saturation on the peaks
+music *= curve(N, [(0, 0), (0.05, 1), (END - 0.3, 1), (END + 0.6, 0), (LENGTH, 0)])[:, None]
 
 # ── Sound design ─────────────────────────────────────────────────────────
 sfx = np.zeros((N, 2))
 
 
-def whoosh(tt, g, length=0.6, lo=300, hi=6000):
-    add(sfx, fx_whoosh(length, lo, hi), tt - length / 2, g)
-
-
-def at(key, offset=0):
+def at(key, i=None, offset=0):
     v = B[key]
-    return fs((v[0] if isinstance(v, list) else v) + offset)
+    if isinstance(v, list):
+        v = v[0 if i is None else i]
+    return fs(v + offset)
 
 
-# Hook: Rumbi's eyes switch on, the light, the path, the logo.
-add(sfx, fx_boop(), fs(B['wake'] + 1), 0.16)
-add(sfx, fx_glow(hz('A5'), 1.8), at('light'), 0.32)
-add(sfx, fx_swell(fs(B['trail'][1] - B['trail'][0]), 220, 2600), at('trail'), 0.12)
-add(sfx, fx_shimmer(('D6', 'F#6', 'A6', 'D7')), at('logo'), 0.24)
-add(sfx, fx_bell('A5', 1.4), at('logo', 4), 0.14)
-add(sfx, fx_bubble(500, 1200), ws('l1', 15), 0.18)  # Rumbi's happy hop
+def whoosh(tt, g, length=0.5, lo=300, hi=7000):
+    add(sfx, fx_whoosh(length, lo, hi), tt - length * 0.6, g)
 
-# The phone takes shape.
-add(sfx, fx_swell(1.4, 180, 2200), at('outline'), 0.14)
-add(sfx, fx_pop(), at('phoneIn', 10), 0.16)
-for key in ('scroll1', 'scroll2'):
-    whoosh(at(key, 4), 0.06, 0.8, 400, 4000)
 
-# Evolution: page, the chart drawing, a tick for each weigh-in, the lifted cards.
-add(sfx, fx_tick(2600), at('toProgress'), 0.12)
-add(sfx, fx_swell(fs(B['chartDraw'][1] - B['chartDraw'][0]), 300, 3200), at('chartDraw'), 0.1)
-for i in range(17):
-    add(sfx, fx_tick(2300 + 80 * i), at('chartDraw') + fs(B['chartDraw'][1] - B['chartDraw'][0]) * (i / 16) ** 0.9, 0.07, -0.6 + 1.2 * i / 16)
+def hit(tt, g=0.3, f=60):
+    """A short, round punch under a big word: low thud and a snap of noise."""
+    n = int(0.25 * SR)
+    t = np.arange(n) / SR
+    snap = hp(rng.standard_normal(n), 2000) * np.exp(-t * 90) * 0.3
+    body = np.sin(2 * np.pi * (f + 80 * np.exp(-t * 30)) * t) * np.exp(-t * 14)
+    add(sfx, st(np.tanh((body + snap) * 1.5)), tt, g)
+
+
+# Hook.
+add(sfx, fx_boop(), at('wake'), 0.2)
+for i in range(len(B['slam'])):
+    hit(at('slam', i), 0.16)
+whoosh(at('slam', 4, 2), 0.14, 0.35, 900, 9000)       # the strike through «cambiarlo todo»
+add(sfx, fx_bubble(500, 1300), at('step'), 0.2)
+whoosh(at('dash', 0, 10), 0.22, 0.8, 200, 8000)
+for key in ('camino', 'rumbo'):
+    hit(at(key), 0.3, 50)
+add(sfx, fx_impact(2.6, 34), at('drop1') - 0.04, 0.3)
+
+# App.
+for key in ('regis', 'observa', 'sigue'):
+    hit(at(key), 0.3)
+    whoosh(at(key), 0.07, 0.3, 1500, 9000)
+whoosh(at('whip1', 0, 12), 0.22, 0.6, 250, 8000)
+
+# Evolution.
+add(sfx, fx_swell(fs(B['chart'][1] - B['chart'][0]), 300, 4000), at('chart'), 0.12)
 for key in ('imc', 'kcal'):
-    whoosh(at(key), 0.1, 0.5, 500, 7000)
-    add(sfx, fx_pop(), at(key, 4), 0.14)
-whoosh(at('zoomChart'), 0.07, 0.8, 200, 3000)
-span = B['markers'][1] - B['markers'][0] - 14
+    whoosh(at(key), 0.14, 0.4, 500, 8000)
+    add(sfx, fx_pop(), at(key, offset=3), 0.16)
+span = B['markers'][1] - B['markers'][0]
 for i in range(17):
-    add(sfx, fx_tick(2600 + 60 * i), fs(B['markers'][0] + i * span / 17), 0.05, -0.5 + i / 16)
+    add(sfx, fx_tick(2200 + 110 * i), fs(B['markers'][0] + i * span / 17), 0.09, -0.6 + 1.2 * i / 16)
+add(sfx, fx_shimmer(('B5', 'D6', 'F#6', 'B6')), at('markers', 1), 0.16)
+whoosh(at('whip2', 0, 12), 0.22, 0.6, 250, 8000)
 
-# Training: the card, the session, the completed set (a small achievement), marks, history.
-whoosh(at('cardIn'), 0.12, 0.6, 400, 7000)
-add(sfx, fx_tick(2400), at('toSession'), 0.12)
-add(sfx, fx_click(), at('setDone', -1), 0.2)
-add(sfx, fx_check(), at('setDone', 1), 0.24)
-add(sfx, fx_shimmer(('A6', 'C#7', 'E7', 'A7'), 0.04, 1.4), at('setDone', 3), 0.16)
-add(sfx, fx_bubble(560, 1300), at('setDone', 9), 0.14)
-for key in ('records', 'stats'):
-    whoosh(at(key), 0.1, 0.5, 500, 7000)
-    add(sfx, fx_pop(), at(key, 4), 0.12)
-whoosh(at('history', 12), 0.07, 1.2, 300, 3000)
-add(sfx, fx_shimmer(('D6', 'F#6', 'A6', 'D7')), at('proud'), 0.2)
+# Training.
+add(sfx, fx_tick(2500), at('session'), 0.14)
+add(sfx, fx_click(), at('setDone', offset=-1), 0.24)
+add(sfx, fx_check(), at('setDone', offset=1), 0.3)
+add(sfx, fx_shimmer(('A6', 'C#7', 'E7', 'A7'), 0.03, 1.2), at('setDone', offset=2), 0.2)
+hit(at('rutinas'), 0.18)
+hit(at('marcas'), 0.24)
+whoosh(at('marcas'), 0.14, 0.4, 500, 8000)
+whoosh(at('history', 0, 6), 0.1, 0.9, 300, 5000)
+add(sfx, fx_pop(), at('stats', offset=3), 0.14)
+add(sfx, fx_shimmer(('D6', 'F#6', 'A6', 'D7')), at('proud'), 0.22)
+whoosh(at('wipe', 0, 14), 0.26, 0.7, 200, 9000)
 
-# Habits: glasses and steps pop in, fly into the cards, «+ 250», the streak, the calendar.
-whoosh(at('toHoy'), 0.08, 0.6, 300, 5000)
+# Habits.
+for key in ('agua', 'pasos', 'racha', 'constancia'):
+    hit(at(key), 0.32, 52)
+add(sfx, fx_click(), at('tap250', offset=-2), 0.24)
 for i in range(3):
-    add(sfx, fx_bubble(460 + 80 * i, 1100 + 120 * i), at('icons', 5 * i), 0.12, 0.3)
-for i in range(2):
-    add(sfx, fx_tick(1800 + 300 * i), ws('l5', 3) + fs(6 * i), 0.1, 0.4)
-whoosh(at('iconsWater', 4), 0.08, 0.5, 600, 7000)
-whoosh(at('iconsSteps', 4), 0.07, 0.5, 600, 7000)
-add(sfx, fx_click(), at('water', -2), 0.2)
-add(sfx, fx_bubble(420, 1500), at('water'), 0.24)
-add(sfx, fx_bell('F#6', 1.0), at('water', 4), 0.12)
-whoosh(at('streak'), 0.1, 0.5, 500, 7000)
-add(sfx, fx_shimmer(('D6', 'A6', 'D7')), ws('l5', 14), 0.16)
-whoosh(at('calendar'), 0.08, 0.7, 250, 3500)
+    add(sfx, fx_bubble(420 + 140 * i, 1300 + 200 * i), at('tap250', offset=i * 2), 0.2, -0.3 + 0.3 * i)
+add(sfx, fx_bell('F#6', 0.9), at('tap250', offset=4), 0.12)
+for i in range(8):
+    add(sfx, fx_tick(1500 + 120 * (i % 2)), at('pasos', offset=4 + i * 3.75), 0.1, -0.5 if i % 2 else 0.5)
+add(sfx, fx_ignite(), at('racha'), 0.3)
+whoosh(at('constancia', offset=2), 0.14, 0.6, 250, 5000)
 
-# Style: the accent sheet, cyan, the sheet goes, light theme, the other colours, violet again.
-add(sfx, fx_click(), at('sheetUp', -2), 0.2)
-add(sfx, fx_swell(0.5, 300, 3000), at('sheetUp'), 0.1)
-add(sfx, fx_pop(), at('cyan', -2), 0.16)
-add(sfx, fx_glow(hz('E6'), 1.0), at('cyan'), 0.18)
-whoosh(at('sheetDown', 6), 0.07, 0.5, 300, 4000)
-add(sfx, fx_click(), at('light', -2), 0.2)
-add(sfx, fx_glow(hz('A6'), 1.2), at('light'), 0.16)
+# Style: a pop that climbs with each colour, the theme switch, the fan.
+hit(at('estilo'), 0.3, 52)
+for i in range(5):
+    add(sfx, fx_pop(), at('colours', i), 0.18)
+    add(sfx, fx_glow(hz(['B5', 'D6', 'E6', 'F#6', 'A6'][i]), 0.7), at('colours', i), 0.2)
+add(sfx, fx_click(), at('light', offset=-2), 0.24)
+add(sfx, fx_glow(hz('B6'), 1.0), at('light'), 0.24)
 for i in range(3):
-    whoosh(at('fan', 8 * i + 6), 0.06, 0.5, 500, 6000)
-add(sfx, fx_click(), at('backViolet', -2), 0.16)
+    whoosh(at('fan', 0, 4 + i * 4), 0.12, 0.35, 600, 9000)
+add(sfx, fx_click(), at('dark', offset=-2), 0.2)
 
-# Privacy: the records float in and settle; a calm, warm glow when they are saved.
+# Privacy: the records float in and settle; a warm glow when they are saved.
 for i in range(4):
-    add(sfx, fx_bubble(400 + 70 * i, 1000 + 110 * i), at('chipsIn', 8 * i + 4), 0.1, -0.5 + 0.33 * i)
+    add(sfx, fx_bubble(400 + 70 * i, 1000 + 110 * i), at('privacy', offset=6 + 8 * i), 0.12, -0.5 + 0.33 * i)
 for i in range(4):
-    add(sfx, fx_tick(2000 + 150 * i), at('chipsHome', 5 * i + 22), 0.08)
-add(sfx, fx_glow(hz('D5'), 2.2), at('saved'), 0.2)
-add(sfx, fx_bell('A5', 1.8), at('saved', 2), 0.1)
-whoosh(at('phoneOut', 8), 0.08, 0.8, 200, 3000)
+    add(sfx, fx_tick(2000 + 150 * i), at('chipsHome', 0, 5 * i + 20), 0.1)
+add(sfx, fx_glow(hz('D5'), 2.0), at('saved'), 0.22)
 
-# Close: three cards, the path, the logo, the tagline and the button.
-for key in ('cardA', 'cardB', 'cardC'):
-    whoosh(at(key), 0.08, 0.5, 500, 7000)
-    add(sfx, fx_pop(), at(key, 4), 0.12)
-add(sfx, fx_shimmer(('D6', 'F#6', 'A6')), ws('l8', 7), 0.16)
-add(sfx, fx_swell(fs(B['closeTrail'][1] - B['closeTrail'][0]), 220, 2800), at('closeTrail'), 0.12)
-add(sfx, fx_shimmer(('D6', 'F#6', 'A6', 'D7', 'F#7')), LOGO, 0.26)
-add(sfx, fx_bell('D6', 1.8), LOGO + 0.02, 0.14)
-whoosh(at('tagline'), 0.05, 0.9, 1200, 9000)
-add(sfx, fx_pop(), at('cta', -1), 0.16)
-add(sfx, fx_bell('A5', 2.4), CTA, 0.12)
-sfx = verb(sfx, ROOM, 0.1)
-sfx *= curve(N, [(0, 1), (END - 1.0, 1), (END, 0), (LENGTH, 0)])[:, None]
+# Build and final drop.
+for key in ('entrena', 'registra', 'celebra'):
+    hit(at(key), 0.3, 55)
+add(sfx, fx_impact(2.2, 32), at('drop2') - 0.06, 0.22)
+add(sfx, fx_shimmer(('D6', 'F#6', 'A6', 'D7', 'F#7')), at('drop2', offset=2), 0.16)
+whoosh(at('tagline'), 0.06, 0.8, 1200, 9000)
+add(sfx, fx_pop(), at('cta', offset=-1), 0.2)
+add(sfx, fx_bell('A5', 2.0), at('cta'), 0.1)
 
 # ── Voice: the ElevenLabs takes, dry, exactly as timed ───────────────────
 voice = np.zeros(N)
 for line in VOICE:
-    x, sr = sf.read(os.path.join(HERE, 'voice-pasos', f"{line['id']}.wav"))
+    x, sr = sf.read(os.path.join(HERE, 'voice-energia', f"{line['id']}.wav"))
     assert sr == SR
     x = np.asarray(x, dtype=np.float64)
     if x.ndim > 1:
         x = x.mean(axis=1)
-    x = hp(x, 70, 2)
-    x = peaking(x, 3200, 1.2, 1.0)
+    x = hp(x, 80, 2)
+    x = peaking(x, 3200, 1.5, 1.0)
     x = x / (np.sqrt(np.mean(x ** 2)) + 1e-9) * 0.11
     i = int(fs(line['at']) * SR)
     n = min(len(x), N - i)
     voice[i:i + n] += x[:n]
     print('voice', line['id'], 'at', round(fs(line['at']), 2), 's', 'len', round(len(x) / SR, 2), 's')
+
+
+# Effects step back while the narration speaks (the music already ducks under it in audio/mux.sh).
+level = np.sqrt(np.convolve(voice ** 2, np.ones(int(0.03 * SR)) / int(0.03 * SR), 'same'))
+hold = maximum_filter1d(np.clip(level / 0.04, 0, 1), size=int(0.25 * SR), origin=-int(0.125 * SR) + 1)
+hold = np.convolve(hold, np.ones(int(0.02 * SR)) / int(0.02 * SR), 'same')
+sfx *= (1 - 0.55 * hold)[:, None]
+sfx = verb(sfx, ROOM, 0.1)
+sfx *= curve(N, [(0, 1), (END - 0.3, 1), (END + 0.6, 0), (LENGTH, 0)])[:, None]
 
 
 def write(path, x, peak=0.89, subtype='FLOAT'):
