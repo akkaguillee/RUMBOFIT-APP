@@ -28,7 +28,7 @@ from scipy.ndimage import maximum_filter1d
 
 import synth
 from synth import (
-    HALL, ROOM, SR, add, clap, curve, cymbal, env, fx_bell, fx_boop, fx_bubble, fx_check, fx_click, fx_glow, fx_ignite,
+    HALL, ROOM, SR, add, bp, clap, curve, cymbal, env, fx_bell, fx_boop, fx_bubble, fx_check, fx_click, fx_glow, fx_ignite,
     fx_impact, fx_pop, fx_reverse, fx_riser, fx_shimmer, fx_swell, fx_thud, fx_tick, fx_whoosh, hat, hp, hz, kick, lp,
     peaking, pluck, saw, snare, sine, st, sweep, tom, verb,
 )
@@ -295,7 +295,7 @@ def hit(tt, g=0.3, f=60):
     """A short, round punch under a big word: low thud and a snap of noise."""
     n = int(0.25 * SR)
     t = np.arange(n) / SR
-    snap = hp(rng.standard_normal(n), 2000) * np.exp(-t * 90) * 0.3
+    snap = bp(rng.standard_normal(n), 1500, 7000) * np.exp(-t * 70) * 0.22  # band-limited: AAC overshoots on brighter clicks
     body = np.sin(2 * np.pi * (f + 80 * np.exp(-t * 30)) * t) * np.exp(-t * 14)
     add(sfx, st(np.tanh((body + snap) * 1.5)), tt, g)
 
