@@ -69,7 +69,7 @@ export function Root() {
         fps={PASOS_FPS}
         width={1080}
         height={1920}
-        defaultProps={{ format: 'story', url: 'myrumbo.netlify.app' } satisfies PasosProps}
+        defaultProps={{ format: 'story' } satisfies PasosProps}
       />
       <Composition
         id="RumboPasos45"
@@ -78,7 +78,7 @@ export function Root() {
         fps={PASOS_FPS}
         width={1080}
         height={1350}
-        defaultProps={{ format: 'feed', url: 'myrumbo.netlify.app' } satisfies PasosProps}
+        defaultProps={{ format: 'feed' } satisfies PasosProps}
       />
     </>
   );

@@ -31,7 +31,7 @@ Anuncio vertical para Reels y TikTok (1:44,5) con adaptación 4:5 para el feed, 
   - el rótulo dice «Tus registros se guardan en este dispositivo»;
   - una nota visible añade «El escáner de comidas, opcional, se conecta a internet para identificar alimentos».
   - El plano de bienvenida, que muestra la frase completa, no aparece en el vídeo.
-- **Datos:** todos son de demostración (usuario ficticio «Alex»), y la pieza lo indica en pantalla con «Datos de demostración». Se eligieron valores con el IMC en el intervalo de referencia para no enseñar etiquetas que puedan culpabilizar. No hay comparaciones de antes y después ni promesas de resultados.
+- **Datos:** todos son de demostración (usuario ficticio «Alex»); el vídeo no lleva rótulo que lo indique. Se eligieron valores con el IMC en el intervalo de referencia para no enseñar etiquetas que puedan culpabilizar. No hay comparaciones de antes y después ni promesas de resultados.
 - **Hitos:** solo se muestra la racha («22 días de racha»), que la app calcula con esos registros.
 - **Tecnología:** la pieza no dice «web app» ni habla de la tecnología.
 
@@ -41,9 +41,9 @@ Anuncio vertical para Reels y TikTok (1:44,5) con adaptación 4:5 para el feed, 
 - **Música:** original, sintetizada en el proyecto (`audio/build_pasos.py`, `audio/synth.py`): 100 BPM, re mayor, cálida y con pulso suave. No usa grabaciones de terceros.
 - **Efectos:** breves y discretos, sobre los momentos de la imagen (`src/pasos/beats.json`). La mezcla atenúa la música bajo la voz con sidechain y normaliza a −14 LUFS y −1 dBTP (`audio/mux.sh`).
 
-## Pendiente de confirmar
+## Otras notas
 
-- **URL del cierre:** el vídeo muestra `myrumbo.netlify.app`, la dirección del brief. El código del proyecto menciona `rumbofit.netlify.app` (`netlify/lib/off.ts`, `netlify/tests/food.test.ts`). Desde este entorno no se pudo abrir ninguna de las dos. Para cambiarla, edita `url` en `src/Root.tsx` y vuelve a renderizar; con `url: ''` el cierre queda sin dirección.
+- **Cierre:** logo, lema y «Empieza hoy», sin dirección web. Si más adelante quieres añadir una, va debajo del botón en `Close` (`src/pasos/scenes.tsx`).
 - **Texto de la app:** la bienvenida (`OnboardingPage.tsx`) y Perfil (`ProfilePage.tsx`) dicen «no se envían a ningún servidor», lo que no es exacto si se usa el escáner. Conviene ajustar ese texto en la app.
 
 ## Cómo rehacerlo

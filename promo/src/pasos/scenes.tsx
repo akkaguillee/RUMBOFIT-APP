@@ -3,7 +3,7 @@ import { spring } from 'remotion';
 import { krophedWidth } from '../../../src/brand/krophed';
 import { accentAt, BEAT, cubicPath, hookLight, hookPath, screenPoint, w } from './choreo';
 import { CHART, CHIPS, column, CROP, HOY, onScreen, places, TAP } from './geo';
-import { clamp, Crop, DemoTag, easeInOut, Headline, keys, Logo, Phone, phoneGeom, prog, Ripple, Sparkle, Trail, useT, windowed } from './kit';
+import { clamp, Crop, easeInOut, Headline, keys, Logo, Phone, phoneGeom, prog, Ripple, Sparkle, Trail, useT, windowed } from './kit';
 import { BRAND_GRAD, C, FONT, FPS, useLayout, type Layout } from './theme';
 
 const v = <T,>(L: Layout, story: T, feed: T): T => (L.format === 'story' ? story : feed);
@@ -113,7 +113,6 @@ export function AppScene() {
           ) : null,
         )}
       </Head>
-      <DemoTag x={L.right} y={v(L, 1296, 1150)} at={340} out={590} align="right" />
     </>
   );
 }
@@ -132,7 +131,6 @@ export function Evolution() {
       </Head>
       <Lift crop={CROP.imc} at={BEAT.imc} out={BEAT.zoomChart[0] - 4} y={v(L, 700, 430)} from={from} />
       <Lift crop={CROP.kcal} at={BEAT.kcal} out={BEAT.zoomChart[0]} y={v(L, 965, 640)} from={from} />
-      <DemoTag x={L.right} y={v(L, 1296, 1150)} at={640} out={1036} align="right" />
     </>
   );
 }
@@ -184,7 +182,6 @@ export function Training() {
       )}
       <Lift crop={CROP.records} at={BEAT.records} out={BEAT.history[0] + 6} y={v(L, 720, 450)} from={{ x: P.x, y: P.y }} />
       <Lift crop={CROP.stats} at={BEAT.stats} out={1468} y={v(L, 740, 460)} from={{ x: P.x, y: P.y }} />
-      <DemoTag x={L.right} y={v(L, 1296, 1150)} at={1060} out={1490} align="right" />
     </>
   );
 }
@@ -246,7 +243,6 @@ export function Habits() {
       <Head>
         <Headline text="La constancia también suma." upper={false} at={w('l5', 16)} out={1904} size={v(L, 60, 52)} accent={[1]} stagger={3} />
       </Head>
-      <DemoTag x={L.right} y={v(L, 1296, 1150)} at={1520} out={1910} align="right" />
     </>
   );
 }
@@ -298,7 +294,6 @@ export function Style() {
       <Head>
         <Headline text="A TU ESTILO." at={w('l6', 1)} out={2296} size={L.display} accent={[2]} />
       </Head>
-      <DemoTag x={L.right} y={v(L, 1296, 1150)} at={1950} out={2300} align="right" />
     </>
   );
 }
@@ -364,13 +359,12 @@ export function Privacy() {
           El escáner de comidas, opcional, se conecta a internet para identificar alimentos.
         </div>
       </Head>
-      <DemoTag x={L.right} y={v(L, 1296, 1150)} at={2340} out={2656} align="right" />
     </>
   );
 }
 
 /* ═══ 8 · Close and call to action ═══════════════════════════════════════ */
-export function Close({ url }: { url: string }) {
+export function Close() {
   const f = useT();
   const fps = FPS;
   const L = useLayout();
@@ -458,7 +452,6 @@ export function Close({ url }: { url: string }) {
               <path d="m12 5 7 7-7 7" />
             </svg>
           </div>
-          <div style={{ fontFamily: FONT.sans, fontWeight: 600, fontSize: v(L, 34, 30), color: C.text2, letterSpacing: '0.01em', opacity: prog(f, BEAT.cta + 10, BEAT.cta + 26) }}>{url}</div>
         </div>
       )}
       {f >= w('l8', 7) && f < w('l8', 7) + 50 && <Sparkle x={v(L, 700, 720)} y={v(L, 1070, 820) - 40} at={w('l8', 7)} radius={120} seed={9} />}

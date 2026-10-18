@@ -9,8 +9,6 @@ import { LAYOUTS, LayoutContext, useLayout, type Format } from './theme';
 
 export type PasosProps = {
   format: Format;
-  /** Address shown under the call to action (empty to leave it out). */
-  url: string;
 };
 
 function Backdrop() {
@@ -49,7 +47,7 @@ function Mascot() {
 }
 
 /** «Cada pequeño paso cuenta»: 1:44.5, 9:16 or 4:5. */
-export function Pasos({ format, url }: PasosProps) {
+export function Pasos({ format }: PasosProps) {
   const L = LAYOUTS[format];
   return (
     <LayoutContext.Provider value={L}>
@@ -64,7 +62,7 @@ export function Pasos({ format, url }: PasosProps) {
         <Habits />
         <Style />
         <Privacy />
-        <Close url={url} />
+        <Close />
         <Mascot />
         <Captions cues={captions as Cue[]} />
       </AbsoluteFill>

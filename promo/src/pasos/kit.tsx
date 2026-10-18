@@ -415,40 +415,6 @@ export function Headline({
   );
 }
 
-/* ── Small text pill: «Datos de demostración» ─────────────────────────── */
-export function DemoTag({ x, y, at, out, align = 'center' }: { x: number; y: number; at: number; out?: number; align?: 'left' | 'center' | 'right' }) {
-  const frame = useT();
-  const o = prog(frame, at, at + 12) * (out === undefined ? 1 : 1 - prog(frame, out, out + 10));
-  const tx = align === 'center' ? '-50%' : align === 'right' ? '-100%' : '0';
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        left: x,
-        top: y,
-        transform: `translate(${tx}, -50%)`,
-        opacity: o,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        padding: '8px 16px',
-        borderRadius: 999,
-        background: 'rgba(255,255,255,0.06)',
-        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.1)',
-        color: C.text2,
-        fontFamily: FONT.sans,
-        fontSize: 22,
-        fontWeight: 600,
-        letterSpacing: '0.01em',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      <span style={{ width: 8, height: 8, borderRadius: 4, background: C.lavender }} />
-      Datos de demostración
-    </div>
-  );
-}
-
 /* ── Tap ripple and achievement sparkle ───────────────────────────────── */
 export function Ripple({ x, y, at, size = 90, color = '#fff' }: { x: number; y: number; at: number; size?: number; color?: string }) {
   const frame = useT();
