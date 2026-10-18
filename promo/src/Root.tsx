@@ -80,6 +80,16 @@ export function Root() {
         height={1350}
         defaultProps={{ format: 'feed' } satisfies PasosProps}
       />
+      {/* The 4:5 cut at 30 fps, for a quick 1080 × 1350 delivery (the animation reads time, so it is the same motion). */}
+      <Composition
+        id="RumboPasos45x30"
+        component={PasosWithFonts}
+        durationInFrames={PASOS_FRAMES}
+        fps={PASOS_TL_FPS}
+        width={1080}
+        height={1350}
+        defaultProps={{ format: 'feed' } satisfies PasosProps}
+      />
     </>
   );
 }
