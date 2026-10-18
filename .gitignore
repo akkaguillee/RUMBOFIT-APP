@@ -33,3 +33,5 @@ promo/out/reel/stills*
 promo/out/reel/*-silent.mp4
 promo/out/reel/render.log
 promo/out/reel/ep*
+promo/out/reel/*.log
+promo/out/reel/reel45-*.mp4
