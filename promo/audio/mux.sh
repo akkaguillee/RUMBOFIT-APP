@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Final mix and encode with FFmpeg: music ducked under the voice (sidechain),
 # effects on top, two-pass loudness normalisation (-14 LUFS, -1 dBTP) and
-# H.264 + AAC MP4 for Reels / TikTok / Shorts.
+# H.264 + AAC MP4 for Reels / TikTok / Shorts. A last limiter at -1.5 dBFS keeps the
+# true peak under -1 dBTP once AAC has encoded it.
 # Defaults are the 40 s cut; the cinematic cut sets STEMS, VIDEO, OUT, LEN and MAXRATE
 # (see the mux:cine script in package.json).
 set -euo pipefail
@@ -28,7 +29,7 @@ MI=$(get input_i); MTP=$(get input_tp); MLRA=$(get input_lra); MTH=$(get input_t
 
 # Pass 2: apply and mux with the Remotion render
 ffmpeg -hide_banner -y -i $STEMS/music.wav -i $STEMS/sfx.wav -i $STEMS/voice.wav -i $VIDEO \
-  -filter_complex "$GRAPH,loudnorm=I=-14:TP=-1.0:LRA=11:measured_I=$MI:measured_TP=$MTP:measured_LRA=$MLRA:measured_thresh=$MTH:offset=$OFF:linear=true,aresample=48000[a]" \
+  -filter_complex "$GRAPH,loudnorm=I=-14:TP=-1.0:LRA=11:measured_I=$MI:measured_TP=$MTP:measured_LRA=$MLRA:measured_thresh=$MTH:offset=$OFF:linear=true,alimiter=limit=0.84:attack=1:release=60:level=disabled,aresample=48000[a]" \
   -map 3:v:0 -map "[a]" \
   -vf "$VF" \
   -c:v libx264 -preset slow -crf $CRF -maxrate ${MAXRATE}M -bufsize $((2 * MAXRATE))M -profile:v high -level:v $LEVEL -r $FPS -g $((2 * FPS)) \
